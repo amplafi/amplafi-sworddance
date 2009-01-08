@@ -11,6 +11,9 @@
     <description>Sworddance utility methods</description>
     <url>http://sworddance.com</url>
     <inceptionYear>2006</inceptionYear>
+    <scm>
+        <developerConnection>scm:svn:${svn-base}/${artifactId}/trunk</developerConnection>
+    </scm>
     <parent>
         <groupId>org.amplafi</groupId>
         <artifactId>amplafi-opensource-parent</artifactId>
