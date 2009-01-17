@@ -64,6 +64,7 @@ public class TestBeanWorker {
 
     /**
      * tests get/set using the same BeanWorker ( this tests duck-typing ) on 2 different classes that are not related to each other.
+     * @param beanWorker
      * @param testClass
      * @param childTestClass
      * @throws Exception
@@ -72,10 +73,10 @@ public class TestBeanWorker {
     public void testPropertyGetSet(BeanWorker beanWorker, Object testClass, Object childTestClass) throws Exception {
         Field deleteField = childTestClass.getClass().getField("delete");
         assertEquals(deleteField.get(childTestClass), true);
-        boolean childDelete = beanWorker.getValue(testClass, "testClass.delete");
+        boolean childDelete = (Boolean) beanWorker.getValue(testClass, "testClass.delete");
         assertTrue(childDelete);
         beanWorker.setValue(testClass, "testClass.delete", false);
-        childDelete = beanWorker.getValue(testClass, "testClass.delete");
+        childDelete =  (Boolean) beanWorker.getValue(testClass, "testClass.delete");
         assertFalse(childDelete);
         // extra checks to make sure that childTestClass is still assigned to testClass.testClass;
         assertEquals(deleteField.get(childTestClass), false);
