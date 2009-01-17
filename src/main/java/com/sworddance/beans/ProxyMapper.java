@@ -8,14 +8,15 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
  * This class takes an interface and a real object.
  * @author patmoore
- * @param <I>
- * @param <O>
+ * @param <I> the interface class that the
+ * @param <O> extends <I> the class (not interface) that is the concrete class that is wrapped by the ProxyWrapper.
  *
  */
 public class ProxyMapper<I,O extends I> extends BeanWorker implements InvocationHandler {
@@ -90,7 +91,7 @@ public class ProxyMapper<I,O extends I> extends BeanWorker implements Invocation
      * the real object may no longer be available. This method reloads the realObject if necessary.
      * @return the realObject
      */
-    private Object getRealObject() {
+    private O getRealObject() {
         if ( this.realObject == null) {
             // TODO
         }
@@ -98,6 +99,13 @@ public class ProxyMapper<I,O extends I> extends BeanWorker implements Invocation
     }
     public Object getKeyExpression() {
         return this.newValues.get(this.getPropertyName(0));
+    }
+
+    public O getAppliedValues() {
+        O result = getRealObject();
+        for(Map.Entry<String, Object> entry : this.newValues.entrySet()) {
+        }
+        return result;
     }
     @SuppressWarnings("unchecked")
     public static <I,O extends I> I getProxy(O realObject, ProxyBehavior proxyBehavior, List<String>propertyChains) {
