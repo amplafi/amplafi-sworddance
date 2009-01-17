@@ -4,7 +4,6 @@
  */
 package com.sworddance.beans;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,10 +15,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.apache.commons.collections.CollectionUtils.*;
-import static org.apache.commons.lang.StringUtils.*;
 
 /**
  * Provides some general utility methods so that bean operations can be used more easily.
+ *
+ * Note that an instance of a BeanWorker is not linked to a class. This allows "duck-typing" operations.
  * @author patmoore
  *
  */
@@ -28,9 +28,14 @@ public class BeanWorker {
     private static final Pattern PROPERTY_METHOD_PATTERN = Pattern.compile("(is|set|get)(([A-Z])(\\w*))$");
     private static final Pattern GET_METHOD_PATTERN = Pattern.compile("(is|get)(([A-Z])(\\w*))$");
     private static final Pattern SET_METHOD_PATTERN = Pattern.compile("(set)(([A-Z])(\\w*))$");
+
+    /**
+     * This list of property names is the list of the only properties that the BeanWorker is allowed to modify.
+     * Specifically, "foo.goo" does not mean the BeanWorker is allowed to modify the "foo" property - only "foo"'s "goo" property can be modified.
+     */
     private List<String> propertyNames;
-    // key = class, key = propertyNames value = chain of methods to get to value.
-    private static final MapByClass<Map<String,List<PropertyMethods>>> methodsMap = new MapByClass<Map<String,List<PropertyMethods>>>();
+    // key = class, key = (each element in) propertyNames value = chain of methods to get to value.
+    private static final MapByClass<Map<String,PropertyMethodChain>> methodsMap = new MapByClass<Map<String,PropertyMethodChain>>();
     public BeanWorker() {
 
     }
@@ -63,85 +68,45 @@ public class BeanWorker {
     protected <T> T getValue(Object base, String property) {
         Object result = base;
         if ( base != null && property != null ) {
-            List<PropertyMethods> methodChain = getMethods(base.getClass(), property);
+            PropertyMethodChain methodChain = getMethods(base.getClass(), property);
             if ( methodChain != null ) {
-                for(PropertyMethods propertyMethods : methodChain) {
-                    Method method = propertyMethods.getter;
-                    try {
-                        result = method.invoke(result);
-                        if ( result == null ) {
-                            break;
-                        }
-                    } catch (IllegalArgumentException e) {
-                        throw new IllegalArgumentException(method.toGenericString(), e);
-                    } catch (IllegalAccessException e) {
-                        throw new IllegalArgumentException(method.toGenericString(), e);
-                    } catch (InvocationTargetException e) {
-                        throw new IllegalArgumentException(method.toGenericString(), e);
-                    }
-                }
+                result = methodChain.getValue(result);
             }
         }
         return (T) result;
     }
-    protected List<PropertyMethods> getMethods(Class<?> clazz, String property) {
-        Map<String, List<PropertyMethods>> classMethodMap = getMethodMap(clazz);
-        List<PropertyMethods> methodChain = classMethodMap.get(property);
+
+    protected void setValue(Object base, String property, Object value) {
+        Object result = base;
+        if ( base != null && property != null ) {
+            PropertyMethodChain methodChain = getMethods(base.getClass(), property);
+            if ( methodChain != null ) {
+                result = methodChain.setValue(result, value);
+            }
+        }
+    }
+    protected PropertyMethodChain getMethods(Class<?> clazz, String property) {
+        Map<String, PropertyMethodChain> classMethodMap = getMethodMap(clazz);
+        PropertyMethodChain methodChain = classMethodMap.get(property);
         return methodChain;
     }
-    protected Map<String, List<PropertyMethods>> getMethodMap(Class<?> clazz) {
-        Map<String, List<PropertyMethods>> propMap;
+    /**
+     * Each
+     * @param clazz
+     * @return
+     */
+    protected Map<String, PropertyMethodChain> getMethodMap(Class<?> clazz) {
+        Map<String, PropertyMethodChain> propMap;
         if ( !methodsMap.containsKey(clazz)) {
-            propMap = new ConcurrentHashMap<String, List<PropertyMethods>>();
+            propMap = new ConcurrentHashMap<String, PropertyMethodChain>();
 
             for(String property: propertyNames) {
-                String[] splitProps = property.split("\\.");
-                propMap.put(property, getMethods(clazz, splitProps));
+                propMap.put(property, new PropertyMethodChain(clazz, property));
             }
         } else {
             propMap = methodsMap.get(clazz);
         }
         return propMap;
-    }
-    /**
-     * collects a chain of property methods that are called sequentially to get the final result.
-     * @param clazz
-     * @param propertyNamesList
-     * @return the chain of methods.
-     */
-    protected List<PropertyMethods> getMethods(Class<?> clazz, String[] propertyNamesList) {
-        Class<?>[] parameterTypes = new Class<?>[0];
-        List<PropertyMethods> methodArray = new ArrayList<PropertyMethods>();
-        for(String propertyName: propertyNamesList) {
-            PropertyMethods propertyMethods = new PropertyMethods();
-            propertyMethods.getter = getMethod(clazz, propertyName, parameterTypes);
-            clazz= propertyMethods.getter.getReturnType();
-            methodArray.add(propertyMethods);
-        }
-        return methodArray;
-    }
-    /**
-     * Get a the Getter method with the given parameter types (usually only a single parameter)
-     * @param clazz
-     * @param propertyName
-     * @param parameterTypes
-     * @return the getter method.
-     */
-    private Method getMethod(Class<?> clazz, String propertyName, Class<?>... parameterTypes) {
-        if (propertyName == null ) {
-            throw new IllegalArgumentException("propertyName cannot be null");
-        }
-        String capitalize = capitalize(propertyName);
-        for (String methodName: Arrays.asList(propertyName, "get"+capitalize, "is"+capitalize)) {
-            try {
-                return clazz.getMethod(methodName, parameterTypes);
-            } catch (SecurityException e) {
-//                throw new IllegalArgumentException(clazz+"."+propertyName+ " " + StringUtils.join(parameterTypes), e);
-            } catch (NoSuchMethodException e) {
-//                throw new IllegalArgumentException(clazz+"."+propertyName+ " " + StringUtils.join(parameterTypes), e);
-            }
-        }
-        throw new IllegalArgumentException(clazz+"."+propertyName+ " " + join(parameterTypes));
     }
 
     protected String getPropertyName(Method method) {
@@ -177,9 +142,5 @@ public class BeanWorker {
             propertyName = null;
         }
         return propertyName;
-    }
-    protected static class PropertyMethods {
-        protected Method getter;
-        protected Method setter;
     }
 }
