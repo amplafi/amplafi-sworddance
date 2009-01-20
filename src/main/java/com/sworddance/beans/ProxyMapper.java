@@ -14,7 +14,34 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * This class takes an interface and a real object.
+ * enables a controlled access to an object tree that also supports caching.
+ *
+ * Sample use case:
+ * <ul>
+ * <li>a User object has a member object Role.</li>
+ * <li>the Role object has its own properties</li>
+ * <li>Both Role and User are stored in the database</li>
+ * <li>Access to changing properties on either User or Role should be restricted on a dynamic basis</li>
+ * </ul>
+ *
+ * <h3>Alternative rejected solutions</h3>
+ * Hibernate caching rejected because:
+ * <ul>
+ * <li>operates on a per-entity basis not on an object tree basis</li>
+ * <li>no mechanism to restrict read-only and write able properties on a per request basis.</li>
+ * <li>no serialization mechanism.</l>
+ * <li>no graceful way to work with flow code to preserve original state</li>
+ * <li>no ability to cache only the parts of the entities needed for the request in question.
+ * For example, if the request is allowing an admin to change another user's role, then the request should
+ * have no ability through bug or hack attempt to access and change the user's password.</li>
+ * </ul>
+ *
+ * Using apache bean utilities
+ * <ul>
+ * <li>does not seem to handle tree of objects</li>
+ * <li> serialization issues</li>
+ * </ul>
+ *
  * @author patmoore
  * @param <I> the interface class that the
  * @param <O> extends <I> the class (not interface) that is the concrete class that is wrapped by the ProxyWrapper.
