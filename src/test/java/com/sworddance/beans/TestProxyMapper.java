@@ -13,7 +13,7 @@ import org.testng.annotations.Test;
  */
 public class TestProxyMapper {
 
-    @Test
+    @Test(enabled=false)
     public void testSimpleGetSet() {
         Interface1Impl child = new Interface1Impl(false, null);
         Interface1Impl impl = new Interface1Impl(true, child);

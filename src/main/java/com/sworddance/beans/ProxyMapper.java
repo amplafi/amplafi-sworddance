@@ -36,6 +36,11 @@ public class ProxyMapper<I,O extends I> extends BeanWorker implements Invocation
         this.proxyBehavior = proxyBehavior;
         initValuesMap(realObject, propertyChains);
     }
+    public ProxyMapper(Class<O> realClass, ProxyBehavior proxyBehavior, List<String>propertyChains) {
+        super(propertyChains);
+        this.realClass = realClass;
+        this.proxyBehavior = proxyBehavior;
+    }
     public ProxyMapper(O realObject, List<String>propertyChains) {
         this(realObject, ProxyBehavior.strict, propertyChains);
     }
@@ -111,12 +116,39 @@ public class ProxyMapper<I,O extends I> extends BeanWorker implements Invocation
         Object proxy = getExistingProxy(propertyName);
         if ( proxy == null ) {
             Class<?> propertyType = this.getPropertyType(realClass, propertyName);
+            proxy = getProxy(propertyType, proxyBehavior, propertyName);
+            setExistingProxy(propertyName, proxy);
         }
         return proxy;
     }
+    /**
+     * @param propertyName
+     * @param proxy
+     */
+    private void setExistingProxy(String propertyName, Object proxy) {
+        if ( this.parent != null ) {
+            this.parent.setExistingProxy(getTruePropertyName(propertyName), proxy);
+        } else {
+            if (this.childProxies == null){
+                this.childProxies = new ConcurrentHashMap<String, Object>();
+            }
+            this.childProxies.put(getTruePropertyName(propertyName), proxy);
+        }
+    }
+    /**
+     * @param propertyName
+     * @return
+     */
+    private String getTruePropertyName(String propertyName) {
+        if ( this.basePropertyPath == null) {
+            return propertyName;
+        } else {
+            return this.basePropertyPath+"."+propertyName;
+        }
+    }
     private Object getExistingProxy(String propertyName) {
         if ( this.parent != null ) {
-            return this.parent.getExistingProxy(this.basePropertyPath+"."+propertyName);
+            return this.parent.getExistingProxy(getTruePropertyName(propertyName));
         } else if (this.childProxies != null){
             return this.childProxies.get(propertyName);
         } else {
@@ -145,7 +177,26 @@ public class ProxyMapper<I,O extends I> extends BeanWorker implements Invocation
     }
     @SuppressWarnings("unchecked")
     public static <I,O extends I> I getProxy(O realObject, ProxyBehavior proxyBehavior, List<String>propertyChains) {
-        Class<?>[] interfaces = realObject.getClass().getInterfaces();
+        Class realClass = realObject.getClass();
+        return (I) getProxy(realObject, realClass, proxyBehavior, propertyChains);
+    }
+    public static <I,O extends I> I getProxy(Class<O> realClass, ProxyBehavior proxyBehavior, List<String> propertyChains) {
+        Class<?>[] interfaces = realClass.getInterfaces();
+        InvocationHandler handler = new ProxyMapper<I, O>(realClass, proxyBehavior, propertyChains);
+        return (I) Proxy.newProxyInstance(realClass.getClassLoader(), interfaces, handler);
+    }
+    /**
+     * @param <O>
+     * @param <I>
+     * @param realObject
+     * @param realClass
+     * @param proxyBehavior
+     * @param propertyChains
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public static <I,O extends I> I getProxy(O realObject, Class<O> realClass, ProxyBehavior proxyBehavior, List<String> propertyChains) {
+        Class<?>[] interfaces = realClass.getInterfaces();
         InvocationHandler handler = new ProxyMapper<I, O>(realObject, proxyBehavior, propertyChains);
         return (I) Proxy.newProxyInstance(realObject.getClass().getClassLoader(), interfaces, handler);
     }
@@ -154,6 +205,9 @@ public class ProxyMapper<I,O extends I> extends BeanWorker implements Invocation
     }
     public static <I,O extends I> I getProxy(O realObject, ProxyBehavior proxyBehavior, String...propertyChains) {
         return getProxy(realObject, proxyBehavior, Arrays.asList(propertyChains));
+    }
+    public static <I,O extends I> I getProxy(Class<O> realClass, ProxyBehavior proxyBehavior, String... propertyChains) {
+        return getProxy(realClass, proxyBehavior, Arrays.asList(propertyChains));
     }
     public static <I,O extends I> I getProxy(O realObject, String...propertyChains) {
         return getProxy(realObject, ProxyBehavior.leafStrict, Arrays.asList(propertyChains));
