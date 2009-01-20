@@ -14,6 +14,13 @@ public enum ProxyBehavior {
      */
     strict,
     /**
+     * attempts to get intermediate objects will be successful (otherwise strict)
+     * Example, if proxy definitions include:
+     * "foo.email"
+     * then the proxy can return a "foo" that can in turn return a "email".
+     */
+    leafStrict,
+    /**
      * return null if the property is not cached and print warning
      */
     nullValue,

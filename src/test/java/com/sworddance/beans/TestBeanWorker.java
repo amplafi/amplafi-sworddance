@@ -50,15 +50,15 @@ public class TestBeanWorker {
         PropertyMethodChain list = map.get("goo");
         assertNotNull(list);
         assertEquals(list.size(), 1);
-        assertEquals(list.get(0).getter, TestClass.class.getMethod("getGoo", new Class[0]));
+        assertEquals(list.get(0).getGetter(), TestClass.class.getMethod("getGoo", new Class[0]));
 
         assertNull(map.get("testClass"));
         list = map.get("testClass.delete");
         assertNotNull(list);
 
-        assertNull(list.get(0).setter);
-        assertEquals(list.get(1).getter, TestClass.class.getMethod("isDelete", new Class[0]));
-        assertEquals(list.get(1).setter, TestClass.class.getMethod("setDelete", new Class[] {boolean.class}));
+        assertNull(list.get(0).getSetter());
+        assertEquals(list.get(1).getGetter(), TestClass.class.getMethod("isDelete", new Class[0]));
+        assertEquals(list.get(1).getSetter(), TestClass.class.getMethod("setDelete", new Class[] {boolean.class}));
 
     }
 

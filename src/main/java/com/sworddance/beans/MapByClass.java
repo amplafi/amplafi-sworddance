@@ -161,7 +161,7 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
      */
     @Override
     public V putIfAbsent(Class<?> key, V value) {
-        return this.putIfAbsent(key, value);
+        return this.byClassMap.putIfAbsent(key, value);
     }
     /**
      * @see java.util.concurrent.ConcurrentMap#remove(java.lang.Object, java.lang.Object)

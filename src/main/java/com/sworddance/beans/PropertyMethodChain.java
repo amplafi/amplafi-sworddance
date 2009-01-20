@@ -18,16 +18,17 @@ public class PropertyMethodChain {
     /**
     *
     */
-   static final String PROPERTY_SEP = ".";
+    static final String PROPERTY_SEP = ".";
     private List<PropertyMethods> propertyMethodList;
 
     /**
      * @param clazz
      * @param property
+     * @param readOnly readonly property
      */
-    public PropertyMethodChain(Class<?> clazz, String property) {
+    public PropertyMethodChain(Class<?> clazz, String property, boolean readOnly) {
         String[] splitProps = property.split("\\" + PROPERTY_SEP);
-        this.propertyMethodList = getMethods(clazz, splitProps);
+        this.propertyMethodList = getMethods(clazz, splitProps, readOnly);
     }
 
     /**
@@ -69,10 +70,10 @@ public class PropertyMethodChain {
             Method method = null;
             try {
                 if (!set || i < propertyMethodList.size()-1) {
-                    method = propertyMethods.getter;
+                    method = propertyMethods.getGetter();
                     result = method.invoke(result);
                 } else {
-                    method = propertyMethods.setter;
+                    method = propertyMethods.getSetter();
                     result = method.invoke(result, value);
                 }
             } catch (IllegalArgumentException e) {
@@ -95,26 +96,25 @@ public class PropertyMethodChain {
      * @param propertyNamesList
      * @return the chain of methods.
      */
-    protected List<PropertyMethods> getMethods(Class<?> clazz, String[] propertyNamesList) {
+    protected List<PropertyMethods> getMethods(Class<?> clazz, String[] propertyNamesList, boolean readOnly) {
         Class<?>[] parameterTypes = new Class<?>[0];
         List<PropertyMethods> propertyMethodChain = new ArrayList<PropertyMethods>();
         for(Iterator<String> iter = Arrays.asList(propertyNamesList).iterator(); iter.hasNext();) {
             String propertyName = iter.next();
             PropertyMethods propertyMethods = new PropertyMethods();
-            propertyMethods.getter = getMethod(clazz, propertyName, parameterTypes);
-            Class<?> returnType = propertyMethods.getter.getReturnType();
-            if ( !iter.hasNext()) {
+            propertyMethods.setGetter(getMethod(clazz, propertyName, parameterTypes));
+            if ( !iter.hasNext() && !readOnly) {
                 // only get the setter on the last iteration because PropertyMethodChain is only allowed to set the property at the
                 // end of the chain. No other property along the way can be set.
                 try {
-                    propertyMethods.setter = clazz.getMethod("set"+capitalize(propertyName), returnType);
+                    propertyMethods.setSetter(clazz.getMethod("set"+capitalize(propertyName), propertyMethods.getReturnType()));
                 } catch (SecurityException e) {
                     // oh well..
                 } catch (NoSuchMethodException e) {
                     // oh well..
                 }
             }
-            clazz = returnType;
+            clazz = propertyMethods.getReturnType();
             propertyMethodChain.add(propertyMethods);
         }
         return propertyMethodChain;
@@ -143,8 +143,45 @@ public class PropertyMethodChain {
         }
         throw new IllegalArgumentException(clazz+PROPERTY_SEP+propertyName+ " " + join(parameterTypes));
     }
-    protected static class PropertyMethods {
-        protected Method getter;
-        protected Method setter;
+    /**
+     * @return last type returned
+     */
+    public Class<?> getReturnType() {
+        return get(this.size()-1).getReturnType();
     }
+    protected static class PropertyMethods {
+        private Method getter;
+        private Method setter;
+        /**
+         * @return the returnType
+         */
+        public Class<?> getReturnType() {
+            return getGetter().getReturnType();
+        }
+        /**
+         * @param getter the getter to set
+         */
+        public void setGetter(Method getter) {
+            this.getter = getter;
+        }
+        /**
+         * @return the getter
+         */
+        public Method getGetter() {
+            return getter;
+        }
+        /**
+         * @param setter the setter to set
+         */
+        public void setSetter(Method setter) {
+            this.setter = setter;
+        }
+        /**
+         * @return the setter
+         */
+        public Method getSetter() {
+            return setter;
+        }
+    }
+
 }

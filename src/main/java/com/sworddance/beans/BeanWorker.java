@@ -68,7 +68,7 @@ public class BeanWorker {
     protected <T> T getValue(Object base, String property) {
         Object result = base;
         if ( base != null && property != null ) {
-            PropertyMethodChain methodChain = getMethods(base.getClass(), property);
+            PropertyMethodChain methodChain = getPropertyMethodChain(base.getClass(), property);
             if ( methodChain != null ) {
                 result = methodChain.getValue(result);
             }
@@ -79,16 +79,25 @@ public class BeanWorker {
     protected void setValue(Object base, String property, Object value) {
         Object result = base;
         if ( base != null && property != null ) {
-            PropertyMethodChain methodChain = getMethods(base.getClass(), property);
+            PropertyMethodChain methodChain = getPropertyMethodChain(base.getClass(), property);
             if ( methodChain != null ) {
                 result = methodChain.setValue(result, value);
             }
         }
     }
-    protected PropertyMethodChain getMethods(Class<?> clazz, String property) {
+    protected PropertyMethodChain getPropertyMethodChain(Class<?> clazz, String property) {
         Map<String, PropertyMethodChain> classMethodMap = getMethodMap(clazz);
         PropertyMethodChain methodChain = classMethodMap.get(property);
         return methodChain;
+    }
+
+    public Class<?> getPropertyType(Class<?> clazz, String property) {
+        PropertyMethodChain chain = getPropertyMethodChain(clazz, property);
+        if ( chain == null) {
+            chain = new PropertyMethodChain(clazz, property, true);
+            // TODO should put in the methodChain
+        }
+        return chain.getReturnType();
     }
     /**
      * Each
@@ -99,13 +108,12 @@ public class BeanWorker {
         Map<String, PropertyMethodChain> propMap;
         if ( !methodsMap.containsKey(clazz)) {
             propMap = new ConcurrentHashMap<String, PropertyMethodChain>();
-
             for(String property: propertyNames) {
-                propMap.put(property, new PropertyMethodChain(clazz, property));
+                propMap.put(property, new PropertyMethodChain(clazz, property, false));
             }
-        } else {
-            propMap = methodsMap.get(clazz);
+            methodsMap.putIfAbsent(clazz, propMap);
         }
+        propMap = methodsMap.get(clazz);
         return propMap;
     }
 
