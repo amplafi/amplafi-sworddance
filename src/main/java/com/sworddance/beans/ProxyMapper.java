@@ -117,8 +117,10 @@ public class ProxyMapper<I,O extends I> extends BeanWorker implements Invocation
     private Object getExistingProxy(String propertyName) {
         if ( this.parent != null ) {
             return this.parent.getExistingProxy(this.basePropertyPath+"."+propertyName);
-        } else {
+        } else if (this.childProxies != null){
             return this.childProxies.get(propertyName);
+        } else {
+            return null;
         }
     }
     /**
