@@ -5,18 +5,21 @@
 package com.sworddance.beans;
 
 import static org.testng.Assert.*;
+
+import org.testng.annotations.Test;
 /**
  * @author patmoore
  *
  */
 public class TestProxyMapper {
 
-//    @Test
+    @Test
     public void testSimpleGetSet() {
         Interface1Impl child = new Interface1Impl(false, null);
         Interface1Impl impl = new Interface1Impl(true, child);
         Interface1 interface1 = ProxyMapper.getProxy(impl, "goo", "child.goo");
         Interface1 returnedChild = interface1.getChild();
+        assertNotNull(returnedChild);
         assertNotSame(child, returnedChild);
         assertFalse(returnedChild.isGoo());
     }
