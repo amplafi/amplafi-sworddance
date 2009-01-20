@@ -40,6 +40,7 @@ public class TestBeanWorker {
 
     /**
      * Test to make sure that only the requested properties are mapped.
+     * Also test to make sure that a restricted set of mappings does not screw up another (different set of mappings)
      * @throws Exception
      */
     @Test
@@ -60,6 +61,12 @@ public class TestBeanWorker {
         assertEquals(list.get(1).getGetter(), TestClass.class.getMethod("isDelete", new Class[0]));
         assertEquals(list.get(1).getSetter(), TestClass.class.getMethod("setDelete", new Class[] {boolean.class}));
 
+        // test different set of mappings
+        BeanWorker beanWorker1 = new BeanWorker("goo", "delete");
+        TestClass testClass1 = new TestClass();
+        testClass1.setDelete(true);
+        boolean delete = (Boolean) beanWorker1.getValue(testClass1, "delete");
+        assertTrue(delete);
     }
 
     /**

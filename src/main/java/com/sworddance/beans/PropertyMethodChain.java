@@ -149,6 +149,11 @@ public class PropertyMethodChain {
     public Class<?> getReturnType() {
         return get(this.size()-1).getReturnType();
     }
+
+    @Override
+    public String toString() {
+        return this.propertyMethodList.toString();
+    }
     protected static class PropertyMethods {
         private Method getter;
         private Method setter;
@@ -181,6 +186,10 @@ public class PropertyMethodChain {
          */
         public Method getSetter() {
             return setter;
+        }
+        @Override
+        public String toString() {
+            return getter.getName();
         }
     }
 

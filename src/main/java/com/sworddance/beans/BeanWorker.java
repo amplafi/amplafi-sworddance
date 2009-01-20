@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,7 +36,8 @@ public class BeanWorker {
      */
     private List<String> propertyNames;
     // key = class, key = (each element in) propertyNames value = chain of methods to get to value.
-    private static final MapByClass<Map<String,PropertyMethodChain>> methodsMap = new MapByClass<Map<String,PropertyMethodChain>>();
+    // TODO in future cache into a second map.
+    private final MapByClass<ConcurrentMap<String,PropertyMethodChain>> methodsMap = new MapByClass<ConcurrentMap<String,PropertyMethodChain>>();
     public BeanWorker() {
 
     }
@@ -105,15 +107,16 @@ public class BeanWorker {
      * @return
      */
     protected Map<String, PropertyMethodChain> getMethodMap(Class<?> clazz) {
-        Map<String, PropertyMethodChain> propMap;
+        ConcurrentMap<String, PropertyMethodChain> propMap;
         if ( !methodsMap.containsKey(clazz)) {
             propMap = new ConcurrentHashMap<String, PropertyMethodChain>();
-            for(String property: propertyNames) {
-                propMap.put(property, new PropertyMethodChain(clazz, property, false));
-            }
             methodsMap.putIfAbsent(clazz, propMap);
         }
         propMap = methodsMap.get(clazz);
+
+        for(String property: propertyNames) {
+            propMap.put(property, new PropertyMethodChain(clazz, property, false));
+        }
         return propMap;
     }
 
