@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentMap;
  * Using apache bean utilities
  * <ul>
  * <li>does not seem to handle tree of objects</li>
- * <li> serialization issues</li>
+ * <li>serialization issues</li>
  * </ul>
  *
  * @author patmoore
