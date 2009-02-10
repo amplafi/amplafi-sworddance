@@ -102,9 +102,9 @@ public class BeanWorker {
         return chain.getReturnType();
     }
     /**
-     * Each
+     * Each class has its own version of the PropertyMethodChain map.
      * @param clazz
-     * @return
+     * @return PropertyMethodChain map for the passed class.
      */
     protected Map<String, PropertyMethodChain> getMethodMap(Class<?> clazz) {
         ConcurrentMap<String, PropertyMethodChain> propMap;
