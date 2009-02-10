@@ -207,6 +207,7 @@ public class ProxyMapper<I,O extends I> extends BeanWorker implements Invocation
         Class realClass = realObject.getClass();
         return (I) getProxy(realObject, realClass, proxyBehavior, propertyChains);
     }
+    @SuppressWarnings("unchecked")
     public static <I,O extends I> I getProxy(Class<O> realClass, ProxyBehavior proxyBehavior, List<String> propertyChains) {
         Class<?>[] interfaces = realClass.getInterfaces();
         InvocationHandler handler = new ProxyMapper<I, O>(realClass, proxyBehavior, propertyChains);
@@ -219,7 +220,7 @@ public class ProxyMapper<I,O extends I> extends BeanWorker implements Invocation
      * @param realClass
      * @param proxyBehavior
      * @param propertyChains
-     * @return
+     * @return the proxy
      */
     @SuppressWarnings("unchecked")
     public static <I,O extends I> I getProxy(O realObject, Class<O> realClass, ProxyBehavior proxyBehavior, List<String> propertyChains) {
