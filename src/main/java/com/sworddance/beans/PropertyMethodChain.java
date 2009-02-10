@@ -7,8 +7,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.apache.commons.lang.StringUtils.*;
-
 /**
  * a list of methods that called in sequence will result in either setting or getting a value.
  * @author patmoore
@@ -19,7 +17,7 @@ public class PropertyMethodChain {
     *
     */
     static final String PROPERTY_SEP = ".";
-    private List<PropertyMethods> propertyMethodList;
+    private List<PropertyAdaptor> propertyMethodList;
 
     /**
      * @param clazz
@@ -34,7 +32,7 @@ public class PropertyMethodChain {
     /**
      * @param propertyMethods
      */
-    public void add(PropertyMethods propertyMethods) {
+    public void add(PropertyAdaptor propertyMethods) {
         propertyMethodList.add(propertyMethods);
     }
 
@@ -46,7 +44,7 @@ public class PropertyMethodChain {
         Object result = invoke(base, null, false);
         return result;
     }
-    public PropertyMethods get(int index) {
+    public PropertyAdaptor get(int index) {
         return this.propertyMethodList.get(index);
     }
 
@@ -66,7 +64,7 @@ public class PropertyMethodChain {
     public Object invoke(Object base, Object value, boolean set) {
         Object result = base;
         for(int i = 0; result != null && i < propertyMethodList.size(); i++) {
-            PropertyMethodChain.PropertyMethods propertyMethods = propertyMethodList.get(i);
+            PropertyAdaptor propertyMethods = propertyMethodList.get(i);
             Method method = null;
             try {
                 if (!set || i < propertyMethodList.size()-1) {
@@ -96,23 +94,17 @@ public class PropertyMethodChain {
      * @param propertyNamesList
      * @return the chain of methods.
      */
-    protected List<PropertyMethods> getMethods(Class<?> clazz, String[] propertyNamesList, boolean readOnly) {
+    protected List<PropertyAdaptor> getMethods(Class<?> clazz, String[] propertyNamesList, boolean readOnly) {
         Class<?>[] parameterTypes = new Class<?>[0];
-        List<PropertyMethods> propertyMethodChain = new ArrayList<PropertyMethods>();
+        List<PropertyAdaptor> propertyMethodChain = new ArrayList<PropertyAdaptor>();
         for(Iterator<String> iter = Arrays.asList(propertyNamesList).iterator(); iter.hasNext();) {
             String propertyName = iter.next();
-            PropertyMethods propertyMethods = new PropertyMethods();
-            propertyMethods.setGetter(getMethod(clazz, propertyName, parameterTypes));
+            PropertyAdaptor propertyMethods = new PropertyAdaptor(propertyName);
+            propertyMethods.setGetter(clazz, parameterTypes);
             if ( !iter.hasNext() && !readOnly) {
                 // only get the setter on the last iteration because PropertyMethodChain is only allowed to set the property at the
                 // end of the chain. No other property along the way can be set.
-                try {
-                    propertyMethods.setSetter(clazz.getMethod("set"+capitalize(propertyName), propertyMethods.getReturnType()));
-                } catch (SecurityException e) {
-                    // oh well..
-                } catch (NoSuchMethodException e) {
-                    // oh well..
-                }
+                propertyMethods.initSetter(clazz);
             }
             clazz = propertyMethods.getReturnType();
             propertyMethodChain.add(propertyMethods);
@@ -120,29 +112,6 @@ public class PropertyMethodChain {
         return propertyMethodChain;
     }
 
-    /**
-     * Get a the Getter method with the given parameter types (usually only a single parameter)
-     * @param clazz
-     * @param propertyName
-     * @param parameterTypes
-     * @return the getter method.
-     */
-    private Method getMethod(Class<?> clazz, String propertyName, Class<?>... parameterTypes) {
-        if (propertyName == null ) {
-            throw new IllegalArgumentException("propertyName cannot be null");
-        }
-        String capitalize = capitalize(propertyName);
-        for (String methodName: Arrays.asList(propertyName, "get"+capitalize, "is"+capitalize)) {
-            try {
-                return clazz.getMethod(methodName, parameterTypes);
-            } catch (SecurityException e) {
-//                    throw new IllegalArgumentException(clazz+"."+propertyName+ " " + StringUtils.join(parameterTypes), e);
-            } catch (NoSuchMethodException e) {
-//                    throw new IllegalArgumentException(clazz+"."+propertyName+ " " + StringUtils.join(parameterTypes), e);
-            }
-        }
-        throw new IllegalArgumentException(clazz+PROPERTY_SEP+propertyName+ " " + join(parameterTypes));
-    }
     /**
      * @return last type returned
      */
@@ -153,44 +122,6 @@ public class PropertyMethodChain {
     @Override
     public String toString() {
         return this.propertyMethodList.toString();
-    }
-    protected static class PropertyMethods {
-        private Method getter;
-        private Method setter;
-        /**
-         * @return the returnType
-         */
-        public Class<?> getReturnType() {
-            return getGetter().getReturnType();
-        }
-        /**
-         * @param getter the getter to set
-         */
-        public void setGetter(Method getter) {
-            this.getter = getter;
-        }
-        /**
-         * @return the getter
-         */
-        public Method getGetter() {
-            return getter;
-        }
-        /**
-         * @param setter the setter to set
-         */
-        public void setSetter(Method setter) {
-            this.setter = setter;
-        }
-        /**
-         * @return the setter
-         */
-        public Method getSetter() {
-            return setter;
-        }
-        @Override
-        public String toString() {
-            return getter.getName();
-        }
     }
 
 }
