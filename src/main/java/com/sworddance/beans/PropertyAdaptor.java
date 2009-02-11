@@ -101,7 +101,7 @@ public class PropertyAdaptor {
         PropertyEditor e = PropertyEditorManager.findEditor(getReturnType());
 
         if (e == null) {
-            Object convertedValue = instantiateViaStringConstructor(target, value);
+            Object convertedValue = instantiateViaStringConstructor(value);
 
             if (convertedValue != null) {
                 return convertedValue;
@@ -123,10 +123,9 @@ public class PropertyAdaptor {
      * Checks to see if this adaptor's property type has a public constructor that takes a single
      * String argument.
      */
-
-    private Object instantiateViaStringConstructor(Object target, String value) {
+    private Object instantiateViaStringConstructor(String value) {
         try {
-            Constructor c = getReturnType().getConstructor(new Class[] { String.class });
+            Constructor<?> c = getReturnType().getConstructor(new Class[] { String.class });
 
             return c.newInstance(new Object[] { value });
         } catch (Exception ex) {
