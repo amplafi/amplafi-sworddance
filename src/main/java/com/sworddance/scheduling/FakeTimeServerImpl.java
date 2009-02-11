@@ -12,8 +12,6 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-import com.sworddance.scheduling.TimeServerImpl;
-
 /**
  * Explanatory comments in {@link FakeTimeServer}.
  * @author Patrick Moore

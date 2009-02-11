@@ -8,8 +8,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import com.sworddance.scheduling.TimeServer;
-
 /**
  * Fake time server for testing. The intent of this service
  * is to have all time functions be under the direct control
