@@ -140,21 +140,45 @@ public class ProxyMapper<I,O extends I> extends BeanWorker implements Invocation
      * @return
      */
     private Object newChildProxy(ProxyMapper<I, O> proxyMapper, String propertyName) {
-        Object proxy = getExistingProxy(propertyName);
+        Object proxy = getChildProxy(propertyName);
         if ( proxy == null ) {
             Class<?> propertyType = this.getPropertyType(realClass, propertyName);
             proxy = getProxy(propertyType, proxyBehavior, propertyName);
-            setExistingProxy(propertyName, proxy);
+            setChildProxy(propertyName, proxy);
         }
         return proxy;
+    }
+    /**
+     * Child proxies are used when 'this' has been asked for a property that is partial path to leaf properties.
+     * <p>For example, a ProxyMapper is managing properties:
+     * <ul><li>foo.bar</li>
+     * <li>foo.goo</li>
+     * <li>bee</li>
+     * </ul>
+     * The ProxyMapper is asked for the "foo" property. The ProxyMapper will return a child ProxyMapper "foo" that has properties:
+     * <ul><li>bar (mapped to parent "foo.bar")</li>
+     * <li>goo (mapped to parent "foo.goo")</li>
+     * </ul>
+     * This allows the ProxyMapper usage to be less visible to called utility code.</p>
+     * @param propertyName
+     * @return
+     */
+    private Object getChildProxy(String propertyName) {
+        if ( this.parent != null ) {
+            return this.parent.getChildProxy(getTruePropertyName(propertyName));
+        } else if (this.childProxies != null){
+            return this.childProxies.get(propertyName);
+        } else {
+            return null;
+        }
     }
     /**
      * @param propertyName
      * @param proxy
      */
-    private void setExistingProxy(String propertyName, Object proxy) {
+    private void setChildProxy(String propertyName, Object proxy) {
         if ( this.parent != null ) {
-            this.parent.setExistingProxy(getTruePropertyName(propertyName), proxy);
+            this.parent.setChildProxy(getTruePropertyName(propertyName), proxy);
         } else {
             if (this.childProxies == null){
                 this.childProxies = new ConcurrentHashMap<String, Object>();
@@ -171,15 +195,6 @@ public class ProxyMapper<I,O extends I> extends BeanWorker implements Invocation
             return propertyName;
         } else {
             return this.basePropertyPath+"."+propertyName;
-        }
-    }
-    private Object getExistingProxy(String propertyName) {
-        if ( this.parent != null ) {
-            return this.parent.getExistingProxy(getTruePropertyName(propertyName));
-        } else if (this.childProxies != null){
-            return this.childProxies.get(propertyName);
-        } else {
-            return null;
         }
     }
     /**
