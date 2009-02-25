@@ -340,6 +340,9 @@ public class DefaultPrioritizedTask implements PrioritizedTask, Callable {
         return taskGroup;
     }
 
+    protected void addTaskStatus(String message) {
+        this.getTaskGroup().addTaskStatus(this, message);
+    }
     public boolean isNeverEligibleToRun() {
         return isDone() && !isReadyToRun();
     }
