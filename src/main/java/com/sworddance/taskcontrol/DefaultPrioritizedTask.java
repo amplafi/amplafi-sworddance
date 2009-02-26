@@ -40,9 +40,9 @@ public class DefaultPrioritizedTask implements PrioritizedTask, Callable {
 
     private String name;
 
-    private long startTime;
+    private long startTimeInMillis;
 
-    private long endTime;
+    private long endTimeInMillis;
 
     private Set<ResourceLock> resourceLocksNeeded = new CopyOnWriteArraySet<ResourceLock>();
 
@@ -144,16 +144,20 @@ public class DefaultPrioritizedTask implements PrioritizedTask, Callable {
 
     protected String getTimingString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getElapsed());
+        sb.append(getElapsedInMillis());
         sb.append("ms elapsed. Start=");
-        sb.append(FORMATTER.format(new Date(startTime)));
+        sb.append(FORMATTER.format(new Date(startTimeInMillis)));
         sb.append(" End=");
-        sb.append(FORMATTER.format(new Date(endTime > 0 ? endTime : System.currentTimeMillis())));
+        sb.append(FORMATTER.format(new Date(endTimeInMillis > 0 ? endTimeInMillis : System.currentTimeMillis())));
         return sb.toString();
     }
 
-    public long getElapsed() {
-        return endTime - startTime;
+    /**
+     *
+     * @return total elapsed time in Millis
+     */
+    public long getElapsedInMillis() {
+        return endTimeInMillis - startTimeInMillis;
     }
 
     public Object call() throws Exception {
@@ -204,14 +208,14 @@ public class DefaultPrioritizedTask implements PrioritizedTask, Callable {
     }
 
     protected void startTiming() {
-        if (startTime == 0) {
-            startTime = System.currentTimeMillis();
+        if (startTimeInMillis == 0) {
+            startTimeInMillis = System.currentTimeMillis();
         }
     }
 
     protected void finishTiming() {
-        if (endTime == 0) {
-            endTime = System.currentTimeMillis();
+        if (endTimeInMillis == 0) {
+            endTimeInMillis = System.currentTimeMillis();
         }
     }
 

@@ -1,20 +1,19 @@
 /**
  *
  */
-package com.sworddance.taskcontrol;
+package com.sworddance.util.perf;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
-
+import static com.sworddance.util.perf.ThreadHistoryTrackerFormatter.*;
 /**
  * @author pmoore
  *
  */
-public class CSVThreadHistoryTrackerFormatter extends
-        ThreadHistoryTrackerFormatter {
+public class CSVThreadHistoryTrackerFormatter implements Iterator<String> {
     private int lineCount;
 
     private int columnCount;
@@ -35,20 +34,21 @@ public class CSVThreadHistoryTrackerFormatter extends
 
     private static final String LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+    private ThreadHistoryTrackerFormatter threadHistoryTrackerFormatter;
     /**
      * @param tracker
      */
     public CSVThreadHistoryTrackerFormatter(ThreadHistoryTracker tracker) {
-        super(tracker);
+        this.threadHistoryTrackerFormatter = new ThreadHistoryTrackerFormatter(tracker);
     }
 
     @Override
-    public Object next() {
-        StringBuffer sb = new StringBuffer(100);
+    public String next() {
+        StringBuilder sb = new StringBuilder(100);
         if (doneWithData) {
             threadUtilizationSummary(sb);
         } else {
-            String[] output = (String[]) super.next();
+            String[] output = this.threadHistoryTrackerFormatter.next();
             lineCount++;
             for (int i = 0; i < output.length; i++) {
                 if (i == 0) {
@@ -78,16 +78,19 @@ public class CSVThreadHistoryTrackerFormatter extends
                 sb.append(deltaTimeCol).append(",0)\",");
                 // formula to calculate time running at max
                 sb.append("\"=IF(AND(");
-                sb.append(activeThreadCol).append(">=").append(maxThreads - 1);
+                sb.append(activeThreadCol).append(">=").append(this.threadHistoryTrackerFormatter.maxThreads - 1);
                 sb.append(',').append(nextActiveThreadCol);
-                sb.append('=').append(maxThreads).append("),");
+                sb.append('=').append(this.threadHistoryTrackerFormatter.maxThreads).append("),");
                 sb.append(deltaTimeCol).append(",0)\"");
             }
         }
         return sb.toString();
     }
+    public void remove() {
+        throw new UnsupportedOperationException();
+    }
 
-    private void threadUtilizationSummary(StringBuffer sb) {
+    private void threadUtilizationSummary(StringBuilder sb) {
         String column;
         postDataLine++;
         int linePos = lineCount + postDataLine;
@@ -134,7 +137,7 @@ public class CSVThreadHistoryTrackerFormatter extends
             break;
         case 7:
             sb.append("Task,Single-Threaded,Multi-Threaded");
-            taskSummary = this.timeMap.entrySet().iterator();
+            taskSummary = this.threadHistoryTrackerFormatter.timeMap.entrySet().iterator();
             break;
         default:
             if (taskSummary != null && taskSummary.hasNext()) {
@@ -148,7 +151,7 @@ public class CSVThreadHistoryTrackerFormatter extends
 
     @Override
     public boolean hasNext() {
-        doneWithData = !super.hasNext();
+        doneWithData = !this.threadHistoryTrackerFormatter.hasNext();
         if (doneWithData && taskSummary != null) {
             return taskSummary.hasNext();
         } else {
@@ -193,4 +196,5 @@ public class CSVThreadHistoryTrackerFormatter extends
             return LETTERS.substring(ones, ones + 1);
         }
     }
+
 }
