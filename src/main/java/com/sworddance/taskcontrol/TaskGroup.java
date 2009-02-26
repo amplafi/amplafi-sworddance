@@ -21,6 +21,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 
+import com.sworddance.util.perf.CSVThreadHistoryTrackerFormatter;
+import com.sworddance.util.perf.ThreadHistoryTracker;
+
 import static java.util.concurrent.TimeUnit.*;
 
 /**
@@ -163,9 +166,9 @@ public class TaskGroup<T> implements NotificationObject {
             if (task instanceof DefaultPrioritizedTask) {
                 threadHistoryTracker.addStopHistory(id,
                         task.getError().toString(),
-                        ((DefaultPrioritizedTask) task).getElapsed()
+                        ((DefaultPrioritizedTask) task).getElapsedInMillis()
                         + "ms",
-                        ((DefaultPrioritizedTask) task).getElapsed());
+                        ((DefaultPrioritizedTask) task).getElapsedInMillis());
             } else {
                 threadHistoryTracker.addStopHistory(id,
                         task.getError().toString(), null, 0);
@@ -173,8 +176,8 @@ public class TaskGroup<T> implements NotificationObject {
         } else {
             if (task instanceof DefaultPrioritizedTask) {
                 threadHistoryTracker.addStopHistory(id, "completed",
-                        ((DefaultPrioritizedTask) task).getElapsed() + "ms",
-                        ((DefaultPrioritizedTask) task).getElapsed());
+                        ((DefaultPrioritizedTask) task).getElapsedInMillis() + "ms",
+                        ((DefaultPrioritizedTask) task).getElapsedInMillis());
             } else {
                 threadHistoryTracker.addStopHistory(id, "completed", null, 0);
             }

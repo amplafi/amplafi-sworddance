@@ -16,6 +16,8 @@ import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * This class is a lightweight timer that lets developers perform many timing
  * operations including remote transmission of timers to collect data across many servers.
@@ -41,9 +43,12 @@ import java.util.*;
  * Alternatively {@link #sendToString()} and {@link #receiveFromString(String)} may be used to
  * send and receive the LapTimers attached to the current thread.
  *
- * 06-04-2004 PSM added begin/end methods that roughly mimic the SPringframework's StopWatch functionality.
+ * 06-04-2004 PSM added begin/end methods that roughly mimic the Springframework's StopWatch functionality.
  *                fix csv output so that it is better formated.
  *                Let LapTimer.Collection set how many laps the member LapTimers should keep.
+ * ----------------------------------
+ * TODO: Use ThreadHistoryTracker. (But need to handle sending LapTimers to other machines)
+ * ----------------------------------
  * @author pmoore
  */
 public class LapTimer implements Runnable, Serializable {
@@ -125,7 +130,7 @@ public class LapTimer implements Runnable, Serializable {
      */
     private long lastLapTime;
     /**
-     * This preserves the time spent in the current lap before a pause() occured.
+     * This preserves the time spent in the current lap before a pause() occurred.
      */
     private long lapOffset;
     /**
@@ -385,22 +390,26 @@ public class LapTimer implements Runnable, Serializable {
         this.lapCount++;
         return this.lapHistory[this.lapHistory.length - 1];
     }
-    static void sBegin(String lapName) {
-        LapTimer timer;
-        for (timer = LapTimer.remotedLapTimers.get(); timer != null; timer = timer.prevStackMember) {
-            timer.begin(lapName);
-        }
-        timer = _getThreadTimer();
-        if (timer != null) {
-            timer.begin(lapName);
+    static void sBegin(Object... lapInfo) {
+        LapTimerIterator iter = new LapTimerIterator(remotedLapTimers.get());
+        if ( iter.hasNext() || hasThreadTimer()) {
+            String lapName = StringUtils.join(lapInfo);
+            while(iter.hasNext()) {
+                LapTimer timer = iter.next();
+                timer.begin(lapName);
+            }
+            LapTimer timer = _getThreadTimer();
+            if (timer != null) {
+                timer.begin(lapName);
+            }
         }
     }
     static void sEnd() {
-        LapTimer timer;
-        for (timer = LapTimer.remotedLapTimers.get(); timer != null; timer = timer.prevStackMember) {
+        for (LapTimerIterator iter = new LapTimerIterator(remotedLapTimers.get()); iter.hasNext();) {
+            LapTimer timer = iter.next();
             timer.end();
         }
-        timer = _getThreadTimer();
+        LapTimer timer = _getThreadTimer();
         if (timer != null) {
             timer.end();
         }
@@ -411,21 +420,23 @@ public class LapTimer implements Runnable, Serializable {
      * no current LapTimer, nothing is done.
      * All LapTimers that have been received by this thread from another JVM are also stamped.
      *
-     * @param lapName The string that is associated with this lap.
-     * @return -1 if there is no current LapTimer otherwise the results of lap(String) are returned.
+     * @param lapInfo Objects that are converted to strings and concatenated. Resultant string is associated with this lap.
+     * @return -1 if there is no current LapTimer otherwise the results of {@link #getThreadTimer()}{@link #lap(String)} are returned.
      */
-    public static long sLap(String lapName) {
-        // TODO test performance!
-        LapTimer timer;
-        for (timer = LapTimer.remotedLapTimers.get(); timer != null; timer = timer.prevStackMember) {
-            timer.lap(lapName);
+    public static long sLap(Object... lapInfo) {
+        LapTimerIterator iter = new LapTimerIterator(remotedLapTimers.get());
+        if ( iter.hasNext() || hasThreadTimer() ) {
+            String lapName = StringUtils.join(lapInfo);
+            while(iter.hasNext()) {
+                LapTimer timer = iter.next();
+                timer.lap(lapName);
+            }
+            LapTimer timer = _getThreadTimer();
+            if (timer != null) {
+                return timer.lap(lapName);
+            }
         }
-        timer = _getThreadTimer();
-        if (timer == null) {
-            return -1;
-        } else {
-            return timer.lap(lapName);
-        }
+        return -1;
     }
 
     /**
@@ -436,12 +447,11 @@ public class LapTimer implements Runnable, Serializable {
      * @return -1 if there is no current LapTimer otherwise the results of lap() are returned.
      */
     public static long sLap() {
-        // TODO test performance!
-        LapTimer timer;
-        for (timer = LapTimer.remotedLapTimers.get(); timer != null; timer = timer.prevStackMember) {
+        for (LapTimerIterator iter = new LapTimerIterator(remotedLapTimers.get());iter.hasNext(); ) {
+            LapTimer timer = iter.next();
             timer.lap();
         }
-        timer = _getThreadTimer();
+        LapTimer timer = _getThreadTimer();
         if (timer == null) {
             return -1;
         } else {
@@ -685,9 +695,7 @@ public class LapTimer implements Runnable, Serializable {
         if (!this.isStarted()) {
             return "not started";
         } else if (this.startDateStr == null) {
-            StringBuffer sb = new StringBuffer(15);
-            MSG_DATE_FORMAT.format(this.getStartDate(), sb, new FieldPosition(0));
-            this.startDateStr = sb.toString();
+            this.startDateStr = MSG_DATE_FORMAT.format(this.getStartDate());
         }
         return this.startDateStr;
     }
@@ -1001,8 +1009,8 @@ public class LapTimer implements Runnable, Serializable {
      * @throws IOException
      */
     public static void send(ObjectOutputStream out) throws IOException {
-        LapTimer timer;
-        for (timer = LapTimer._getThreadTimer(); timer != null; timer = timer.prevStackMember) {
+        for (LapTimerIterator iter = new LapTimerIterator(_getThreadTimer()); iter.hasNext(); ) {
+            LapTimer timer = iter.next();
             if (timer.sent || !timer.isRemotable()) {
                 // this timer has already be sent out, hopefully on this request
                 continue;
@@ -1014,8 +1022,8 @@ public class LapTimer implements Runnable, Serializable {
             }
             out.writeObject(timer);
         }
-        // TODO test performance!
-        for (timer = LapTimer.remotedLapTimers.get(); timer != null; timer = timer.prevStackMember) {
+        for (LapTimerIterator iter = new LapTimerIterator(remotedLapTimers.get());iter.hasNext(); ) {
+            LapTimer timer = iter.next();
             if (DEBUG ) {
                 System.out.println("SENDING REMOTED LAPTIMER="+timer);
             }
@@ -1133,8 +1141,8 @@ public class LapTimer implements Runnable, Serializable {
     }
 
     public static void pushRemotedLapTimer(LapTimer timer) {
-        timer.prevStackMember = LapTimer.remotedLapTimers.get();
-        LapTimer.remotedLapTimers.set(timer);
+        timer.prevStackMember = remotedLapTimers.get();
+        remotedLapTimers.set(timer);
     }
 
     /**
@@ -1168,6 +1176,44 @@ public class LapTimer implements Runnable, Serializable {
         this.timerName = timer.timerName;
     }
 
+    public static class LapTimerIterator implements Iterator<LapTimer> {
+        private LapTimer nextTimer;
+
+        LapTimerIterator(LapTimer startingLapTimer){
+            this.nextTimer = startingLapTimer;
+        }
+
+        /**
+         * @see java.util.Iterator#hasNext()
+         */
+        @Override
+        public boolean hasNext() {
+            return nextTimer != null && nextTimer.prevStackMember != null;
+        }
+
+        /**
+         * @see java.util.Iterator#next()
+         */
+        @Override
+        public LapTimer next() {
+            if ( !hasNext()) {
+                throw new NoSuchElementException();
+            } else {
+                this.nextTimer = this.nextTimer.prevStackMember;
+            }
+            return this.nextTimer;
+        }
+
+        /**
+         * @see java.util.Iterator#remove()
+         */
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+
+    }
     private static class Id implements Serializable {
 
         private static final long serialVersionUID = -4147276090981031760L;
@@ -1396,7 +1442,7 @@ public class LapTimer implements Runnable, Serializable {
 
         @Override
         public String toString() {
-            StringBuffer sb = new StringBuffer(this.collectionName);
+            StringBuilder sb = new StringBuilder(this.collectionName);
             sb.append(":[");
             for (LapTimer lapTimer : this.lapTimers) {
                 sb.append(lapTimer.toString()).append('\n');
@@ -1490,21 +1536,6 @@ public class LapTimer implements Runnable, Serializable {
         }
     }
 
-
-    public static class LTMap {
-        private Map<String, LapTimer> laptimers = Collections.synchronizedMap(new HashMap<String, LapTimer>());
-        public LapTimer get(String key) {
-            LapTimer t= laptimers.get(key);
-            if (t == null) {
-                t=new LapTimer(key);
-                this.set(t);
-            }
-            return t;
-        }
-        public void set(LapTimer timer) {
-            laptimers.put(timer.getName(), timer);
-        }
-    }
     private static class ProxyWrapper implements InvocationHandler {
         private Object real;
         private LapTimer lapTimer;
@@ -1652,7 +1683,7 @@ public class LapTimer implements Runnable, Serializable {
             int numFullGroups = aLen / 3;
             int numBytesInPartialGroup = aLen - 3 * numFullGroups;
             int resultLen = 4 * ((aLen + 2) / 3);
-            StringBuffer result = new StringBuffer(resultLen);
+            StringBuilder result = new StringBuilder(resultLen);
             char[] intToAlpha = intToBase64;
 
             // Translate all full groups from byte array elements to Base64

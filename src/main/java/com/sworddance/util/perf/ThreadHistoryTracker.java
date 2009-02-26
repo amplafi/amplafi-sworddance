@@ -1,14 +1,15 @@
 /**
  *
  */
-package com.sworddance.taskcontrol;
+package com.sworddance.util.perf;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -17,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  */
 public class ThreadHistoryTracker {
-    private Map<Long, List<ThreadHistory>> history = new ConcurrentHashMap<Long, List<ThreadHistory>>();
+    private ConcurrentMap<Long, List<ThreadHistory>> history = new ConcurrentHashMap<Long, List<ThreadHistory>>();
 
     private AtomicInteger sequence = new AtomicInteger(0);
 
@@ -30,6 +31,7 @@ public class ThreadHistoryTracker {
 
     public void addStartHistory(String taskName, String status, String note) {
         Thread t = Thread.currentThread();
+        // TODO: use System.identityHashCode() getId() may be reused.
         Long threadId = t.getId();
         long currentTimeMillis = System.currentTimeMillis();
         addStartHistory(currentTimeMillis, threadId, taskName, status, note);
@@ -45,9 +47,9 @@ public class ThreadHistoryTracker {
      */
     public void addStartHistory(long currentTimeMillis, Long threadId,
             String taskName, String status, String note) {
-        List<ThreadHistory> l = getHistory(threadId);
-        l.add(0, new ThreadHistory(currentTimeMillis, threadId, taskName,
-                status, note, Boolean.TRUE));
+        ThreadHistory threadHistory = new ThreadHistory(currentTimeMillis, threadId, taskName,
+                status, note, Boolean.TRUE, this.sequence.incrementAndGet());
+        addHistoryStatus(threadId, threadHistory);
     }
 
     public void addStopHistory(String taskName, String status, String note,
@@ -62,19 +64,26 @@ public class ThreadHistoryTracker {
     /**
      * really just for testing.
      *
-     * @param sequentialTime
+     * @param sequentialTimeInMillis
      * @param currentTimeMillis
      * @param threadId
      * @param taskName
      * @param status
      * @param note
      */
-    public void addStopHistory(long currentTimeMillis, Long threadId,
-            String taskName, String status, String note, long sequentialTime) {
-        List<ThreadHistory> l = getHistory(threadId);
+    void addStopHistory(long currentTimeMillis, Long threadId,
+            String taskName, String status, String note, long sequentialTimeInMillis) {
         ThreadHistory threadHistory = new ThreadHistory(currentTimeMillis,
-                threadId, taskName, status, note, Boolean.FALSE);
-        threadHistory.setSequentialTime(sequentialTime);
+                threadId, taskName, status, note, Boolean.FALSE, sequentialTimeInMillis, this.sequence.incrementAndGet());
+        addHistoryStatus(threadId, threadHistory);
+    }
+
+    /**
+     * @param threadId
+     * @param threadHistory
+     */
+    public void addHistoryStatus(Long threadId, ThreadHistory threadHistory) {
+        List<ThreadHistory> l = getHistory(threadId);
         l.add(0, threadHistory);
     }
 
@@ -96,10 +105,9 @@ public class ThreadHistoryTracker {
      */
     public void addHistoryStatus(long currentTimeMillis, Long threadId,
             String taskName, String status) {
-        List<ThreadHistory> l = getHistory(threadId);
         ThreadHistory threadHistory = new ThreadHistory(currentTimeMillis,
-                threadId, taskName, status, null, Boolean.TRUE);
-        l.add(0, threadHistory);
+                threadId, taskName, status, null, Boolean.TRUE, this.sequence.incrementAndGet());
+        addHistoryStatus(threadId, threadHistory);
     }
 
     /**
@@ -107,76 +115,9 @@ public class ThreadHistoryTracker {
      * @return
      */
     private List<ThreadHistory> getHistory(Long threadId) {
+        history.putIfAbsent(threadId, new CopyOnWriteArrayList<ThreadHistory>());
         List<ThreadHistory> l = history.get(threadId);
-        if (l == null) {
-            l = new CopyOnWriteArrayList<ThreadHistory>();
-            history.put(threadId, l);
-        }
         return l;
-    }
-
-    /**
-     * a record of a thread status change.
-     * @author Patrick Moore
-     */
-    class ThreadHistory {
-        long timestamp;
-
-        Long threadId;
-
-        String taskName;
-
-        String status;
-
-        String note;
-
-        /**
-         *  null -- no change in status, false = task stopping.
-         */
-        Boolean threadInUse;
-
-        private final int sequenceId = ThreadHistoryTracker.this.sequence.incrementAndGet();
-
-        private long sequentialTime;
-
-        ThreadHistory(long timestamp, Long threadId, String taskName,
-                String status, String note, Boolean threadInUse) {
-            this.timestamp = timestamp;
-            this.threadId = threadId;
-            this.taskName = taskName;
-            this.status = status;
-            this.note = note;
-            this.threadInUse = threadInUse;
-        }
-
-        /**
-         * @param sequentialTime the sequentialTime to set
-         */
-        public void setSequentialTime(long sequentialTime) {
-            this.sequentialTime = sequentialTime;
-        }
-
-        /**
-         * @return the sequentialTime
-         */
-        public long getSequentialTime() {
-            return sequentialTime;
-        }
-
-        /**
-         * @return the sequence
-         */
-        public int getSequenceId() {
-            return sequenceId;
-        }
-
-        @Override
-        public String toString() {
-            StringBuffer sb = new StringBuffer(40);
-            sb.append(timestamp).append(":").append(threadId).append(taskName)
-                    .append(status);
-            return sb.toString();
-        }
     }
 
     /**
@@ -189,10 +130,10 @@ public class ThreadHistoryTracker {
 
     /**
      * @param threadId
-     * @return a thread-safe history of this thread. null if no information
+     * @return a copy of history of this thread. null if no information
      *         available.
      */
-    public List<ThreadHistory> getThreadHistory(Object threadId) {
-        return history.get(threadId);
+    public List<ThreadHistory> getThreadHistoryCopy(Long threadId) {
+        return history.containsKey(threadId)?new ArrayList<ThreadHistory>(history.get(threadId)):null;
     }
 }

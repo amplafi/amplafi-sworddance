@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.sworddance.taskcontrol;
+package com.sworddance.util.perf;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -13,13 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.sworddance.taskcontrol.ThreadHistoryTracker.ThreadHistory;
 
 /**
  * @author pmoore
  *
  */
-public class ThreadHistoryTrackerFormatter implements Iterator {
+public class ThreadHistoryTrackerFormatter implements Iterator<String[]> {
     /**
      *
      */
@@ -72,21 +71,20 @@ public class ThreadHistoryTrackerFormatter implements Iterator {
         // deep copy of history in a thread safe manner
         Set<Long> threadIds = tracker.getThreadIds();
         for (Long threadId: threadIds) {
-            history.put(threadId, tracker.getThreadHistory(threadId));
+            history.put(threadId, tracker.getThreadHistoryCopy(threadId));
         }
         nextEntries = new ArrayList<ThreadHistory>(history.values().size());
         iterators = new ArrayList<Iterator<?>>(history.values().size());
         threadStatus = new ArrayList<Boolean>(history.values().size());
         outputStrings = new String[history.values().size() + EXTRA_COLUMNS];
         // prime iterators
-        for (Iterator<List<ThreadHistory>> iter = history.values().iterator(); iter
-                .hasNext();) {
-            Iterator<?> iterator = iter.next().iterator();
+        for (List<ThreadHistory> list : history.values()) {
+            Iterator<?> iterator = list.iterator();
             iterators.add(iterator);
             if (iterator.hasNext()) {
                 ThreadHistory next = (ThreadHistory) iterator.next();
-                if (next.threadInUse != null) {
-                    threadStatus.add(next.threadInUse);
+                if (next.getThreadInUse() != null) {
+                    threadStatus.add(next.getThreadInUse());
                 } else {
                     // TODO for now assume that it is active since messages
                     // are only issued by active threads
@@ -108,7 +106,7 @@ public class ThreadHistoryTrackerFormatter implements Iterator {
         }
     }
 
-    public Object next() {
+    public String[] next() {
         if (!headerOutputed) {
             headerOutputed = true;
             outputStrings[TIME_COL] = "Time";
@@ -134,26 +132,26 @@ public class ThreadHistoryTrackerFormatter implements Iterator {
                  * that a task has started then that means that before this the
                  * thread was not doing any thing.
                  */
-                if (next.threadInUse != null) {
-                    threadStatus.set(newest, next.threadInUse);
+                if (next.getThreadInUse() != null) {
+                    threadStatus.set(newest, next.getThreadInUse());
                 }
             } else {
                 // no earlier history for this thread.
-                if (newestHistory.threadInUse != null) {
+                if (newestHistory.getThreadInUse() != null) {
                     // if last history was completing a task then
                     // that means that earlier the thread was idle.
                     threadStatus
                             .set(
                                     newest,
-                                    newestHistory.threadInUse == Boolean.FALSE ? Boolean.TRUE
+                                    newestHistory.getThreadInUse() == Boolean.FALSE ? Boolean.TRUE
                                             : Boolean.FALSE);
                 }
                 nextEntries.set(newest, null);
             }
             // create
             outputStrings[TIME_COL] = format.format(new Date(
-                    newestHistory.timestamp));
-            outputStrings[NOTES_COL] = newestHistory.note != null ? newestHistory.note
+                    newestHistory.getTimestampInMillis()));
+            outputStrings[NOTES_COL] = newestHistory.getNote() != null ? newestHistory.getNote()
                     : "";
             outputStrings[SEQUENTIAL_TIME] = Long
                     .toString(newestHistory.getSequentialTime());
@@ -170,13 +168,13 @@ public class ThreadHistoryTrackerFormatter implements Iterator {
                 outputStrings[outputStringIndex++] = threadActive ? THREAD_ACTIVE
                         : THREAD_INACTIVE;
             }
-            outputStrings[outputStringIndex++] = newestHistory.taskName + ":"
-                    + newestHistory.status;
-            if (newestHistory.threadInUse.booleanValue()) {
+            outputStrings[outputStringIndex++] = newestHistory.getTaskName() + ":"
+                    + newestHistory.getStatus();
+            if (newestHistory.getThreadInUse().booleanValue()) {
                 activeThreads++;
-                this.activeTaskNames.remove(newestHistory.taskName);
+                this.activeTaskNames.remove(newestHistory.getTaskName());
             } else {
-                this.activeTaskNames.add(newestHistory.taskName);
+                this.activeTaskNames.add(newestHistory.getTaskName());
             }
             for (int i = newest + 1; i < nextEntries.size(); i++) {
                 boolean threadActive = threadStatus.get(i).booleanValue();
@@ -190,8 +188,8 @@ public class ThreadHistoryTrackerFormatter implements Iterator {
             long deltaTime;
             if (isMore()) {
                 int nextEntry = getNextEntryIndex();
-                long nextTime = nextEntries.get(nextEntry).timestamp;
-                deltaTime = newestHistory.timestamp - nextTime;
+                long nextTime = nextEntries.get(nextEntry).getTimestampInMillis();
+                deltaTime = newestHistory.getTimestampInMillis() - nextTime;
                 outputStrings[DELTA_TIME_COL] = Long.toString(deltaTime);
             } else {
                 // beginning of run
@@ -206,16 +204,14 @@ public class ThreadHistoryTrackerFormatter implements Iterator {
                 timeIndex = 1;
             }
             previousActiveThreads = activeThreads;
-            for (Iterator<String> iter = this.activeTaskNames.iterator(); iter
-                    .hasNext();) {
-                String taskName = iter.next();
+            for (String taskName : this.activeTaskNames) {
                 long[] time = timeMap.get(taskName);
                 if (time == null) {
                     time = new long[2];
                     timeMap.put(taskName, time);
                 }
-                time[timeIndex] += deltaTime;
-            }
+            time[timeIndex] += deltaTime;
+         }
             previousActiveThreads = activeThreads;
         }
         return outputStrings;
@@ -230,8 +226,8 @@ public class ThreadHistoryTrackerFormatter implements Iterator {
                 if (newestHistory == null) {
                     newest = i;
                     newestHistory = nextEntries.get(newest);
-                } else if ((threadHistory.timestamp > newestHistory.timestamp)
-                        || ((threadHistory.timestamp == newestHistory.timestamp) && (threadHistory.getSequenceId() > newestHistory.getSequenceId()))) {
+                } else if ((threadHistory.getTimestampInMillis() > newestHistory.getTimestampInMillis())
+                        || ((threadHistory.getTimestampInMillis() == newestHistory.getTimestampInMillis()) && (threadHistory.getSequenceId() > newestHistory.getSequenceId()))) {
                     newest = i;
                     newestHistory = nextEntries.get(newest);
                 }
@@ -244,12 +240,11 @@ public class ThreadHistoryTrackerFormatter implements Iterator {
      * @return
      */
     private boolean isMore() {
-        for (Iterator<ThreadHistory> iter = nextEntries.iterator(); iter
-                .hasNext();) {
-            if (iter.next() != null) {
-                return true;
-            }
-        }
+        for (ThreadHistory threadHistory : nextEntries) {
+         if (threadHistory != null) {
+        return true;
+         }
+      }
         return false;
     }
 
