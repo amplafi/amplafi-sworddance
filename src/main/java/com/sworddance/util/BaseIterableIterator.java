@@ -15,9 +15,11 @@ import java.util.Map;
  * @param <T> type returned by iteration.
  * @author Patrick Moore
  */
-public class BaseIterableIterator<T> implements IterableIterator<T> {
+public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIterator<T> {
 
     private Iterator<T> iter;
+    // TODO: should this have a weak reference?
+    private T current;
     public BaseIterableIterator() {
     }
     public BaseIterableIterator(Iterator<T> iter) {
@@ -66,12 +68,16 @@ public class BaseIterableIterator<T> implements IterableIterator<T> {
     }
     @Override
     public T next() {
-        return iter.next();
+        return current = iter.next();
     }
 
+    public T current() {
+        return current;
+    }
     @Override
     public void remove() {
         iter.remove();
+        // don't null current that way old value can be retrieved.
     }
 
     @Override
