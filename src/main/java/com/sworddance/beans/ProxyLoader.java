@@ -5,6 +5,9 @@
 package com.sworddance.beans;
 
 /**
+ * Used by ProxyMapper to retrieve realObect when it doesn't have the real backing object
+ * already.
+ *
  * @author patmoore
  *
  */

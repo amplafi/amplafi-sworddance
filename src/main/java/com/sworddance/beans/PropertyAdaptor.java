@@ -17,10 +17,12 @@ package com.sworddance.beans;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import com.sworddance.util.ApplicationGeneralException;
+import com.sworddance.util.ApplicationNullPointerException;
 
 import static org.apache.commons.lang.StringUtils.*;
 
@@ -73,16 +75,20 @@ public class PropertyAdaptor {
      * @param target the object to update
      * @param value the value to be stored into the target object property
      */
-    public void write(Object target, Object value) {
+    public <T> T write(Object target, Object value) {
         if (setter == null) {
             throw new ApplicationGeneralException("No set"+this.propertyName+"()");
-        }
+        } else {
 
-        try {
-            setter.invoke(target, new Object[] { value });
-
-        } catch (Exception ex) {
-            throw new ApplicationGeneralException(ex);
+            try {
+                return (T) setter.invoke(target, new Object[] { value });
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(setter.toGenericString(), e);
+            } catch (IllegalAccessException e) {
+                throw new IllegalArgumentException(setter.toGenericString(), e);
+            } catch (InvocationTargetException e) {
+                throw new IllegalArgumentException(setter.toGenericString(), e.getCause());
+            }
         }
     }
 
@@ -149,13 +155,20 @@ public class PropertyAdaptor {
     public Object read(Object target) {
         if (getter == null) {
             throw new ApplicationGeneralException("no get"+propertyName+"()");
-        }
+        } else if ( target == null) {
+            throw new ApplicationNullPointerException("target to read property "+propertyName+" from is null");
+        } else {
 
-        try {
-            return getter.invoke(target);
+            try {
+                return getter.invoke(target);
 
-        } catch (Exception ex) {
-            throw new ApplicationGeneralException(ex);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(getter.toGenericString() +" target is a "+target.getClass().getName(), e);
+            } catch (IllegalAccessException e) {
+                throw new IllegalArgumentException(getter.toGenericString() +" target is a "+target.getClass().getName(), e);
+            } catch (InvocationTargetException e) {
+                throw new IllegalArgumentException(getter.toGenericString() + " target is a "+target.getClass().getName(), e.getCause());
+            }
         }
     }
 
