@@ -7,11 +7,10 @@ package com.sworddance.beans;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+
+import com.sworddance.util.CurrentIterator;
 
 /**
  * enables a controlled access to an object tree that also supports caching.
@@ -47,51 +46,84 @@ import java.util.concurrent.ConcurrentMap;
  * @param <O> extends <I> the class (not interface) that is the concrete class that is wrapped by the ProxyWrapper.
  *
  */
-public class ProxyMapper<I,O extends I> extends BeanWorker implements InvocationHandler {
-    private ConcurrentMap<String, Object> originalValues;
-    private ConcurrentMap<String, Object> newValues;
+public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements InvocationHandler {
+    private I externalFacingProxy;
     private transient O realObject;
     private Class<? extends Object> realClass;
-    private ProxyBehavior proxyBehavior;
-    private ConcurrentMap<String, Object> childProxies;
     private String basePropertyPath;
-    private ProxyMapper parent;
-    public ProxyMapper(O realObject, ProxyBehavior proxyBehavior, List<String>propertyChains) {
+    private ProxyLoader proxyLoader;
+    protected ProxyMapper(String basePropertyPath, O realObject, Class<O> realClass, List<String> propertyChains) {
         super(propertyChains);
+        this.basePropertyPath = basePropertyPath;
         this.realObject = realObject;
-        this.realClass = this.realObject.getClass();
-        this.proxyBehavior = proxyBehavior;
-        initValuesMap(realObject, propertyChains);
-    }
-    public ProxyMapper(Class<O> realClass, ProxyBehavior proxyBehavior, List<String>propertyChains) {
-        super(propertyChains);
-        this.realClass = realClass;
-        this.proxyBehavior = proxyBehavior;
-    }
-    public ProxyMapper(O realObject, List<String>propertyChains) {
-        this(realObject, ProxyBehavior.strict, propertyChains);
-    }
-    public ProxyMapper(O realObject, ProxyBehavior proxyBehavior, String...propertyChains) {
-        this(realObject, proxyBehavior, Arrays.asList(propertyChains));
-    }
-    public ProxyMapper(O realObject, String...propertyChains) {
-        this(realObject, ProxyBehavior.strict, Arrays.asList(propertyChains));
-    }
-    /**
-     * @param realObject
-     * @param propertyChains
-     */
-    @SuppressWarnings("hiding")
-    private void initValuesMap(O realObject, List<String> propertyChains) {
-        originalValues = new ConcurrentHashMap<String, Object>();
-        newValues = new ConcurrentHashMap<String, Object>();
-        for(String property: propertyChains) {
-            Object value = getValue(realObject, property);
-            originalValues.put(property, value);
-            newValues.put(property, value);
-        }
+        this.setRealClass(realClass);
+        this.setExternalFacingProxy(createExternalFacingProxy());
     }
 
+    /**
+     * used when initializing the ProxyMapper. To get the cached values
+     * @param base
+     * @param property
+     */
+    @SuppressWarnings("unchecked")
+    protected Object initValue(O base, String property) {
+        Object result;
+        if ( base != null && property != null ) {
+            result = base;
+            StringBuilder builder = new StringBuilder();
+            PropertyMethodChain methodChain = getPropertyMethodChainAddIfAbsent(base.getClass(), property, true);
+            if ( methodChain != null ) {
+                CurrentIterator<PropertyAdaptor> iterator = methodChain.iterator();
+                PropertyAdaptor propertyAdaptor = null;
+                for (;iterator.hasNext();) {
+                    propertyAdaptor = iterator.next();
+                    // construct the intermediate propertyPath to the passed property name.
+                    if ( builder.length() > 0 ) {
+                        builder.append(".");
+                    }
+                    builder.append(propertyAdaptor.getPropertyName());
+
+                    if (propertyAdaptor.getReturnType().isInterface()) {
+                        // only interfaces get child proxies
+                        // need to do leaf nodes as well because one propertyChain's leaf is another's parent
+                        // example: "foo" and "foo.uri"
+                        ProxyMapper childProxy = getChildProxyMapper(builder.toString());
+                        if (childProxy.getRealObject() == null) {
+                            childProxy.realObject = propertyAdaptor.read(result);
+                        }
+                        if ( iterator.hasNext()) {
+                            // we are still walking the property chain.
+                            // result will be the real object for the next iteration through the loop.
+                            result = childProxy.getRealObject();
+                        } else {
+                            // we are going to be done. return the child proxy.
+                            result = childProxy.getExternalFacingProxy();
+                        }
+                    } else {
+                        // there will not be any more proxies
+                        // now finish out the retrieval of the result.
+                        result = methodChain.getValue(result, iterator);
+                    }
+                }
+            }
+        } else {
+            result = null;
+        }
+        putOriginalValues(property, result);
+        return result;
+    }
+
+    /**
+     * @param property
+     * @param result
+     */
+    protected abstract void putOriginalValues(String propertyName, Object result);
+    protected abstract void putNewValues(String propertyName, Object result);
+    public abstract Object getCachedValues(String propertyName);
+    public abstract boolean containsKey(String propertyName);
+    public abstract Map<String, Object> getNewValues();
+    public abstract Map<String, Object> getOriginalValues();
+    public abstract ProxyBehavior getProxyBehavior();
     /**
      * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
      */
@@ -101,31 +133,39 @@ public class ProxyMapper<I,O extends I> extends BeanWorker implements Invocation
         String methodName = method.getName();
         String propertyName;
         if ( methodName.equals("toString")) {
-            return this.getClass()+" "+this.newValues;
+            // TODO doesn't seem right should go through ... ( but real object may not exist... )
+            return this.getClass()+" "+this.getNewValues();
         } else if (methodName.equals("equals")) {
-            Object key = getValue(args[0], this.getPropertyName(0));
-            return this.newValues.get(this.getKeyExpression()).equals(key);
+            // get the key of the object we are comparing to
+            Object key = getValue(args[0], getKeyProperty());
+            Boolean eq = this.getKeyExpression().equals(key);
+            return eq;
         } else if ( (propertyName = this.getGetterPropertyName(methodName)) != null) {
-            if ( this.newValues.containsKey(propertyName)) {
-                return this.newValues.get(propertyName);
+            if ( this.containsKey(propertyName)) {
+                return this.getCachedValues(propertyName);
             } else {
-                switch(this.proxyBehavior) {
+                switch(this.getProxyBehavior()) {
                 case nullValue:
                     return null;
                 case readThrough:
-                    return method.invoke(getRealObject(), args);
                 case leafStrict:
-                    return newChildProxy(this, propertyName);
+                    if ( method.getReturnType() == Void.class || args != null && args.length > 1) {
+                        // or more than 1 argument (therefore not java bean property )
+                        return method.invoke(getRealObject(), args);
+                    } else {
+                        return initValue(getRealObject(), propertyName);
+                    }
                 case strict:
                     throw new IllegalStateException("no cached value with strict proxy behavior");
                 }
             }
             return null;
         } else if ((propertyName = this.getSetterPropertyName(methodName)) != null) {
-            this.newValues.put(propertyName, args[0]);
+            this.putNewValues(propertyName, args[0]);
             return null;
         } else {
-            switch(this.proxyBehavior) {
+            // HACK: how to handle sideeffects? (can't )
+            switch(this.getProxyBehavior()) {
             case strict:
                 throw new IllegalStateException("");
             default:
@@ -133,64 +173,18 @@ public class ProxyMapper<I,O extends I> extends BeanWorker implements Invocation
             }
         }
     }
+    /**
+     * @return
+     */
+    private String getKeyProperty() {
+        return this.getPropertyName(0);
+    }
 
     /**
-     * @param proxyMapper
      * @param propertyName
      * @return
      */
-    private Object newChildProxy(ProxyMapper<I, O> proxyMapper, String propertyName) {
-        Object proxy = getChildProxy(propertyName);
-        if ( proxy == null ) {
-            Class<?> propertyType = this.getPropertyType(realClass, propertyName);
-            proxy = getProxy(propertyType, proxyBehavior, propertyName);
-            setChildProxy(propertyName, proxy);
-        }
-        return proxy;
-    }
-    /**
-     * Child proxies are used when 'this' has been asked for a property that is partial path to leaf properties.
-     * <p>For example, a ProxyMapper is managing properties:
-     * <ul><li>foo.bar</li>
-     * <li>foo.goo</li>
-     * <li>bee</li>
-     * </ul>
-     * The ProxyMapper is asked for the "foo" property. The ProxyMapper will return a child ProxyMapper "foo" that has properties:
-     * <ul><li>bar (mapped to parent "foo.bar")</li>
-     * <li>goo (mapped to parent "foo.goo")</li>
-     * </ul>
-     * This allows the ProxyMapper usage to be less visible to called utility code.</p>
-     * @param propertyName
-     * @return
-     */
-    private Object getChildProxy(String propertyName) {
-        if ( this.parent != null ) {
-            return this.parent.getChildProxy(getTruePropertyName(propertyName));
-        } else if (this.childProxies != null){
-            return this.childProxies.get(propertyName);
-        } else {
-            return null;
-        }
-    }
-    /**
-     * @param propertyName
-     * @param proxy
-     */
-    private void setChildProxy(String propertyName, Object proxy) {
-        if ( this.parent != null ) {
-            this.parent.setChildProxy(getTruePropertyName(propertyName), proxy);
-        } else {
-            if (this.childProxies == null){
-                this.childProxies = new ConcurrentHashMap<String, Object>();
-            }
-            this.childProxies.put(getTruePropertyName(propertyName), proxy);
-        }
-    }
-    /**
-     * @param propertyName
-     * @return
-     */
-    private String getTruePropertyName(String propertyName) {
+    protected String getTruePropertyName(String propertyName) {
         if ( this.basePropertyPath == null) {
             return propertyName;
         } else {
@@ -201,58 +195,103 @@ public class ProxyMapper<I,O extends I> extends BeanWorker implements Invocation
      * the real object may no longer be available. This method reloads the realObject if necessary.
      * @return the realObject
      */
+    @SuppressWarnings("unchecked")
     private O getRealObject() {
         if ( this.realObject == null) {
-            // TODO
+            ProxyLoader loader = getProxyLoader();
+            if ( loader != null ) {
+                this.realObject = (O) loader.get(this.getRealClass(), this.getKeyExpression());
+            }
         }
         return this.realObject;
     }
     public Object getKeyExpression() {
-        return this.newValues.get(this.getPropertyName(0));
+        return this.getCachedValues(getKeyProperty());
     }
 
     public O getAppliedValues() {
-        O result = getRealObject();
-        for(Map.Entry<String, Object> entry : this.newValues.entrySet()) {
+        O base = getRealObject();
+        for(Map.Entry<String, Object> entry : this.getNewValues().entrySet()) {
+            this.setValue(base, entry.getKey(), entry.getValue());
         }
-        return result;
-    }
-    @SuppressWarnings("unchecked")
-    public static <I,O extends I> I getProxy(O realObject, ProxyBehavior proxyBehavior, List<String>propertyChains) {
-        Class realClass = realObject.getClass();
-        return (I) getProxy(realObject, realClass, proxyBehavior, propertyChains);
-    }
-    @SuppressWarnings("unchecked")
-    public static <I,O extends I> I getProxy(Class<O> realClass, ProxyBehavior proxyBehavior, List<String> propertyChains) {
-        Class<?>[] interfaces = realClass.getInterfaces();
-        InvocationHandler handler = new ProxyMapper<I, O>(realClass, proxyBehavior, propertyChains);
-        return (I) Proxy.newProxyInstance(realClass.getClassLoader(), interfaces, handler);
+        return base;
     }
     /**
-     * @param <O>
-     * @param <I>
-     * @param realObject
-     * @param realClass
-     * @param proxyBehavior
-     * @param propertyChains
-     * @return the proxy
+     * @param externalFacingProxy the externalFacingProxy to set
      */
+    public void setExternalFacingProxy(I externalFacingProxy) {
+        this.externalFacingProxy = externalFacingProxy;
+    }
+    /**
+     * @return the externalFacingProxy
+     */
+    public I getExternalFacingProxy() {
+        return externalFacingProxy;
+    }
     @SuppressWarnings("unchecked")
-    public static <I,O extends I> I getProxy(O realObject, Class<O> realClass, ProxyBehavior proxyBehavior, List<String> propertyChains) {
-        Class<?>[] interfaces = realClass.getInterfaces();
-        InvocationHandler handler = new ProxyMapper<I, O>(realObject, proxyBehavior, propertyChains);
-        return (I) Proxy.newProxyInstance(realObject.getClass().getClassLoader(), interfaces, handler);
+    protected I createExternalFacingProxy() {
+        Class<?>[] interfaces;
+        if ( getRealClass().isInterface()) {
+            interfaces = new Class<?>[] { getRealClass() };
+        } else {
+            interfaces = getRealClass().getInterfaces();
+        }
+        if (interfaces.length == 0) {
+            throw new IllegalArgumentException(this.getRealClass()+" is not an interface or does not have any interfaces.");
+        }
+        return (I) Proxy.newProxyInstance(getRealClass().getClassLoader(), interfaces, this);
     }
-    public static <I,O extends I> I getProxy(O realObject, List<String>propertyChains) {
-        return getProxy(realObject, ProxyBehavior.leafStrict, propertyChains);
+    /**
+     * @param proxyLoader the proxyLoader to set
+     */
+    public void setProxyLoader(ProxyLoader proxyLoader) {
+        this.proxyLoader = proxyLoader;
     }
-    public static <I,O extends I> I getProxy(O realObject, ProxyBehavior proxyBehavior, String...propertyChains) {
-        return getProxy(realObject, proxyBehavior, Arrays.asList(propertyChains));
+    /**
+     * @return the proxyLoader
+     */
+    public ProxyLoader getProxyLoader() {
+        return proxyLoader;
     }
-    public static <I,O extends I> I getProxy(Class<O> realClass, ProxyBehavior proxyBehavior, String... propertyChains) {
-        return getProxy(realClass, proxyBehavior, Arrays.asList(propertyChains));
+
+    @Override
+    public String toString() {
+        return this.getClass()+ " for " + this.getRealClass()+" new values="+this.getNewValues()+ " original="+this.getOriginalValues();
     }
-    public static <I,O extends I> I getProxy(O realObject, String...propertyChains) {
-        return getProxy(realObject, ProxyBehavior.leafStrict, Arrays.asList(propertyChains));
+
+    /**
+     * returns existing or creates a new ProxyMapper and returns it
+     * @param propertyName
+     * @return ProxyMapper
+     */
+    protected abstract ProxyMapper<?, ?> getChildProxyMapper(String propertyName);
+
+    /**
+     * @param realClass the realClass to set
+     */
+    public void setRealClass(Class<? extends Object> realClass) {
+        this.realClass = realClass;
+    }
+
+    /**
+     * @return the realClass
+     */
+    public Class<? extends Object> getRealClass() {
+        return realClass;
+    }
+
+    /**
+     * gets the real object when the leaf node is being proxied
+     * @param proxy
+     * @return proxy or the real object if proxy is a ProxyMapper
+     */
+    public static Object getRealObject(Object proxy) {
+        if ( proxy != null && Proxy.isProxyClass(proxy.getClass())) {
+            InvocationHandler handler = Proxy.getInvocationHandler(proxy);
+            if ( handler instanceof ProxyMapper) {
+                return ((ProxyMapper)handler).getRealObject();
+            }
+        }
+        return proxy;
     }
 }

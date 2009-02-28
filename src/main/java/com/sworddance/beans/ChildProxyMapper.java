@@ -1,0 +1,84 @@
+/**
+ * Copyright 2006-2008 by Amplafi. All rights reserved.
+ * Confidential.
+ */
+package com.sworddance.beans;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @author patmoore
+ *
+ */
+public class ChildProxyMapper<I,O extends I> extends ProxyMapper<I,O> {
+
+    private RootProxyMapper<?,?> rootProxyMapper;
+    public ChildProxyMapper(String basePropertyPath, RootProxyMapper<?,?> rootProxyMapper, O realObject, Class<O> realClass, List<String> propertyChains) {
+        super(basePropertyPath, realObject, realClass, propertyChains);
+        this.rootProxyMapper = rootProxyMapper;
+    }
+
+    /**
+     * @param rootProxyMapper the rootProxyMapper to set
+     */
+    protected void setRootProxyMapper(RootProxyMapper<?,?> rootProxyMapper) {
+        this.rootProxyMapper = rootProxyMapper;
+    }
+
+    /**
+     * @return the rootProxyMapper
+     */
+    protected RootProxyMapper<?,?> getRootProxyMapper() {
+        return rootProxyMapper;
+    }
+    /**
+     * @param property
+     * @param result
+     */
+    @Override
+    protected void putOriginalValues(String propertyName, Object result) {
+        this.getRootProxyMapper().putOriginalValues(getTruePropertyName(propertyName), result);
+    }
+    @Override
+    protected void putNewValues(String propertyName, Object result) {
+        this.getRootProxyMapper().putNewValues(getTruePropertyName(propertyName), result);
+    }
+    @Override
+    public Object getCachedValues(String propertyName) {
+        return this.getRootProxyMapper().getCachedValues(getTruePropertyName(propertyName));
+    }
+    @Override
+    public boolean containsKey(String propertyName) {
+        return this.getRootProxyMapper().containsKey(getTruePropertyName(propertyName));
+    }
+
+    @Override
+    public Map<String, Object> getNewValues() {
+        return this.getRootProxyMapper().getNewValues();
+    }
+    @Override
+    public Map<String, Object> getOriginalValues() {
+        return this.getRootProxyMapper().getOriginalValues();
+    }
+    @Override
+    public ProxyBehavior getProxyBehavior() {
+        return this.getRootProxyMapper().getProxyBehavior();
+    }
+
+    @Override
+    protected ProxyMapper<?,?> getChildProxyMapper(String propertyName) {
+        return this.getRootProxyMapper().getChildProxyMapper(this, getTruePropertyName(propertyName));
+    }
+    /**
+     * @return the proxyLoader
+     */
+    @Override
+    public ProxyLoader getProxyLoader() {
+        if ( super.getProxyLoader() == null && this.getRootProxyMapper() != null) {
+            return this.getRootProxyMapper().getProxyLoader();
+        } else {
+            return super.getProxyLoader();
+        }
+    }
+}

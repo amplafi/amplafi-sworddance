@@ -66,16 +66,23 @@ public class BeanWorker {
         return isNotEmpty(this.propertyNames) && index < this.propertyNames.size()?this.propertyNames.get(index) : null;
     }
 
+    /**
+     * Follows the propertyPath starting at base until null or until the end.
+     * @param <T>
+     * @param base
+     * @param property
+     * @return null or the property
+     */
     @SuppressWarnings("unchecked")
     protected <T> T getValue(Object base, String property) {
-        Object result = base;
+        T result = null;
         if ( base != null && property != null ) {
             PropertyMethodChain methodChain = getPropertyMethodChain(base.getClass(), property);
             if ( methodChain != null ) {
-                result = methodChain.getValue(result);
+                result = (T) methodChain.getValue(base);
             }
         }
-        return (T) result;
+        return result;
     }
 
     protected void setValue(Object base, String property, Object value) {
@@ -92,6 +99,11 @@ public class BeanWorker {
         PropertyMethodChain methodChain = classMethodMap.get(property);
         return methodChain;
     }
+    protected PropertyMethodChain getPropertyMethodChainAddIfAbsent(Class<?> clazz, String property, boolean readOnly) {
+        ConcurrentMap<String, PropertyMethodChain> classMethodMap = getMethodMap(clazz);
+        PropertyMethodChain methodChain = addPropertyMethodChainIfAbsent(clazz, classMethodMap, property, readOnly);
+        return methodChain;
+    }
 
     public Class<?> getPropertyType(Class<?> clazz, String property) {
         PropertyMethodChain chain = getPropertyMethodChain(clazz, property);
@@ -106,7 +118,7 @@ public class BeanWorker {
      * @param clazz
      * @return PropertyMethodChain map for the passed class.
      */
-    protected Map<String, PropertyMethodChain> getMethodMap(Class<?> clazz) {
+    protected ConcurrentMap<String, PropertyMethodChain> getMethodMap(Class<?> clazz) {
         ConcurrentMap<String, PropertyMethodChain> propMap;
         if ( !methodsMap.containsKey(clazz)) {
             propMap = new ConcurrentHashMap<String, PropertyMethodChain>();
@@ -115,9 +127,22 @@ public class BeanWorker {
         propMap = methodsMap.get(clazz);
 
         for(String property: propertyNames) {
-            propMap.put(property, new PropertyMethodChain(clazz, property, false));
+            addPropertyMethodChainIfAbsent(clazz, propMap, property, false);
         }
         return propMap;
+    }
+    /**
+     * @param clazz
+     * @param propMap
+     * @param property
+     * @param readOnly TODO
+     */
+    protected PropertyMethodChain addPropertyMethodChainIfAbsent(Class<?> clazz, ConcurrentMap<String, PropertyMethodChain> propMap, String property, boolean readOnly) {
+        if (!propMap.containsKey(property)) {
+            PropertyMethodChain propertyMethodChain = new PropertyMethodChain(clazz, property, readOnly);
+            propMap.putIfAbsent(property, propertyMethodChain);
+        }
+        return propMap.get(property);
     }
 
     protected String getPropertyName(Method method) {

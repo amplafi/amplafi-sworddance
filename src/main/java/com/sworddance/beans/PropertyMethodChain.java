@@ -1,18 +1,19 @@
 package com.sworddance.beans;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+
+import com.sworddance.util.BaseIterableIterator;
+import com.sworddance.util.CurrentIterator;
 
 /**
  * a list of methods that called in sequence will result in either setting or getting a value.
  * @author patmoore
  *
  */
-public class PropertyMethodChain {
+public class PropertyMethodChain implements Iterable<PropertyAdaptor>{
     /**
     *
     */
@@ -44,6 +45,11 @@ public class PropertyMethodChain {
         Object result = invoke(base, null, false);
         return result;
     }
+
+    public Object getValue(Object base, Iterator<PropertyAdaptor> iterator) {
+        Object result = invoke(base, null, false, iterator);
+        return result;
+    }
     public PropertyAdaptor get(int index) {
         return this.propertyMethodList.get(index);
     }
@@ -59,30 +65,42 @@ public class PropertyMethodChain {
         Object result = invoke(base, value, true);
         return result;
     }
-
-    @SuppressWarnings("null")
+    public Object setValue(Object base, Object value, Iterator<PropertyAdaptor> iterator) {
+        Object result = invoke(base, value, true, iterator);
+        return result;
+    }
     public Object invoke(Object base, Object value, boolean set) {
-        Object result = base;
-        for(int i = 0; result != null && i < propertyMethodList.size(); i++) {
-            PropertyAdaptor propertyMethods = propertyMethodList.get(i);
-            Method method = null;
-            try {
-                if (!set || i < propertyMethodList.size()-1) {
-                    method = propertyMethods.getGetter();
-                    result = method.invoke(result);
-                } else {
-                    method = propertyMethods.getSetter();
-                    result = method.invoke(result, value);
-                }
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException(method.toGenericString(), e);
-            } catch (IllegalAccessException e) {
-                throw new IllegalArgumentException(method.toGenericString(), e);
-            } catch (InvocationTargetException e) {
-                throw new IllegalArgumentException(method.toGenericString(), e);
-            }
+        BaseIterableIterator<PropertyAdaptor> iterator = this.iterator();
+        return invoke(base, value, set, iterator);
+    }
+    public Object invoke(Object base, Object value, boolean set, Iterator<PropertyAdaptor> iterator) {
+        Object result;
+        if ( iterator instanceof CurrentIterator && ((CurrentIterator<PropertyAdaptor>) iterator).current() != null) {
+            result = invoke(base, value, set, iterator, ((CurrentIterator<PropertyAdaptor>) iterator).current());
+        } else {
+            result = base;
+        }
+        for(; result != null && iterator.hasNext();) {
+            PropertyAdaptor propertyMethods =iterator.next();
+            result = invoke(result, value, set, iterator, propertyMethods);
         }
         return result;
+    }
+
+    /**
+     * @param result
+     * @param value
+     * @param set
+     * @param iterator
+     * @param propertyAdaptor
+     * @return result of invocation
+     */
+    private Object invoke(Object target, Object value, boolean set, Iterator<PropertyAdaptor> iterator, PropertyAdaptor propertyAdaptor) {
+        if (!set || iterator.hasNext()) {
+            return propertyAdaptor.read(target);
+        } else {
+            return propertyAdaptor.write(target, value);
+        }
     }
 
     public int size() {
@@ -123,5 +141,14 @@ public class PropertyMethodChain {
     public String toString() {
         return this.propertyMethodList.toString();
     }
+
+    /**
+     * @return iterator
+     * @see java.util.List#iterator()
+     */
+    public BaseIterableIterator<PropertyAdaptor> iterator() {
+        return new BaseIterableIterator<PropertyAdaptor>(propertyMethodList.iterator());
+    }
+
 
 }
