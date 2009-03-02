@@ -77,6 +77,7 @@ public class FakeTimeServerImpl extends TimeServerImpl implements FakeTimeServer
     public void setBaseTime(Calendar baseTime) {
         currentCalendar = (Calendar) baseTime.clone();
         this.baseTime = (Calendar) baseTime.clone();
+        this.nanoOffset = 0;
     }
 
     @Override
@@ -96,8 +97,8 @@ public class FakeTimeServerImpl extends TimeServerImpl implements FakeTimeServer
         return baseTime;
     }
 
-    public void runClock(int i, TimeUnit timeUnit) {
-        this.nanoOffset += NANOSECONDS.convert(i, timeUnit);
+    public void runClock(long duration, TimeUnit timeUnit) {
+        this.nanoOffset += NANOSECONDS.convert(duration, timeUnit);
         currentCalendar = (Calendar) getBaseTime().clone();
         currentCalendar.add(Calendar.MILLISECOND,
                 (int)MILLISECONDS.convert(nanoOffset, NANOSECONDS));

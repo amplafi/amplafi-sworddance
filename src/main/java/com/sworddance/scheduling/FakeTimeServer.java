@@ -51,7 +51,7 @@ public interface FakeTimeServer extends TimeServer {
      * @param duration
      * @param units
      */
-    public void runClock(int duration, TimeUnit units);
+    public void runClock(long duration, TimeUnit units);
 
     public long getNanoOffset();
 
