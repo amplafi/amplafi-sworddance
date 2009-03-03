@@ -6,6 +6,10 @@ package com.sworddance.beans;
 
 import static org.testng.Assert.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Proxy;
 
 import org.testng.annotations.Test;
@@ -20,7 +24,7 @@ public class TestProxyMapper {
         Interface1Impl child1 = new Interface1Impl(2, true, null);
         Interface1Impl child = new Interface1Impl(1, false, child1);
         Interface1Impl impl = new Interface1Impl(0, true, child);
-        Interface1 interface1 = ProxyFactoryImpl.getProxy(impl, "goo", "child.goo");
+        Interface1 interface1 = new ProxyFactoryImpl().getProxy(impl, "goo", "child.goo");
         // make sure we are not looking at the original objects
         testProxyUnique(interface1, child1, child, impl);
 
@@ -32,6 +36,8 @@ public class TestProxyMapper {
         testProxyUnique(returnedChild1, returnedChild, interface1, child1, child, impl);
         assertSame(child1, ProxyMapper.getRealObject(returnedChild1));
         assertTrue(returnedChild1.isGoo());
+
+        assertNull(returnedChild1.getChild(), returnedChild1.getChild()+" should be null");
     }
 
     private void testProxyUnique(Object value, Object...others) {
@@ -40,6 +46,30 @@ public class TestProxyMapper {
         for (Object other: others) {
             assertNotSame(value, other);
         }
+    }
+
+    @Test
+    public void testSerializable() throws Exception {
+        Interface1Impl child1 = new Interface1Impl(2, true, null);
+        Interface1Impl child = new Interface1Impl(1, false, child1);
+        Interface1Impl impl = new Interface1Impl(0, true, child);
+        Interface1 interface1 = new ProxyFactoryImpl().getProxy(impl, "goo", "child.goo");
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(byteArrayOutputStream);
+        out.writeObject(interface1);
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
+        Interface1 restoredObject = (Interface1) objectInputStream.readObject();
+        testProxyUnique(restoredObject, interface1, child1, child, impl);
+        assertTrue(restoredObject.isGoo());
+
+        Interface1 returnedChild = restoredObject.getChild();
+        testProxyUnique(returnedChild, restoredObject, interface1, child1, child, impl);
+        assertFalse(returnedChild.isGoo());
+
+        Interface1 returnedChild1 = returnedChild.getChild();
+        assertNull(returnedChild1);
     }
 
     public static interface Interface1 {

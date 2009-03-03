@@ -9,6 +9,8 @@ import java.util.Map;
 
 /**
  * @author patmoore
+ * @param <I>
+ * @param <O>
  *
  */
 public class ChildProxyMapper<I,O extends I> extends ProxyMapper<I,O> {
@@ -45,8 +47,8 @@ public class ChildProxyMapper<I,O extends I> extends ProxyMapper<I,O> {
         this.getRootProxyMapper().putNewValues(getTruePropertyName(propertyName), result);
     }
     @Override
-    public Object getCachedValues(String propertyName) {
-        return this.getRootProxyMapper().getCachedValues(getTruePropertyName(propertyName));
+    public Object getCachedValue(String propertyName) {
+        return this.getRootProxyMapper().getCachedValue(getTruePropertyName(propertyName));
     }
     @Override
     public boolean containsKey(String propertyName) {
@@ -67,8 +69,8 @@ public class ChildProxyMapper<I,O extends I> extends ProxyMapper<I,O> {
     }
 
     @Override
-    protected ProxyMapper<?,?> getChildProxyMapper(String propertyName) {
-        return this.getRootProxyMapper().getChildProxyMapper(this, getTruePropertyName(propertyName));
+    protected <CI, CO extends CI> ProxyMapper<CI, CO> getChildProxyMapper(String propertyName, PropertyAdaptor propertyAdaptor, Object base) {
+        return this.getRootProxyMapper().getChildProxyMapper(this, getTruePropertyName(propertyName), propertyAdaptor, base);
     }
     /**
      * @return the proxyLoader
@@ -81,4 +83,5 @@ public class ChildProxyMapper<I,O extends I> extends ProxyMapper<I,O> {
             return super.getProxyLoader();
         }
     }
+
 }

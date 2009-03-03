@@ -4,11 +4,13 @@
  */
 package com.sworddance.beans;
 
+import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.sworddance.util.CurrentIterator;
 
@@ -46,12 +48,27 @@ import com.sworddance.util.CurrentIterator;
  * @param <O> extends <I> the class (not interface) that is the concrete class that is wrapped by the ProxyWrapper.
  *
  */
-public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements InvocationHandler {
+public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements InvocationHandler, Serializable {
     private I externalFacingProxy;
+    /**
+     * the real value may be null. This can arise if a ProxyMapper was created for a non-null object and then the object was
+     * set to null.
+     */
+    private boolean realObjectSet;
     private transient O realObject;
     private Class<? extends Object> realClass;
     private String basePropertyPath;
-    private ProxyLoader proxyLoader;
+    private transient ProxyLoader proxyLoader;
+
+    /**
+     * {@link ConcurrentHashMap} does not allow null keys or values.
+     */
+    protected static final Serializable NullObject = new Serializable() {
+        @Override
+        public String toString() {
+            return "(nullobject)";
+        }
+    };
     protected ProxyMapper(String basePropertyPath, O realObject, Class<O> realClass, List<String> propertyChains) {
         super(propertyChains);
         this.basePropertyPath = basePropertyPath;
@@ -61,7 +78,7 @@ public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements I
     }
 
     /**
-     * used when initializing the ProxyMapper. To get the cached values
+     * used to initialize the ProxyMapper with the cached values
      * @param base
      * @param property
      */
@@ -75,7 +92,7 @@ public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements I
             if ( methodChain != null ) {
                 CurrentIterator<PropertyAdaptor> iterator = methodChain.iterator();
                 PropertyAdaptor propertyAdaptor = null;
-                for (;iterator.hasNext();) {
+                for (;iterator.hasNext() && result != null;) {
                     propertyAdaptor = iterator.next();
                     // construct the intermediate propertyPath to the passed property name.
                     if ( builder.length() > 0 ) {
@@ -87,11 +104,10 @@ public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements I
                         // only interfaces get child proxies
                         // need to do leaf nodes as well because one propertyChain's leaf is another's parent
                         // example: "foo" and "foo.uri"
-                        ProxyMapper childProxy = getChildProxyMapper(builder.toString());
-                        if (childProxy.getRealObject() == null) {
-                            childProxy.realObject = propertyAdaptor.read(result);
-                        }
-                        if ( iterator.hasNext()) {
+                        ProxyMapper childProxy = getChildProxyMapper(builder.toString(), propertyAdaptor, result);
+                        if ( childProxy == null) {
+                            result = null;
+                        } else if ( iterator.hasNext()) {
                             // we are still walking the property chain.
                             // result will be the real object for the next iteration through the loop.
                             result = childProxy.getRealObject();
@@ -119,11 +135,15 @@ public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements I
      */
     protected abstract void putOriginalValues(String propertyName, Object result);
     protected abstract void putNewValues(String propertyName, Object result);
-    public abstract Object getCachedValues(String propertyName);
+    public abstract Object getCachedValue(String propertyName);
     public abstract boolean containsKey(String propertyName);
     public abstract Map<String, Object> getNewValues();
     public abstract Map<String, Object> getOriginalValues();
     public abstract ProxyBehavior getProxyBehavior();
+    public void clear() {
+        this.realObject = null;
+        this.realObjectSet = false;
+    }
     /**
      * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
      */
@@ -142,7 +162,7 @@ public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements I
             return eq;
         } else if ( (propertyName = this.getGetterPropertyName(methodName)) != null) {
             if ( this.containsKey(propertyName)) {
-                return this.getCachedValues(propertyName);
+                return this.getCachedValue(propertyName);
             } else {
                 switch(this.getProxyBehavior()) {
                 case nullValue:
@@ -196,17 +216,27 @@ public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements I
      * @return the realObject
      */
     @SuppressWarnings("unchecked")
-    private O getRealObject() {
-        if ( this.realObject == null) {
+    public O getRealObject() {
+        // null may be the real value!
+        if ( this.realObject == null && !this.isRealObjectSet()) {
             ProxyLoader loader = getProxyLoader();
             if ( loader != null ) {
-                this.realObject = (O) loader.get(this.getRealClass(), this.getKeyExpression());
+                this.realObject = (O) loader.get(this);
             }
         }
         return this.realObject;
     }
+
+    public void setRealObject(O realObject) {
+        this.realObject = realObject;
+        this.realObjectSet = true;
+    }
+
+    public boolean isRealObjectSet() {
+        return this.realObjectSet;
+    }
     public Object getKeyExpression() {
-        return this.getCachedValues(getKeyProperty());
+        return this.getCachedValue(getKeyProperty());
     }
 
     public O getAppliedValues() {
@@ -260,11 +290,13 @@ public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements I
     }
 
     /**
-     * returns existing or creates a new ProxyMapper and returns it
+     * returns existing or creates a new ProxyMapper and returns it for the property.
      * @param propertyName
-     * @return ProxyMapper
+     * @param propertyAdaptor TODO
+     * @param base TODO
+     * @return null if base's value for the property is null otherwise returns a ProxyMapper
      */
-    protected abstract ProxyMapper<?, ?> getChildProxyMapper(String propertyName);
+    protected abstract <CI, CO extends CI> ProxyMapper<CI, CO> getChildProxyMapper(String propertyName, PropertyAdaptor propertyAdaptor, Object base);
 
     /**
      * @param realClass the realClass to set
@@ -282,16 +314,27 @@ public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements I
 
     /**
      * gets the real object when the leaf node is being proxied
+     * @param <I>
+     * @param <O>
      * @param proxy
      * @return proxy or the real object if proxy is a ProxyMapper
      */
-    public static Object getRealObject(Object proxy) {
+    public static <I, O extends I> I getRealObject(I proxy) {
+        ProxyMapper<I, O> proxyMapper = getProxyMapper(proxy);
+        if ( proxyMapper != null) {
+            return proxyMapper.getRealObject();
+        }
+        return proxy;
+    }
+    @SuppressWarnings("unchecked")
+    public static <I, O extends I> ProxyMapper<I, O> getProxyMapper(Object proxy) {
         if ( proxy != null && Proxy.isProxyClass(proxy.getClass())) {
             InvocationHandler handler = Proxy.getInvocationHandler(proxy);
             if ( handler instanceof ProxyMapper) {
-                return ((ProxyMapper)handler).getRealObject();
+                ProxyMapper<I, O> proxyMapper = (ProxyMapper<I, O>)handler;
+                return proxyMapper;
             }
         }
-        return proxy;
+        return null;
     }
 }

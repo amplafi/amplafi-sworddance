@@ -97,7 +97,7 @@ public class PropertyMethodChain implements Iterable<PropertyAdaptor>{
      */
     private Object invoke(Object target, Object value, boolean set, Iterator<PropertyAdaptor> iterator, PropertyAdaptor propertyAdaptor) {
         if (!set || iterator.hasNext()) {
-            return propertyAdaptor.read(target);
+            return target == null? null: propertyAdaptor.read(target);
         } else {
             return propertyAdaptor.write(target, value);
         }
