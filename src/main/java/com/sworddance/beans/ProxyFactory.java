@@ -1,6 +1,6 @@
 /**
  * Copyright 2006-2008 by Amplafi. All rights reserved.
- * Confidential. 
+ * Confidential.
  */
 package com.sworddance.beans;
 
@@ -10,4 +10,5 @@ package com.sworddance.beans;
  */
 public interface ProxyFactory {
 
+    public <I,O extends I> I getProxy(O realObject, String...propertyChains);
 }

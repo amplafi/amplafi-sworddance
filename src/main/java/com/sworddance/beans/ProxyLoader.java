@@ -12,5 +12,5 @@ package com.sworddance.beans;
  *
  */
 public interface ProxyLoader {
-    public <T> T get(Class<T> clazz, Object id);
+    public <I, O extends I> I get(ProxyMapper<I,O> proxyMapper);
 }

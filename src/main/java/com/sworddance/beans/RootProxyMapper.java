@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.sworddance.util.ApplicationIllegalArgumentException;
+
 /**
  * @author patmoore
  * @param <I>
@@ -23,6 +25,7 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapper<I, O> {
     private ConcurrentMap<String, Object> newValues;
 
     private ConcurrentMap<String, ProxyMapper<?,?>> childProxies;
+
     /**
      * @param realObject
      * @param proxyBehavior
@@ -66,26 +69,48 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapper<I, O> {
     }
     @Override
     public boolean containsKey(String propertyName) {
-        return this.getNewValues().containsKey(propertyName) || this.originalValues.containsKey(propertyName);
+        return this.getNewValues().containsKey(propertyName) || this.getOriginalValues().containsKey(propertyName) || this.childProxies.containsKey(propertyName);
     }
     /**
-     * @param property
+     * @param propertyName
      * @param result
      */
     @Override
-    protected void putOriginalValues(String property, Object result) {
-        this.originalValues.put(property, result);
+    protected void putOriginalValues(String propertyName, Object result) {
+        if (propertyName == null) {
+            throw new ApplicationIllegalArgumentException( "propertyName cannot be null");
+        }
+        this.getOriginalValues().put(propertyName, result==null?NullObject:result);
     }
     @Override
-    protected void putNewValues(String property, Object result) {
-        this.getNewValues().put(property, result);
+    protected void putNewValues(String propertyName, Object result) {
+        if (propertyName == null) {
+            throw new ApplicationIllegalArgumentException( "propertyName cannot be null");
+        }
+        this.getNewValues().put(propertyName, result==null?NullObject:result);
     }
     @Override
-    public Object getCachedValues(String propertyName) {
+    public Object getCachedValue(String propertyName) {
+        Object o;
         if (this.getNewValues().containsKey(propertyName)) {
-            return this.getNewValues().get(propertyName);
+            o = this.getNewValues().get(propertyName);
+        } else if (this.getOriginalValues().containsKey(propertyName)){
+            o = this.getOriginalValues().get(propertyName);
         } else {
-            return this.originalValues.get(propertyName);
+            ProxyMapper<?,?> childProxy = this.childProxies.get(propertyName);
+            o = childProxy.getExternalFacingProxy();
+        }
+        if ( o == NullObject) {
+            o = null;
+        }
+        return o;
+    }
+
+    @Override
+    public void clear() {
+        this.setRealObject(null);
+        for(ProxyMapper<?, ?>proxyMapper: this.childProxies.values()) {
+            proxyMapper.clear();
         }
     }
     /**
@@ -100,12 +125,15 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapper<I, O> {
      * <li>goo (mapped to parent "foo.goo")</li>
      * </ul>
      * This allows the ProxyMapper usage to be less visible to called utility code.</p>
+     * @param <CI>
+     * @param <CO>
      * @param propertyName
      * @return existing child proxy
      */
-    public ProxyMapper<?,?> getExistingChildProxy(String propertyName) {
+    @SuppressWarnings("unchecked")
+    public <CI, CO extends CI> ProxyMapper<CI, CO> getExistingChildProxy(String propertyName) {
         if (this.childProxies != null){
-            return this.childProxies.get(propertyName);
+            return (ProxyMapper<CI, CO>) this.childProxies.get(propertyName);
         } else {
             return null;
         }
@@ -121,14 +149,26 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapper<I, O> {
         this.childProxies.putIfAbsent(propertyName, proxy);
     }
     @Override
-    public ProxyMapper<?, ?> getChildProxyMapper(String propertyName) {
-        return this.getChildProxyMapper(this, propertyName);
+    public <CI, CO extends CI> ProxyMapper<CI, CO> getChildProxyMapper(String propertyName, PropertyAdaptor propertyAdaptor, Object base) {
+        return this.getChildProxyMapper(this, propertyName, propertyAdaptor, base);
     }
-    protected ProxyMapper<?,?> getChildProxyMapper(ProxyMapper<?, ?> base, String propertyName) {
-        ProxyMapper<?,?> childProxy = getExistingChildProxy(propertyName);
-        if ( childProxy == null ) {
-            Class<?> propertyType = this.getPropertyType(base.getRealClass(), propertyName);
-            childProxy = new ChildProxyMapper(propertyName, this, null, propertyType, new ArrayList<String>());
+    @SuppressWarnings("unchecked")
+    protected <CI, CO extends CI> ProxyMapper<CI, CO> getChildProxyMapper(ProxyMapper<?, ?> baseProxyMapper, String propertyName, PropertyAdaptor propertyAdaptor, Object base) {
+        ProxyMapper<CI,CO> childProxy = getExistingChildProxy(propertyName);
+        // do not want to eagerly get the propValue unnecessarily because this may trigger expensive operations (for example hibernate db operation )
+        CO propValue;
+        if ( base != null && (childProxy == null || !childProxy.isRealObjectSet() )) {
+            propValue = (CO) propertyAdaptor.read(base);
+        } else {
+            propValue = null;
+        }
+        if ( childProxy != null ) {
+            if (!childProxy.isRealObjectSet()) {
+                childProxy.setRealObject(propValue);
+            }
+            return childProxy;
+        } else if ( propValue != null ) {
+            childProxy = new ChildProxyMapper<CI,CO>(propertyName, this, propValue, (Class<CO>)propertyAdaptor.getReturnType(), new ArrayList<String>());
             setChildProxy(propertyName, childProxy);
             // multi-thread environment may mean that the object this thread created was not the
             // one actually inserted. (see use of ConcurrentMap#putIfAbsent() )
@@ -161,6 +201,6 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapper<I, O> {
     }
     @Override
     public Map<String, Object> getOriginalValues() {
-        return this.newValues;
+        return this.originalValues;
     }
 }
