@@ -1,3 +1,16 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy
+ * of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed
+ * under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
+ * OR CONDITIONS OF ANY KIND, either express or implied. See the License for
+ * the specific language governing permissions and limitations under the
+ * License.
+ */
 package com.sworddance.taskcontrol;
 
 import java.util.ArrayList;
@@ -62,7 +75,7 @@ public class TestTaskControl {
     }
 
     @Test(dataProvider="testObjects")
-    public void testBadDependencies(TaskGroup<?> taskGroup, OrderedOut orderOut, Log logger) throws Exception {
+    public void testBadDependencies(TaskGroup<?> taskGroup, OrderedOut orderOut, Log logger) {
         taskGroup.setLog(logger);
         DefaultDependentPrioritizedTask blocking = new DefaultDependentPrioritizedTask();
         blocking.setName("blocking");
@@ -95,7 +108,7 @@ public class TestTaskControl {
         TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1);
         taskControl.setLog(logger);
         List<TestTask> list = new ArrayList<TestTask>();
-        DefaultPrioritizedTask blocking = new DefaultPrioritizedTask();
+        DefaultPrioritizedTask<Object> blocking = new DefaultPrioritizedTask<Object>();
         blocking.setName("blocking");
         taskGroup.addTask(blocking);
         // add some dead tasks.
@@ -341,7 +354,6 @@ public class TestTaskControl {
 
         boolean callBodyCalled;
 
-        @SuppressWarnings("hiding")
         private OrderedOut orderOut;
 
         public TestTask(int id, OrderedOut orderOut) {

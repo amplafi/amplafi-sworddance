@@ -1,3 +1,16 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy
+ * of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed
+ * under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
+ * OR CONDITIONS OF ANY KIND, either express or implied. See the License for
+ * the specific language governing permissions and limitations under the
+ * License.
+ */
 package com.sworddance.taskcontrol;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -17,9 +30,10 @@ import java.util.concurrent.ExecutionException;
  * All tasks in TaskControl should extend or emulate this class's behavior.
  *
  * @author pmoore
+ * @param <R> callable result type
  *
  */
-public class DefaultPrioritizedTask implements PrioritizedTask, Callable {
+public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
     private TaskGroup<?> taskGroup;
 
     private final CountDownLatch shouldRun = new CountDownLatch(1);
@@ -30,13 +44,13 @@ public class DefaultPrioritizedTask implements PrioritizedTask, Callable {
 
     private int sequenceId;
 
-    private final Callable<?> wrappedCallable;
+    private final Callable<R> wrappedCallable;
 
     private final Integer priority;
 
     private String status;
 
-    private FutureResult<Object> result = new FutureResult<Object>();
+    private FutureResult<R> result = new FutureResult<R>();
 
     private String name;
 
@@ -73,10 +87,10 @@ public class DefaultPrioritizedTask implements PrioritizedTask, Callable {
         initResourceLocker(wrapped);
     }
 
-    public DefaultPrioritizedTask(Callable<?> callable) {
+    public DefaultPrioritizedTask(Callable<R> callable) {
         this(callable.getClass().getName(), callable);
     }
-    public DefaultPrioritizedTask(String name, Callable<?> callable) {
+    public DefaultPrioritizedTask(String name, Callable<R> callable) {
         super();
         wrappedCallable = callable;
         wrappedRunnable = null;
@@ -160,7 +174,7 @@ public class DefaultPrioritizedTask implements PrioritizedTask, Callable {
         return endTimeInMillis - startTimeInMillis;
     }
 
-    public Object call() throws Exception {
+    public R call() throws Exception {
         String threadName = Thread.currentThread().getName();
         startTiming();
         try {
@@ -223,8 +237,8 @@ public class DefaultPrioritizedTask implements PrioritizedTask, Callable {
      * subclasses should override this method.
      *
      */
-    protected Object callBody() throws Exception {
-        Object returnResult;
+    protected R callBody() throws Exception {
+        R returnResult;
         if (wrappedCallable != null) {
             returnResult = wrappedCallable.call();
         } else if (wrappedRunnable != null) {

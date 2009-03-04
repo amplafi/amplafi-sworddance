@@ -1,7 +1,17 @@
 /*
- * Created on Oct 17, 2006
- * Copyright 2006 by Patrick Moore
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy
+ * of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed
+ * under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
+ * OR CONDITIONS OF ANY KIND, either express or implied. See the License for
+ * the specific language governing permissions and limitations under the
+ * License.
  */
+
 package com.sworddance.util;
 
 import java.util.ArrayList;
@@ -28,7 +38,7 @@ public class TestPredicatedTransformingIterator {
     private Predicate predicate;
 
     @BeforeMethod()
-    protected void setUp() throws Exception {        
+    protected void setUp() {
         ints = new ArrayList<Integer>();
         ints.add(0);
         ints.add(1);
@@ -44,7 +54,7 @@ public class TestPredicatedTransformingIterator {
     }
 
     public void testSimple() {
-        PredicatedTransformingIterator<Integer> transformingIterator = 
+        PredicatedTransformingIterator<Integer> transformingIterator =
             new PredicatedTransformingIterator<Integer>(ints);
         int j = 0;
         for(Integer i : transformingIterator) {
@@ -52,9 +62,9 @@ public class TestPredicatedTransformingIterator {
         }
         assertEquals(ints.size(), j);
     }
-    
+
     public void testSimpleTransform() {
-        PredicatedTransformingIterator<String> transformingIterator = 
+        PredicatedTransformingIterator<String> transformingIterator =
             new PredicatedTransformingIterator<String>(ints);
         transformingIterator.setTransformer(StringValueTransformer.INSTANCE);
         int j = 0;
@@ -63,9 +73,9 @@ public class TestPredicatedTransformingIterator {
         }
         assertEquals(ints.size(), j);
     }
-    
+
     public void testFiltering() {
-        PredicatedTransformingIterator<Integer> transformingIterator = 
+        PredicatedTransformingIterator<Integer> transformingIterator =
             new PredicatedTransformingIterator<Integer>(ints);
         transformingIterator.setPredicate(predicate);
         int j = 0;
@@ -77,9 +87,9 @@ public class TestPredicatedTransformingIterator {
         }
         assertEquals(ints.size()/2, k);
     }
-    
+
     public void testSetFlattening() {
-        PredicatedTransformingIterator<Double> transformingIterator = 
+        PredicatedTransformingIterator<Double> transformingIterator =
             new PredicatedTransformingIterator<Double>(ints);
         Transformer transformer = new Transformer() {
 
@@ -91,7 +101,7 @@ public class TestPredicatedTransformingIterator {
                 }
                 return d;
             }
-            
+
         };
         transformingIterator.setTransformer(transformer);
         transformingIterator.setPredicate(predicate);
@@ -105,7 +115,7 @@ public class TestPredicatedTransformingIterator {
         }
         HashSet<Double> actual = new HashSet<Double>();
         CollectionUtils.addAll(actual, transformingIterator);
-        
+
         assertTrue(CollectionUtils.disjunction(actual, expected).isEmpty());
     }
 }
