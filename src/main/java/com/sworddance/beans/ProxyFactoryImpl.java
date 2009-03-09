@@ -27,6 +27,10 @@ public class ProxyFactoryImpl implements ProxyFactory {
         return getProxy(realObject, ProxyBehavior.leafStrict, Arrays.asList(propertyChains));
     }
 
+    public <I,O extends I> I getProxy(O realObject, Class<O>realClass,  String...propertyChains) {
+        return getProxy(realObject, realClass, ProxyBehavior.leafStrict, Arrays.asList(propertyChains));
+    }
+
     public <I,O extends I> I getProxy(Class<O> realClass, ProxyBehavior proxyBehavior, String... propertyChains) {
         return getProxy(realClass, proxyBehavior, Arrays.asList(propertyChains));
     }
