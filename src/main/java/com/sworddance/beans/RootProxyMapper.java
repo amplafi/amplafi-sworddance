@@ -16,6 +16,7 @@ package com.sworddance.beans;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -119,7 +120,7 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapper<I, O> {
 
     @Override
     public void clear() {
-        this.setRealObject(null);
+        super.clear();
         for(ProxyMapper<?, ?>proxyMapper: this.childProxies.values()) {
             proxyMapper.clear();
         }
@@ -213,5 +214,30 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapper<I, O> {
     @Override
     public Map<String, Object> getOriginalValues() {
         return this.originalValues;
+    }
+
+    /**
+     * @param basePropertyPath
+     * @return
+     */
+    public Map<String, Object> getNewValues(String basePropertyPath) {
+        return getSubvalues(basePropertyPath, getNewValues());
+    }
+    /**
+     * @param basePropertyPath
+     * @return
+     */
+    public Map<String, Object> getOriginalValues(String basePropertyPath) {
+        return getSubvalues(basePropertyPath, getOriginalValues());
+    }
+    private Map<String, Object> getSubvalues(String basePropertyPath, Map<String, Object> rootMap) {
+        String searchString = basePropertyPath+".";
+        Map<String, Object> result = new HashMap<String, Object>();
+        for(Map.Entry<String, Object> entry:rootMap.entrySet()) {
+            if (entry.getKey().startsWith(searchString)) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return result;
     }
 }

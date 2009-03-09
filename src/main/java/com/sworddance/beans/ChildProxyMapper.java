@@ -44,6 +44,10 @@ public class ChildProxyMapper<I,O extends I> extends ProxyMapper<I,O> {
     protected RootProxyMapper<?,?> getRootProxyMapper() {
         return rootProxyMapper;
     }
+    @Override
+    public O applyToRealObject() {
+        throw new UnsupportedOperationException("cannot applyToRealObject() from childProxyMapper (yet)");
+    }
     /**
      * @param property
      * @param result
@@ -67,15 +71,19 @@ public class ChildProxyMapper<I,O extends I> extends ProxyMapper<I,O> {
 
     @Override
     public Map<String, Object> getNewValues() {
-        return this.getRootProxyMapper().getNewValues();
+        return this.getRootProxyMapper().getNewValues(getBasePropertyPath());
     }
     @Override
     public Map<String, Object> getOriginalValues() {
-        return this.getRootProxyMapper().getOriginalValues();
+        return this.getRootProxyMapper().getOriginalValues(getBasePropertyPath());
     }
     @Override
     public ProxyBehavior getProxyBehavior() {
         return this.getRootProxyMapper().getProxyBehavior();
+    }
+    @Override
+    protected PropertyMethodChain getPropertyMethodChain(Class<?> clazz, String propertyName) {
+        return this.getRootProxyMapper().getPropertyMethodChain(clazz, getTruePropertyName(propertyName));
     }
 
     @Override
