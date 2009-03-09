@@ -21,4 +21,5 @@ package com.sworddance.beans;
 public interface ProxyFactory {
 
     public <I,O extends I> I getProxy(O realObject, String...propertyChains);
+    public <I,O extends I> I getProxy(O realObject, Class<O> realClass, String...propertyChains);
 }
