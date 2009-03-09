@@ -71,10 +71,13 @@ public class PropertyAdaptor {
 
     /**
      * Updates the property of the target object.
+     * @param <T>
      *
      * @param target the object to update
      * @param value the value to be stored into the target object property
+     * @return value returned by the set operation ( usually void )
      */
+    @SuppressWarnings("unchecked")
     public <T> T write(Object target, Object value) {
         if (setter == null) {
             throw new ApplicationGeneralException("No set"+this.propertyName+"()");

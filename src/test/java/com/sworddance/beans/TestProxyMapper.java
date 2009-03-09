@@ -58,6 +58,11 @@ public class TestProxyMapper {
         }
     }
 
+    /**
+     * Make sure that when a proxy mapper is serialize that it does not serialize the realObject.
+     * Check to make sure that when deserialized it cannot access uninitialized property paths.
+     * @throws Exception
+     */
     @Test
     public void testSerializable() throws Exception {
         Interface1Impl child1 = new Interface1Impl(2, true, null);
@@ -80,6 +85,29 @@ public class TestProxyMapper {
 
         Interface1 returnedChild1 = returnedChild.getChild();
         assertNull(returnedChild1);
+    }
+
+    /**
+     * test for delayed applying of changes for root.
+     */
+    @Test
+    public void testApplyChanges() {
+        Interface1Impl child1 = new Interface1Impl(2, true, null);
+        Interface1Impl child = new Interface1Impl(1, false, child1);
+        Interface1Impl impl = new Interface1Impl(0, true, child);
+        Interface1 interface1 = new ProxyFactoryImpl().getProxy(impl, "goo", "child.goo", "child.child.goo");
+
+        assertFalse(interface1.getChild().isGoo());
+        interface1.getChild().setGoo(true);
+        assertTrue(interface1.getChild().isGoo());
+        assertFalse(child.isGoo());
+        ProxyMapper<Object, Object> rootProxyMapper = ProxyMapper.getProxyMapper(interface1);
+        rootProxyMapper.applyToRealObject();
+        assertTrue(child.isGoo());
+        // applying from child proxy does not work.
+//        ProxyMapper<Object, Object> childProxyMapper = ProxyMapper.getProxyMapper(interface1.getChild());
+//        childProxyMapper.applyToRealObject();
+//        assertTrue(child.isGoo());
     }
 
     public static interface Interface1 {

@@ -15,6 +15,7 @@
 package com.sworddance.beans;
 
 import java.io.Serializable;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -64,8 +65,8 @@ public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements I
      * the real value may be null. This can arise if a ProxyMapper was created for a non-null object and then the object was
      * set to null.
      */
-    private boolean realObjectSet;
-    private transient O realObject;
+    private transient boolean realObjectSet;
+    private transient WeakReference<O> realObject;
     private Class<? extends Object> realClass;
     private String basePropertyPath;
     private transient ProxyLoader proxyLoader;
@@ -82,7 +83,9 @@ public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements I
     protected ProxyMapper(String basePropertyPath, O realObject, Class<O> realClass, List<String> propertyChains) {
         super(propertyChains);
         this.basePropertyPath = basePropertyPath;
-        this.realObject = realObject;
+        if (realObject != null) {
+            this.setRealObject(realObject);
+        }
         this.setRealClass(realClass);
         this.setExternalFacingProxy(createExternalFacingProxy());
     }
@@ -221,35 +224,44 @@ public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements I
             return this.basePropertyPath+"."+propertyName;
         }
     }
+
+    /**
+     * @return the basePropertyPath
+     */
+    public String getBasePropertyPath() {
+        return basePropertyPath;
+    }
+
     /**
      * the real object may no longer be available. This method reloads the realObject if necessary.
      * @return the realObject
      */
     @SuppressWarnings("unchecked")
     public O getRealObject() {
-        // null may be the real value!
-        if ( this.realObject == null && !this.isRealObjectSet()) {
+
+        if ( !this.isRealObjectSet()) {
             ProxyLoader loader = getProxyLoader();
             if ( loader != null ) {
-                this.realObject = (O) loader.get(this);
+                this.setRealObject((O) loader.get(this));
             }
         }
-        return this.realObject;
+        return this.realObject == null? null: this.realObject.get();
     }
 
     public void setRealObject(O realObject) {
-        this.realObject = realObject;
+        this.realObject = realObject == null?null: new WeakReference<O>(realObject);
         this.realObjectSet = true;
     }
 
     public boolean isRealObjectSet() {
+        // null may be the real value so can not just check realObject being null
         return this.realObjectSet;
     }
     public Object getKeyExpression() {
         return this.getCachedValue(getKeyProperty());
     }
 
-    public O getAppliedValues() {
+    public O applyToRealObject() {
         O base = getRealObject();
         for(Map.Entry<String, Object> entry : this.getNewValues().entrySet()) {
             this.setValue(base, entry.getKey(), entry.getValue());
