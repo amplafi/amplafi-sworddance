@@ -173,7 +173,7 @@ public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements I
             Object key = getValue(args[0], getKeyProperty());
             Boolean eq = this.getKeyExpression().equals(key);
             return eq;
-        } else if ( (propertyName = this.getGetterPropertyName(methodName)) != null) {
+        } else if ( method.getGenericParameterTypes().length == 0 && (propertyName = this.getGetterPropertyName(methodName)) != null) {
             if ( this.containsKey(propertyName)) {
                 return this.getCachedValue(propertyName);
             } else {
@@ -193,7 +193,7 @@ public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements I
                 }
             }
             return null;
-        } else if ((propertyName = this.getSetterPropertyName(methodName)) != null) {
+        } else if (method.getGenericParameterTypes().length == 1 &&(propertyName = this.getSetterPropertyName(methodName)) != null) {
             this.putNewValues(propertyName, args[0]);
             return null;
         } else {
