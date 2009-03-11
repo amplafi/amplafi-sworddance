@@ -264,4 +264,10 @@ public class PropertyAdaptor {
     public String toString() {
         return getter.getName();
     }
+    /**
+     * @return {@link #isReadable()} || {@link #isWritable()}
+     */
+    public boolean isExists() {
+        return this.isReadable() || this.isWritable();
+    }
 }

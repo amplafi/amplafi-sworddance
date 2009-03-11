@@ -130,15 +130,19 @@ public class PropertyMethodChain implements Iterable<PropertyAdaptor>{
         List<PropertyAdaptor> propertyMethodChain = new ArrayList<PropertyAdaptor>();
         for(Iterator<String> iter = Arrays.asList(propertyNamesList).iterator(); iter.hasNext();) {
             String propertyName = iter.next();
-            PropertyAdaptor propertyMethods = new PropertyAdaptor(propertyName);
-            propertyMethods.setGetter(clazz, parameterTypes);
+            PropertyAdaptor propertyAdaptor = new PropertyAdaptor(propertyName);
+            propertyAdaptor.setGetter(clazz, parameterTypes);
             if ( !iter.hasNext() && !readOnly) {
                 // only get the setter on the last iteration because PropertyMethodChain is only allowed to set the property at the
                 // end of the chain. No other property along the way can be set.
-                propertyMethods.initSetter(clazz);
+                propertyAdaptor.initSetter(clazz);
             }
-            clazz = propertyMethods.getReturnType();
-            propertyMethodChain.add(propertyMethods);
+            if ( propertyAdaptor.isExists()) {
+                clazz = propertyAdaptor.getReturnType();
+                propertyMethodChain.add(propertyAdaptor);
+            } else {
+                throw new IllegalArgumentException(propertyNamesList+" has bad property " + propertyName);
+            }
         }
         return propertyMethodChain;
     }

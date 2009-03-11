@@ -149,12 +149,26 @@ public class BeanWorker {
      */
     protected PropertyMethodChain addPropertyMethodChainIfAbsent(Class<?> clazz, ConcurrentMap<String, PropertyMethodChain> propMap, String property, boolean readOnly) {
         if (!propMap.containsKey(property)) {
-            PropertyMethodChain propertyMethodChain = new PropertyMethodChain(clazz, property, readOnly);
+            PropertyMethodChain propertyMethodChain = newPropertyMethodChain(clazz, property, readOnly);
             propMap.putIfAbsent(property, propertyMethodChain);
         }
         return propMap.get(property);
     }
 
+
+    /**
+     * @param clazz
+     * @param property
+     * @param readOnly
+     * @return
+     */
+    protected PropertyMethodChain newPropertyMethodChain(Class<?> clazz, String property, boolean readOnly) {
+        try {
+            return new PropertyMethodChain(clazz, property, readOnly);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
     protected String getPropertyName(Method method) {
         String methodName = method.getName();
         return this.getPropertyName(methodName);
