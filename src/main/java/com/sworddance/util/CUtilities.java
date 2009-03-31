@@ -184,14 +184,57 @@ public class CUtilities {
         return true;
     }
 
+    /**
+     *
+     * @param <K>
+     * @param <T>
+     * @param map
+     * @param key
+     * @param value if null then {@link Map#remove(Object)} is called, otherwise
+     * @return map.{@link Map#put(Object, Object)}
+     */
     public static <K, T> T put(Map<K,T> map, K key, T value) {
-        if ( value == null ) {
-            return map.remove(key);
+        if ( map != null ) {
+            if ( value == null ) {
+                return map.remove(key);
+            } else {
+                return map.put(key, value);
+            }
         } else {
-            return map.put(key, value);
+            return null;
         }
     }
 
+    /**
+     * Used when value extends {@link MapKeyed} to add to a map.
+     * @param <K>
+     * @param <V>
+     * @param map may be null.
+     * @param value if null then nothing happens ( key to remove is not known )
+     * @return {@link #put(Map, Object, Object)}
+     */
+    public static <K, V extends MapKeyed<K>> V put(Map<K,V> map, V value) {
+        if (map == null || value == null) {
+            return null;
+        } else {
+            return put(map, value.getMapKey(), value);
+        }
+    }
+    /**
+     * Adds any number of MapKeyed<V> to the map.
+     * @param <K>
+     * @param <V>
+     * @param map map be null.
+     * @param values extends V but can't be enforced because generics don't allow for multiple extends bounds when compiler can't enforce that
+     * there is only one class specified. (ie. <T extends V & MapKeyed<K>> is not permitted )
+     */
+    public static <K, V extends MapKeyed<K>> void putAll(Map<K,?> map, Object... values) {
+        if (map != null) {
+            for(Object value : values ) {
+                put((Map<K,V>)map, (V) value);
+            }
+        }
+    }
     /**
      *
      * @param <K>
