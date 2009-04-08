@@ -65,7 +65,11 @@ public class ThreadFactoryImpl implements ThreadFactory {
         registerThread(t);
         return t;
     }
-
+    public Thread newThread(String threadName, Runnable command) {
+        Thread t = newThread(command);
+        t.setName(threadName);
+        return t;
+    }
     /**
      * @param t
      */
