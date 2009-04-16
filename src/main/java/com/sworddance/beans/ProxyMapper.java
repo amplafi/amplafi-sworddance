@@ -143,7 +143,7 @@ public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements I
     }
 
     /**
-     * @param property
+     * @param propertyName
      * @param result
      */
     protected abstract void putOriginalValues(String propertyName, Object result);
@@ -215,7 +215,7 @@ public abstract class ProxyMapper<I,O extends I> extends BeanWorker implements I
 
     /**
      * @param propertyName
-     * @return
+     * @return "{@link #basePropertyPath}.propertyName"
      */
     protected String getTruePropertyName(String propertyName) {
         if ( this.basePropertyPath == null) {

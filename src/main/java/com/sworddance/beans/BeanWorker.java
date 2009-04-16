@@ -145,7 +145,8 @@ public class BeanWorker {
      * @param clazz
      * @param propMap
      * @param property
-     * @param readOnly TODO
+     * @param readOnly if true and if propertyMethodChain has not bee found then only the get method is searched for.
+     * @return the propertyMethodChain
      */
     protected PropertyMethodChain addPropertyMethodChainIfAbsent(Class<?> clazz, ConcurrentMap<String, PropertyMethodChain> propMap, String property, boolean readOnly) {
         if (!propMap.containsKey(property)) {
@@ -160,7 +161,7 @@ public class BeanWorker {
      * @param clazz
      * @param property
      * @param readOnly
-     * @return
+     * @return the propertyMethodChain
      */
     protected PropertyMethodChain newPropertyMethodChain(Class<?> clazz, String property, boolean readOnly) {
         try {

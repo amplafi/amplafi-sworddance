@@ -49,7 +49,7 @@ public class ChildProxyMapper<I,O extends I> extends ProxyMapper<I,O> {
         throw new UnsupportedOperationException("cannot applyToRealObject() from childProxyMapper (yet)");
     }
     /**
-     * @param property
+     * @param propertyName
      * @param result
      */
     @Override

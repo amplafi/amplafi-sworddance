@@ -218,14 +218,14 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapper<I, O> {
 
     /**
      * @param basePropertyPath
-     * @return
+     * @return the map of new values assigned to this ProxyMapper
      */
     public Map<String, Object> getNewValues(String basePropertyPath) {
         return getSubvalues(basePropertyPath, getNewValues());
     }
     /**
      * @param basePropertyPath
-     * @return
+     * @return the original values
      */
     public Map<String, Object> getOriginalValues(String basePropertyPath) {
         return getSubvalues(basePropertyPath, getOriginalValues());
