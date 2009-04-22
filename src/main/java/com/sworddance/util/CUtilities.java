@@ -18,7 +18,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -35,7 +34,7 @@ public class CUtilities {
 
     /**
      * size of object
-     * @param object
+     * @param object {@link Map}, {@link Collection}, Array, {@link CharSequence}
      * @return 0 if null
      */
     @SuppressWarnings("unchecked")
@@ -46,28 +45,18 @@ public class CUtilities {
                 total = ((Map) object).size();
             } else if (object instanceof Collection) {
                 total = ((Collection) object).size();
-            } else if (object instanceof Object[]) {
-                total = ((Object[]) object).length;
-            } else if (object instanceof Iterator) {
-                Iterator it = (Iterator) object;
+            } else if (object.getClass().isArray()) {
+                total = Array.getLength(object);
+            } else if (object instanceof CharSequence) {
+                total = ((CharSequence)object).length();
+            } else if (object instanceof Iterable) {
+                Iterator it = ((Iterable) object).iterator();
                 while (it.hasNext()) {
                     total++;
                     it.next();
                 }
-            } else if (object instanceof Enumeration) {
-                Enumeration it = (Enumeration) object;
-                while (it.hasMoreElements()) {
-                    total++;
-                    it.nextElement();
-                }
-            } else if (object instanceof CharSequence) {
-                total = ((CharSequence)object).length();
             } else {
-                try {
-                    total = Array.getLength(object);
-                } catch (IllegalArgumentException ex) {
-                    throw new IllegalArgumentException("Unsupported object type: " + object.getClass().getName());
-                }
+                throw new IllegalArgumentException("Unsupported object type: " + object.getClass().getName());
             }
         }
         return total;
@@ -91,7 +80,7 @@ public class CUtilities {
      * @param <T>
      * @param collection
      * @param index
-     * @return the index-th item in the collection
+     * @return the index-th item in the collection if collection is a Map, the index-th Map.Entry element is returned.
      */
     @SuppressWarnings("unchecked")
     public static <T> T get(Object collection, int index) {
@@ -104,7 +93,7 @@ public class CUtilities {
             } else {
                 return (T) list.get(index);
             }
-        } else if (collection instanceof Object[]) {
+        } else if (collection.getClass().isArray()) {
             Object[] list = (Object[]) collection;
             if (list.length <= index) {
                 return null;
@@ -183,6 +172,9 @@ public class CUtilities {
         }
         return true;
     }
+    public static boolean isNotEmpty(Object... objects) {
+        return !isEmpty(objects);
+    }
 
     /**
      *
@@ -253,14 +245,18 @@ public class CUtilities {
         }
         V value = map.get(key);
         if ( value == null && defaultValue != null) {
+            V callValue;
             try {
-                if ( map instanceof ConcurrentMap) {
-                    ((ConcurrentMap<K,V>)map).putIfAbsent(key, defaultValue.call());
-                } else {
-                    map.put(key, defaultValue.call());
-                }
+                callValue = defaultValue.call();
+            } catch (RuntimeException e) {
+                throw e;
             } catch (Exception e) {
                 throw new RuntimeException(e);
+            }
+            if ( map instanceof ConcurrentMap) {
+                ((ConcurrentMap<K,V>)map).putIfAbsent(key, callValue);
+            } else {
+                map.put(key, callValue);
             }
             // another thread may beat us to assigning the value.
             value = map.get(key);
