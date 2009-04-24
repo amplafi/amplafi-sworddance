@@ -21,7 +21,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Map that is keyed by class.
+ * Map that is keyed by class and searches for a value by examining the class hierarchy.
+ *
+ * Useful for finding helper classes that can be used by subclasses.
  * @param <V>
  *
  */
@@ -47,6 +49,42 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
         }
     }
 
+    /**
+     * Gets the value indexed by the 'key' class. If no value is found then get() looks for a match using
+     * the implemented interface classes. If still no match, then get() repeats the process on 'key' class's super class.
+     * If still no luck, then each of the 'key' class's interfaces' superinterfaces are then searched.
+     *
+     * Once a match is found, the recursion unwinds storing the returned value in the {@link #byClassMap} map.
+     *
+     * Example:
+     * <pre>
+     * class Foo extends Bar implements ZZZ, YYY {
+     * }
+     *
+     * interface ZZZ extends sZZZ {
+     * }
+     * class Bar extends Peanut implements IBar {
+     * }
+     * interface IBar extends sIBar {
+     * }
+     * </pre>
+     * The search order is
+     * <ol>
+     * <li>Foo</li>
+     * <li>ZZZ</li>
+     * <li>YYY</li>
+     * <li>Bar</li>
+     * <li>IBar</li>
+     * <li>Peanut</li>
+     * <li>sIBar (arguable this is 'further' away than sZZZ and should be checked later than sZZZ)</li>
+     * <li>sZZZ</li>
+     * </ol>
+     *
+     * @param key if not an instance of {@link Class} then null is returned.
+     * @see java.util.Map#get(java.lang.Object)
+     */
+    // TODO instead of get() == null checks should really be using containsKey() to allow for null values in the map.
+    // (minor now since ConcurrentMap does not allow null values )
     public V get(Object key) {
         if (key == null || !(key instanceof Class)) {
             return null;
@@ -54,6 +92,7 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
             Class<?> clazz = (Class<?>) key;
             V valueByClass = getRaw(clazz);
             if ( valueByClass == null ) {
+                // check just 'key' directly implemented interfaces
                 for(Class<?> interf: clazz.getInterfaces()) {
                     valueByClass = getRaw(interf);
                     if ( valueByClass != null ) {
@@ -61,13 +100,17 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
                     }
                 }
 
-                if (valueByClass == null && clazz.getSuperclass() != null ) {
+                // check just the immediate superclass
+                // TODO? should we ignore 'java.*' classes. (optionally)
+                Class<?> superclass = clazz.getSuperclass();
+                if (valueByClass == null && superclass != null ) {
                     valueByClass = getRaw(clazz.getSuperclass());
                 }
-                // no luck so far? check up the hierarchy tree
+                // no luck so far? check up the superclass hierarchy tree
                 if ( valueByClass == null && clazz.getSuperclass() != null ) {
                     valueByClass = get(clazz.getSuperclass());
                 }
+                // no luck so far? check up the superinterface hierarchy tree
                 if ( valueByClass == null ) {
                     for(Class<?> interf: clazz.getInterfaces()) {
                         valueByClass = get(interf);
