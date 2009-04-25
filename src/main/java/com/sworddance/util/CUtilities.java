@@ -236,7 +236,7 @@ public class CUtilities {
      * @return null if map or key is null
      */
     public static <K, T> T get(Map<K,T> map, K key) {
-        return get(map, key, (T)null);
+        return get(map, key, (Callable<T>)null);
     }
 
     public static <K, V> V get(Map<K,V> map, K key, Callable<V> defaultValue) {
@@ -253,10 +253,12 @@ public class CUtilities {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            if ( map instanceof ConcurrentMap) {
-                ((ConcurrentMap<K,V>)map).putIfAbsent(key, callValue);
-            } else {
-                map.put(key, callValue);
+            if ( callValue != null ) {
+                if ( map instanceof ConcurrentMap) {
+                    ((ConcurrentMap<K,V>)map).putIfAbsent(key, callValue);
+                } else {
+                    map.put(key, callValue);
+                }
             }
             // another thread may beat us to assigning the value.
             value = map.get(key);
