@@ -284,4 +284,20 @@ public class CUtilities {
         return set;
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T extends Collection<?>> T cloneCollection(T cloned) {
+        Collection result = null;
+        if (cloned != null) {
+            try {
+                result = cloned.getClass().newInstance();
+            } catch (InstantiationException e) {
+                throw new ApplicationGeneralException(e);
+            } catch (IllegalAccessException e) {
+                throw new ApplicationGeneralException(e);
+            }
+            result.addAll(cloned);
+        }
+        return (T) result;
+    }
+
 }
