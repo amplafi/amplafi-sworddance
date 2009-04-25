@@ -126,54 +126,51 @@ public class CUtilities {
 
     /**
      * a universal isEmpty check that can handle arrays, {@link Collection}s, {@link Map}s, {@link CharSequence} or objects.
-     * @param objects zero or more arrays, {@link Collection}s, {@link Map}s, {@link CharSequence} or objects.
-     * @return true if ALL of the passed object(s) are an array, {@link Collection}, {@link Map}, or {@link CharSequence} that is null or contains no elements.
+     * @param object Array, {@link Collection}, {@link Map}s, {@link CharSequence} or object.
+     * @return true if the passed object is an array, {@link Collection}, {@link Map}, or {@link CharSequence} that is null or contains no elements.
      * For other objects return true if the object is not null.
      * if the objects is a single object (that is not an array, collection, map) then true is return if the object is null.
      * TODO (Any or All? which is better?)
      */
-    public static boolean isEmpty(Object... objects) {
-        if ( objects != null ) {
-            for(Object object: objects) {
-                if (object != null ) {
-                    if ( object instanceof Map ) {
-                        if ( !((Map<?,?>)object).isEmpty()) {
-                            return false;
-                        }
-                    } else if ( object instanceof Collection ) {
-                        if ( !((Collection<?>)object).isEmpty()) {
-                            return false;
-                        }
-                    } else if ( object.getClass().isArray()) {
-                        if ( ((Object[])object).length != 0) {
-                            return false;
-                        }
-                    } else if ( object instanceof CharSequence) {
-                        if ( ((CharSequence)object).length() != 0) {
-                            return false;
-                        }
-                    } else {
-                        Method empty;
-                        try {
-                            empty = object.getClass().getMethod("isEmpty", new Class<?>[0]);
-                            return (Boolean) empty.invoke(object);
-                        } catch (NoSuchMethodException e) {
-                        } catch (IllegalArgumentException e) {
-                        } catch (IllegalAccessException e) {
-                            throw new ApplicationIllegalStateException(e);
-                        } catch (InvocationTargetException e) {
-                            throw new ApplicationIllegalStateException(e);
-                        }
-                        // singleton object is always "not-empty"
-                        return false;
-                    }
+    public static boolean isEmpty(Object object) {
+        if (object != null ) {
+            if ( object instanceof Map ) {
+                if ( !((Map<?,?>)object).isEmpty()) {
+                    return false;
                 }
+            } else if ( object instanceof Collection ) {
+                if ( !((Collection<?>)object).isEmpty()) {
+                    return false;
+                }
+            } else if ( object.getClass().isArray()) {
+                if ( ((Object[])object).length != 0) {
+                    return false;
+                }
+            } else if ( object instanceof CharSequence) {
+                if ( ((CharSequence)object).length() != 0) {
+                    return false;
+                }
+            } else {
+                Method empty;
+                try {
+                    empty = object.getClass().getMethod("isEmpty", new Class<?>[0]);
+                    return (Boolean) empty.invoke(object);
+                } catch (NoSuchMethodException e) {
+                } catch (IllegalArgumentException e) {
+                } catch (IllegalAccessException e) {
+                    throw new ApplicationIllegalStateException(e);
+                } catch (InvocationTargetException e) {
+                    throw new ApplicationIllegalStateException(e);
+                }
+                // singleton object is always "not-empty"
+                return false;
             }
         }
         return true;
     }
-    public static boolean isNotEmpty(Object... objects) {
-        return !isEmpty(objects);
+
+    public static boolean isNotEmpty(Object object) {
+        return !isEmpty(object);
     }
 
     /**
