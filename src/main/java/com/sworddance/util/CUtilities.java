@@ -17,7 +17,10 @@ package com.sworddance.util;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -298,6 +301,27 @@ public class CUtilities {
             result.addAll(cloned);
         }
         return (T) result;
+    }
+
+    /**
+     * @return an new {@link ArrayList}.
+     */
+    public static <T> List<T> newList() {
+        return new ArrayList<T>();
+    }
+
+    /**
+     * @return an new {@link HashSet}.
+     */
+    public static <T> Set<T> newSet() {
+        return new HashSet<T>();
+    }
+
+    /**
+     * @return an new {@link HashMap}. 
+     */
+    public static <K, V> Map<K, V> newMap() {
+        return new HashMap<K, V>();
     }
 
 }
