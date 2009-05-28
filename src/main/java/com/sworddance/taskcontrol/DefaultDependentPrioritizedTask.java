@@ -64,12 +64,12 @@ public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Obje
 
     @Override
     public void setTaskGroup(TaskGroup<?> taskGroup) {
-        for (Object element : this.dependencyTasks) {
+        for (PrioritizedTask element : this.dependencyTasks) {
             // this avoids circular dependencies
-            if (((PrioritizedTask) element).getTaskGroup() == null) {
+            if (element.getTaskGroup() == null) {
                 throw new IllegalStateException(
                         this.getName()
-                                + " has dependent task that has not been assigned to a task group");
+                                + ": has dependent task ("+element.getName()+") that has not been assigned to a task group");
             }
         }
         super.setTaskGroup(taskGroup);
@@ -83,21 +83,11 @@ public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Obje
     }
 
     public boolean isSuccessDependentOn(PrioritizedTask task) {
-        for (PrioritizedTask dependency : this.dependencyTasks) {
-            if (task == dependency) {
-                return true;
-            }
-        }
-        return false;
+        return this.dependencyTasks.contains(task);
     }
 
     public boolean isAlwaysDependentOn(PrioritizedTask task) {
-        for (PrioritizedTask dependency : this.cleanUpAfterTasks) {
-            if (task == dependency) {
-                return true;
-            }
-        }
-        return false;
+        return this.cleanUpAfterTasks.contains(task);
     }
 
     private boolean doDependencyCheck() {
@@ -110,8 +100,7 @@ public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Obje
                             + this.getTaskGroup().getError().getClass());
             return false;
         }
-        for (Object element : this.dependencyTasks) {
-            PrioritizedTask dependency = (PrioritizedTask) element;
+        for (PrioritizedTask dependency : this.dependencyTasks) {
             if (!dependency.isSuccessful()) {
                 if (dependency.isDone()) {
                     // dependency failed ... this task will never be run
@@ -127,8 +116,7 @@ public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Obje
                 return false;
             }
         }
-        for (Object element : this.cleanUpAfterTasks) {
-            PrioritizedTask dependency = (PrioritizedTask) element;
+        for (PrioritizedTask dependency : this.cleanUpAfterTasks) {
             if (!dependency.isDone()) {
                 return false;
             }
