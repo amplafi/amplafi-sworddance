@@ -21,7 +21,7 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * this represents a {@link CharSequence} that may not be presently available but is being
- * retreived.
+ * retrieved.
  *
  * @author Patrick Moore
  */
