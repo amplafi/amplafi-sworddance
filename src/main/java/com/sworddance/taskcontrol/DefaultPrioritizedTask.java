@@ -17,7 +17,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -25,6 +24,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+
+import com.sworddance.util.perf.LapTimer;
 
 /**
  * All tasks in TaskControl should extend or emulate this class's behavior.
@@ -54,9 +55,8 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
 
     private String name;
 
-    private long startTimeInMillis;
-
-    private long endTimeInMillis;
+    // should not create until in thread that will be running the task. (cannot create on construction)
+    private LapTimer lapTimer;
 
     private Set<ResourceLock> resourceLocksNeeded = new CopyOnWriteArraySet<ResourceLock>();
 
@@ -71,9 +71,6 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
     private Map<String, Integer> resourceLocksUsed = new HashMap<String, Integer>();
 
     private boolean lockDowngradeEnabled;
-
-    private static SimpleDateFormat FORMATTER = new SimpleDateFormat(
-            "HH:mm:ss.SSS");
 
     public DefaultPrioritizedTask() {
         this((Runnable) null);
@@ -157,12 +154,13 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
     }
 
     protected String getTimingString() {
+        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss.SSS");
         StringBuilder sb = new StringBuilder();
         sb.append(getElapsedInMillis());
         sb.append("ms elapsed. Start=");
-        sb.append(FORMATTER.format(new Date(startTimeInMillis)));
+        sb.append(this.lapTimer.getStartDateStr());
         sb.append(" End=");
-        sb.append(FORMATTER.format(new Date(endTimeInMillis > 0 ? endTimeInMillis : System.currentTimeMillis())));
+        sb.append(this.lapTimer.getStartDate());
         return sb.toString();
     }
 
@@ -171,7 +169,7 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
      * @return total elapsed time in Millis
      */
     public long getElapsedInMillis() {
-        return endTimeInMillis - startTimeInMillis;
+        return lapTimer.elapsed();
     }
 
     public R call() throws Exception {
@@ -222,14 +220,16 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
     }
 
     protected void startTiming() {
-        if (startTimeInMillis == 0) {
-            startTimeInMillis = System.currentTimeMillis();
+        if (lapTimer == null) {
+            this.lapTimer = LapTimer.pushNewThreadTimer();
+            lapTimer.start();
         }
     }
 
     protected void finishTiming() {
-        if (endTimeInMillis == 0) {
-            endTimeInMillis = System.currentTimeMillis();
+        if (lapTimer != null) {
+            this.lapTimer.lap("end "+this.getName());
+            LapTimer.popThreadTimer();
         }
     }
 
@@ -420,5 +420,19 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
 
     public boolean isLockDowngradeEnabled() {
         return lockDowngradeEnabled;
+    }
+
+    /**
+     * @param lapTimer the lapTimer to set
+     */
+    public void setLapTimer(LapTimer lapTimer) {
+        this.lapTimer = lapTimer;
+    }
+
+    /**
+     * @return the lapTimer
+     */
+    public LapTimer getLapTimer() {
+        return lapTimer;
     }
 }
