@@ -802,7 +802,7 @@ public class LapTimer implements Runnable, Serializable {
 
     /**
      * @return the most recent LapTimer popped off the Threadstack.
-     * @see #popThreadTimer()
+     * @see #popThreadTimer(LapTimer)
      */
     public static LapTimer getLastThreadTimer() {
         return lastThreadLapTimer.get();
@@ -833,7 +833,7 @@ public class LapTimer implements Runnable, Serializable {
     /**
      * Create a new LapTimer that will be pushed on to this Thread's stack. This Thread's
      * previously attached LapTimer is saved. The previous LapTimer is restored with a call
-     * to {@link #popThreadTimer()}. The new LapTimer is automatically started.
+     * to {@link #popThreadTimer(LapTimer)}. The new LapTimer is automatically started.
      *
      * @return a started LapTimer
      */
@@ -851,7 +851,7 @@ public class LapTimer implements Runnable, Serializable {
     /**
      * Create a new LapTimer that will be pushed on to this Thread's stack. This Thread's
      * previously attached LapTimer is saved. The previous LapTimer is restored with a call
-     * to {@link #popThreadTimer()}. The new LapTimer is automatically started.
+     * to {@link #popThreadTimer(LapTimer)}. The new LapTimer is automatically started.
      *
      * @param name
      * @return a started LapTimer
@@ -864,11 +864,12 @@ public class LapTimer implements Runnable, Serializable {
      * This Thread's current LapTimer is stopped and popped off of the Thread's stack.
      * The previous LapTimer attached to this thread is restored. The popped LapTimer
      * is stopped (can be restarted by a call to {@link #cont()}).
+     * @param expected the laptimer to be popped off. (this ensures that only the expected laptimer is removed)
      *
-     * @return The LapTimer formerly attached to this thread.
+     * @return expected
      */
-    public static LapTimer popThreadTimer() {
-        return LapTimer.popThreadTimer(null);
+    public static LapTimer popThreadTimer(LapTimer expected) {
+        return LapTimer.popThreadTimer(null, expected);
     }
 
     /**
@@ -877,11 +878,12 @@ public class LapTimer implements Runnable, Serializable {
      * is {@link #stop(String)}'ed (can be restarted by a call to {@link #cont()}).
      *
      * @param lapName name passed to stop
+     * @param expected the laptimer to be popped off. (this ensures that only the expected laptimer is removed)
      * @return The LapTimer formerly attached to this thread.
      */
-    public static LapTimer popThreadTimer(String lapName) {
+    public static LapTimer popThreadTimer(String lapName, LapTimer expected) {
         LapTimer timer = _getThreadTimer();
-        if (timer != null) {
+        if (timer != null && expected == timer) {
             timer.stop(lapName);
             threadLapTimer.set(timer.prevStackMember);
             lastThreadLapTimer.set(timer);
@@ -1398,14 +1400,6 @@ public class LapTimer implements Runnable, Serializable {
         public LapTimer pushNewThreadTimer() {
             String name = this.collectionName + " timer #" + (this.lapTimers.size() + 1);
             return this.pushNewThreadTimer(name);
-        }
-
-        public LapTimer popThreadTimer() {
-            return LapTimer.popThreadTimer();
-        }
-
-        public LapTimer popThreadTimer(String lapName) {
-            return LapTimer.popThreadTimer(lapName);
         }
 
         /**
