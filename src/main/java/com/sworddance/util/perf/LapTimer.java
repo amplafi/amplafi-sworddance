@@ -24,6 +24,8 @@ import java.rmi.dgc.VMID;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -85,12 +87,12 @@ public class LapTimer implements Runnable, Serializable {
      * A LapTimer that is new to this JVM (actually ClassLoader)
      * is stored in this map. When it is sent on (or back) it is removed.
      */
-    private static Map<Id, LapTimer> receivedLaptimers = Collections.synchronizedMap(new HashMap<Id, LapTimer>());
+    private static ConcurrentMap<Id, LapTimer> receivedLaptimers = new ConcurrentHashMap<Id, LapTimer>();
     /**
      * This is a map of all LapTimers that are sent out from this JVM/ClassLoader.
      * A LapTimer can never be in both receivedLaptimers and sentLaptimers
      */
-    private static Map<Id, LapTimer> sentLaptimers = Collections.synchronizedMap(new HashMap<Id, LapTimer>());
+    private static ConcurrentMap<Id, LapTimer> sentLaptimers = new ConcurrentHashMap<Id, LapTimer>();
     /**
      * This is used as a way to avoid having to keep track the LapTimer.
      * By attaching it to a thread the LapTimer can be less intrusive.
@@ -100,12 +102,7 @@ public class LapTimer implements Runnable, Serializable {
 
     /**
      */
-    private static Map<Object, LapTimer> keyedTimers = new HashMap<Object, LapTimer>();
-    /**
-     * CVS Date Format
-     */
-    private static final SimpleDateFormat CSV_DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss.SSS");
-    private static final SimpleDateFormat MSG_DATE_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS");
+    private static ConcurrentMap<Object, LapTimer> keyedTimers = new ConcurrentHashMap<Object, LapTimer>();
 
     /**
      * The id of the LapTimer. Because it is used to identify serialize LapTimers that
@@ -130,6 +127,8 @@ public class LapTimer implements Runnable, Serializable {
     private transient Date startDate;
     private transient String startDateStr;
     private long endTime;
+    private transient Date endDate;
+    private transient String endDateStr;
     /**
      * This is the time that the LapTimer has been running. This is the sum of all the lap() return results.
      */
@@ -347,25 +346,27 @@ public class LapTimer implements Runnable, Serializable {
         return this.paused;
     }
     /**
-     * This method in combination with {@link #end()}. A laptimer using
+     * This method in combination with {@link #endLap()}. A laptimer using
      * begin/end will not in general use the lap() methods. But combining
      * the two will not interfere with each other.
      * @param lapName tag marking this "lap".
      */
-    public void begin(String lapName) {
+    public void beginNewLap(String lapName) {
         // maybe paused from previous end()
         this.cont();
         this.pendingLapName = lapName;
     }
     /**
      * Equivalent to {@link #lap(String)} where the lap name is the
-     * name passed in on the {@link #begin(String)}
+     * name passed in on the {@link #beginNewLap(String)}
      *
      */
-    public void end() {
-        this.end(true);
+    @Deprecated // combine with lap()
+    public void endLap() {
+        this.endLap(true);
     }
-    public void end(boolean pauseTimer) {
+    @Deprecated // combine with lap()
+    public void endLap(boolean pauseTimer) {
         this.lap(this.pendingLapName);
         if ( pauseTimer) {
             this.pause();
@@ -405,22 +406,22 @@ public class LapTimer implements Runnable, Serializable {
             String lapName = StringUtils.join(lapInfo);
             while(iter.hasNext()) {
                 LapTimer timer = iter.next();
-                timer.begin(lapName);
+                timer.beginNewLap(lapName);
             }
             LapTimer timer = _getThreadTimer();
             if (timer != null) {
-                timer.begin(lapName);
+                timer.beginNewLap(lapName);
             }
         }
     }
     static void sEnd() {
         for (LapTimerIterator iter = new LapTimerIterator(remotedLapTimers.get()); iter.hasNext();) {
             LapTimer timer = iter.next();
-            timer.end();
+            timer.endLap();
         }
         LapTimer timer = _getThreadTimer();
         if (timer != null) {
-            timer.end();
+            timer.endLap();
         }
     }
 
@@ -595,6 +596,9 @@ public class LapTimer implements Runnable, Serializable {
         return this.stop(null);
     }
 
+    public boolean isDone() {
+        return this.endTime != 0;
+    }
     /**
      * temporarily pauses the LapTimer - does not cause a lap to be done.
      * While paused the elapsed time will not increase.
@@ -704,11 +708,33 @@ public class LapTimer implements Runnable, Serializable {
         if (!this.isStarted()) {
             return "not started";
         } else if (this.startDateStr == null) {
-            this.startDateStr = MSG_DATE_FORMAT.format(this.getStartDate());
+            this.startDateStr = new SimpleDateFormat("HH:mm:ss.SSS").format(this.getStartDate());
         }
         return this.startDateStr;
     }
+    /**
+     * @return the date/time that this LapTimer was stopped
+     */
+    public Date getEndDate() {
+        if (this.endDate == null && this.isDone()) {
+            this.endDate = new Date(this.endTime);
+        }
+        return this.endDate;
+    }
 
+    /**
+     * Get the human readable version of the starting time string.
+     *
+     * @return {@link #getEndDate()} converted to a String
+     */
+    public String getEndDateStr() {
+        if (!this.isDone()) {
+            return "not done";
+        } else if (this.endDateStr == null) {
+            this.endDateStr = new SimpleDateFormat("HH:mm:ss.SSS").format(this.getEndDate());
+        }
+        return this.endDateStr;
+    }
     /**
      * @see #run(Runnable)
      * @see #setRunnable(Runnable)
@@ -870,15 +896,13 @@ public class LapTimer implements Runnable, Serializable {
      * @return the LapTimer associated with this Key
      */
     public static LapTimer getKeyedTimer(Object key) {
-        synchronized (keyedTimers) {
-            LapTimer timer = keyedTimers.get(key);
-            if (timer == null) {
-                timer = new LapTimer();
-                keyedTimers.put(key, timer);
-                timer.start();
-            }
-            return timer;
+        LapTimer timer =new LapTimer();
+        keyedTimers.putIfAbsent(key, timer);
+        LapTimer t = keyedTimers.get(key);
+        if (timer == t) {
+            timer.start();
         }
+        return timer;
     }
 
     /**
@@ -888,9 +912,7 @@ public class LapTimer implements Runnable, Serializable {
      * @return The just removed LapTimer
      */
     public static LapTimer removeKeyedTimer(Object key) {
-        synchronized (keyedTimers) {
-            return keyedTimers.remove(key);
-        }
+        return keyedTimers.remove(key);
     }
 
     public static Object getProxy(Object obj) {
@@ -972,7 +994,7 @@ public class LapTimer implements Runnable, Serializable {
             sb.append(this.timerName);
         }
         sb.append(',');
-        CSV_DATE_FORMAT.format(this.getStartDate(), sb, new FieldPosition(0));
+        new SimpleDateFormat("MM/dd/yyyy HH:mm:ss.SSS").format(this.getStartDate(), sb, new FieldPosition(0));
         sb.append(',').append(this.hopCount);
         sb.append(',').append(this.elapsed());
         long[] history = this.getLapHistory();
@@ -1096,7 +1118,7 @@ public class LapTimer implements Runnable, Serializable {
     private void writeObject(ObjectOutputStream out) throws IOException {
         boolean skipCheck = this.home == null;
 
-        // check to see if this LapTimer was recieved remotely.
+        // check to see if this LapTimer was received remotely.
         // if its homeVMID was not set then this JVM/ClassLoader
         // is created it and is sending it out.
         if (skipCheck) {
@@ -1109,7 +1131,7 @@ public class LapTimer implements Runnable, Serializable {
         }
         boolean restart = this.isRunning();
         if (restart) {
-            this.begin("XMIT");
+            this.beginNewLap("XMIT");
 //            this.pause(); TODO how to handle staying on same machine?
         }
         out.writeBoolean(restart);
@@ -1123,7 +1145,7 @@ public class LapTimer implements Runnable, Serializable {
         if (restart) {
             this.cont();
             //TODO do we continue?
-            this.end(); //("EndXMIT");
+            this.endLap(); //("EndXMIT");
         }
     }
 
@@ -1604,7 +1626,7 @@ public class LapTimer implements Runnable, Serializable {
         public Object invoke(Object proxy, Method method, Object[] args)
                 throws Throwable {
             if (this.lapTimer != null) {
-                this.lapTimer.begin(this.className+method.getName());
+                this.lapTimer.beginNewLap(this.className+method.getName());
             } else {
                 sBegin(this.className+method.getName());
             }
@@ -1616,7 +1638,7 @@ public class LapTimer implements Runnable, Serializable {
                 throw e.getTargetException();
             } finally {
                 if (this.lapTimer != null) {
-                    this.lapTimer.end();
+                    this.lapTimer.endLap();
                 } else {
                     sEnd();
                 }
