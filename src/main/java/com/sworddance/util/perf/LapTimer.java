@@ -400,7 +400,7 @@ public class LapTimer implements Runnable, Serializable {
         this.lapCount++;
         return this.lapHistory[this.lapHistory.length - 1];
     }
-    static void sBegin(Object... lapInfo) {
+    public static void sBegin(Object... lapInfo) {
         LapTimerIterator iter = new LapTimerIterator(remotedLapTimers.get());
         if ( iter.hasNext() || hasThreadTimer()) {
             String lapName = StringUtils.join(lapInfo);
@@ -414,7 +414,7 @@ public class LapTimer implements Runnable, Serializable {
             }
         }
     }
-    static void sEnd() {
+    public static void sEnd() {
         for (LapTimerIterator iter = new LapTimerIterator(remotedLapTimers.get()); iter.hasNext();) {
             LapTimer timer = iter.next();
             timer.endLap();
