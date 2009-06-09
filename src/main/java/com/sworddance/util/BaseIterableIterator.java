@@ -26,6 +26,7 @@ import java.util.Map;
  * @author Patrick Moore
  */
 public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIterator<T> {
+    private int index = -1;
 
     private Iterator<T> iter;
     // TODO: should this have a weak reference?
@@ -78,7 +79,9 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
     }
     @Override
     public T next() {
-        return current = iter.next();
+        current = iter.next();
+        index++;
+        return current;
     }
 
     public T current() {
@@ -88,11 +91,18 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
     public void remove() {
         iter.remove();
         // don't null current that way old value can be retrieved.
+        index--;
     }
 
     @Override
     public Iterator<T> iterator() {
         return this;
+    }
+    /**
+     * @return the index
+     */
+    public int getIndex() {
+        return index;
     }
 
 }
