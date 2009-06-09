@@ -28,4 +28,9 @@ public interface CurrentIterator<E> extends Iterator<E> {
      * @return value last returned by {@link #next()}, null if #next() has not been called yet
      */
     public E current();
+    /**
+     * remove() will reduce this number.
+     * @return index of last item returned by the Iterator
+     */
+    int getIndex();
 }
