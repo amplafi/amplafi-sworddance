@@ -318,10 +318,49 @@ public class CUtilities {
     }
 
     /**
-     * @return an new {@link HashMap}. 
+     * @return an new {@link HashMap}.
      */
     public static <K, V> Map<K, V> newMap() {
         return new HashMap<K, V>();
     }
 
+    /**
+     * conceptually equivalent to masterCollection.clear(); masterCollection.addAll(newValues);
+     *
+     * except that the masterCollection is only modified to the extent needed to bring it into compliance.
+     * Useful for avoiding unnecessary db operations.
+     * compare the values in the newValues Collection to the masterCollection.
+     * @param <T>
+     * @param masterCollection
+     * @param newValues
+     * @return true if a change was made
+     */
+    public static <T> boolean updateCollectionAsNeeded(Collection<T> masterCollection, Collection<T> newValues) {
+        boolean changed = false;
+        // avoid updating with self.
+        if ( masterCollection != newValues) {
+            if ( isEmpty(newValues)) {
+                if ( !masterCollection.isEmpty()) {
+                    masterCollection.clear();
+                    changed = true;
+                }
+            } else {
+                // may be copying directly from another envelope
+                List<T> remainingValues = new ArrayList<T>(newValues);
+                // remove topics that are no longer present.
+                for(Iterator<T> iterator = masterCollection.iterator(); iterator.hasNext(); ) {
+                    T existingObjectInMasterCollection = iterator.next();
+                    if(!remainingValues.contains(existingObjectInMasterCollection)) {
+                        iterator.remove();
+                        changed = true;
+                    } else {
+                        remainingValues.remove(existingObjectInMasterCollection);
+                    }
+                }
+                // add any remaining objects that are actually new.
+                masterCollection.addAll(remainingValues);
+            }
+        }
+        return changed;
+    }
 }
