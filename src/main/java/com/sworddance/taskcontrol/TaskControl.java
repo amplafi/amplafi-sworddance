@@ -94,9 +94,6 @@ public class TaskControl implements Runnable {
         this.stayActive = true;
     }
 
-    /**
-     *
-     */
     public TaskControl(Log log) {
         this(new PriorityEligibleWorkItemComparator(), 5);
         setLog(log);
