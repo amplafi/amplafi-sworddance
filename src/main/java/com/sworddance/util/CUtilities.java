@@ -220,6 +220,7 @@ public class CUtilities {
      * @param values extends V but can't be enforced because generics don't allow for multiple extends bounds when compiler can't enforce that
      * there is only one class specified. (ie. <T extends V & MapKeyed<K>> is not permitted )
      */
+    @SuppressWarnings("unchecked")
     public static <K, V extends MapKeyed<K>> void putAll(Map<K,?> map, Object... values) {
         if (map != null) {
             for(Object value : values ) {
@@ -304,21 +305,39 @@ public class CUtilities {
     }
 
     /**
-     * @return an new {@link ArrayList}.
+     * @param newValues
+     * @param <T>
+     * @return an new {@link List} populated with the non-null values in newValues
      */
-    public static <T> List<T> newList() {
-        return new ArrayList<T>();
+    public static <T> List<T> newList(T...newValues) {
+        List<T> l = new ArrayList<T>();
+        for(T newValue: newValues) {
+            if ( newValue != null) {
+                l.add(newValue);
+            }
+        }
+        return l;
     }
 
     /**
-     * @return an new {@link HashSet}.
+     * @param newValues
+     * @param <T>
+     * @return an new {@link Set}  populated with the non-null values in newValues.
      */
-    public static <T> Set<T> newSet() {
-        return new HashSet<T>();
+    public static <T> Set<T> newSet(T...newValues) {
+        Set<T> s = new HashSet<T>();
+        for(T newValue: newValues) {
+            if ( newValue != null) {
+                s.add(newValue);
+            }
+        }
+        return s;
     }
 
     /**
-     * @return an new {@link HashMap}.
+     * @param <K>
+     * @param <V>
+     * @return an new {@link Map}.
      */
     public static <K, V> Map<K, V> newMap() {
         return new HashMap<K, V>();
