@@ -23,6 +23,15 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * add some convenience to the {@link FutureTask} class.
+ *
+ * TODO:
+ * FutureResult should have 3 possible callables:
+ *
+ *     * call on success
+ *     * call on failure
+ *     * call when result (success or failure)
+ *
+ * In this way when the future has a result it is able to proactive trigger the next action.
  * @param <T> type of value returned by this {@link Future}.
  * @author Patrick Moore
  */
