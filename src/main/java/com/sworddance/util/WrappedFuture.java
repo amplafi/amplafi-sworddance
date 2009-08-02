@@ -5,7 +5,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.sworddance.taskcontrol.FutureResult;
+import com.sworddance.taskcontrol.FutureResultImpl;
+import com.sworddance.taskcontrol.FutureResultImplementor;
 
 /**
  * Handle issue of multiple Futures that really are pointing to the same result.
@@ -13,15 +14,15 @@ import com.sworddance.taskcontrol.FutureResult;
  * Example, URIs when following http redirects.
  *
  */
-public class WrappedFuture extends FutureResult<Object> {
+public class WrappedFuture extends FutureResultImpl<Object> {
     private CountDownLatch executeLatch;
-    private FutureResult<Object> actualResult;
+    private FutureResultImplementor<Object> actualResult;
 
     public WrappedFuture(CountDownLatch executeLatch) {
         this.executeLatch = executeLatch;
     }
 
-    public void setActualResult(FutureResult<Object> actualResult) {
+    public void setActualResult(FutureResultImplementor<Object> actualResult) {
         this.actualResult = actualResult;
     }
 

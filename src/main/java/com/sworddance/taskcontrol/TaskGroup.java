@@ -95,7 +95,7 @@ public class TaskGroup<T> implements NotificationObject {
      * Used to indicate when all the tasks in this TaskGroup have completed. And
      * what the overall state of the Tasks run within the TaskGroup is.
      */
-    private final FutureResult<T> result;
+    private final FutureResultImplementor<T> result;
 
     /**
      * used to aid in debugging. This will hold a reference to the last task
@@ -107,7 +107,7 @@ public class TaskGroup<T> implements NotificationObject {
     private Set<PrioritizedTask> runningTasks = Collections.newSetFromMap(new ConcurrentHashMap<PrioritizedTask, Boolean>());
     private String latestStatsFilename;
 
-    public TaskGroup(String name, Comparator<PrioritizedTask> taskComparator, FutureResult<T> result) {
+    public TaskGroup(String name, Comparator<PrioritizedTask> taskComparator, FutureResultImplementor<T> result) {
         this.name = name;
         this.taskComparator = taskComparator;
         this.result = result;
@@ -124,9 +124,9 @@ public class TaskGroup<T> implements NotificationObject {
      * @param name
      */
     public TaskGroup(String name) {
-        this(name, new PossibleWorkItemComparator(), new FutureResult<T>());
+        this(name, new PossibleWorkItemComparator(), new FutureResultImpl<T>());
     }
-    public TaskGroup(String name, FutureResult<T> result) {
+    public TaskGroup(String name, FutureResultImplementor<T> result) {
         this(name, new PossibleWorkItemComparator(), result);
     }
 

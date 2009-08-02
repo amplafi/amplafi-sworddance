@@ -15,7 +15,6 @@ package com.sworddance.taskcontrol;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +50,7 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
 
     private String status;
 
-    private FutureResult<R> result = new FutureResult<R>();
+    private FutureResultImplementor<R> result = new FutureResultImpl<R>();
 
     private String name;
 
@@ -154,7 +153,6 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
     }
 
     protected String getTimingString() {
-        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss.SSS");
         StringBuilder sb = new StringBuilder();
         sb.append(getElapsedInMillis());
         sb.append("ms elapsed. Start=");
