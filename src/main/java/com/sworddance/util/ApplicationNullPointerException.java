@@ -44,4 +44,14 @@ public class ApplicationNullPointerException extends RuntimeException {
     public ApplicationNullPointerException(Object... message) {
         super(join(message));
     }
+
+    /**
+     * @param value
+     * @param message
+     */
+    public static void notNull(Object value, Object... message) {
+        if ( value == null ) {
+            throw new ApplicationNullPointerException(message);
+        }
+    }
 }
