@@ -1,12 +1,10 @@
 package com.sworddance.util;
 
-import java.net.URI;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.sworddance.util.CUtilities.*;
-import static com.sworddance.util.UriFactoryImpl.*;
 import static org.testng.Assert.*;
 import org.testng.annotations.Test;
 /**
@@ -103,24 +101,5 @@ public class TestUtilities {
         assertFalse(isEmpty(m));
         assertFalse(isEmpty(new Object[] { new Object()}));
     }
-    public void testCreateUriForRedirect(){
-        String host = "http://test.com";
-        URI redirect = createUriForRedirect(null, host);
-        assertEquals(redirect.toString(), "http://test.com/");
 
-        redirect = createUriForRedirect("", host);
-        assertEquals(redirect.toString(), "http://test.com/");
-
-        redirect = createUriForRedirect("/", host);
-        assertEquals(redirect.toString(), "http://test.com/");
-
-        redirect = createUriForRedirect("/page.1", host);
-        assertEquals(redirect.toString(), "http://test.com/page.1");
-
-        redirect = createUriForRedirect("page", host);
-        assertEquals(redirect.toString(), "http://test.com/page");
-
-        redirect = createUriForRedirect("page/", host);
-        assertEquals(redirect.toString(), "http://test.com/page/");
-    }
 }

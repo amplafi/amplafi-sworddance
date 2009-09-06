@@ -27,6 +27,7 @@ import static com.sworddance.util.ApplicationNullPointerException.notNull;
  *
  */
 public class UriFactoryImpl {
+    private static final Pattern WHITESPACE = Pattern.compile("\\s");
 
     public static String getFilename(URI uri) {
         return uri == null ? "" : substringAfterLast(uri.getPath(), "/");
@@ -148,7 +149,20 @@ public class UriFactoryImpl {
         } else {
             String uriString = uriStr.toString().trim();
             if (isNotBlank(uriString)) {
-                uri = URI.create(uriString);
+            	// customers may send in a url with spaces in the path part of the uri.
+                // we can't use URLEncoder on the whole uri because that would screw up the valid parts.
+            	// Will we have problem with multiple
+                // http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars requires UTF-8
+//                    String encoded = URLEncoder.encode(uriString, "UTF-8");
+                // Manually encode just ' ' to '+' but of course before we can do that we must first encode, '+'
+                if ( WHITESPACE.matcher(uriString).find()) {
+                    // only do substitution if has whitespace. Otherwise we would reencode an already encoded URI!
+                    String encoded = uriString.replaceAll("%", "%25").replaceAll("\\+", "%2B").replaceAll("\\s", "+");
+                    uri = URI.create(encoded);
+                } else {
+                    uri = URI.create(uriString);
+                }
+
             } else {
                 return null;
             }
@@ -194,4 +208,42 @@ public class UriFactoryImpl {
         return domain;
     }
 
+    /**
+     * TODO need to figure out what parts of WebLocationImpl belong here.
+     * @param uri
+     * @return
+     */
+    public static URI getNormalizedUri(URI uri) {
+        try {
+            String path = uri.getPath();
+
+            // see WebLocationImpl ( this implementation here may not be correct )
+            return new URI(uri.getScheme(), uri.getHost(), path==null?"/":"/"+ path, uri.getQuery());
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    /**
+     * @param originalUri
+     * @param uri
+     * @return true if the uri's have the same host / domain. Always returns false if either uri has a "mailTo" scheme.
+     */
+    public static boolean isSameHost(URI originalUri, URI uri) {
+        if ( isWebUri(originalUri) || isWebUri(uri)) {
+            return false;
+        } else {
+            String originalHost = originalUri.getHost();
+            String host = uri.getHost();
+            return equalsIgnoreCase(originalHost, host);
+        }
+    }
+
+    /**
+     * @param uri
+     * @return true if uri does not have a "mailTo" scheme
+     */
+    public static boolean isWebUri(URI uri) {
+        return !"mailTo".equalsIgnoreCase(uri.getScheme());
+    }
 }
