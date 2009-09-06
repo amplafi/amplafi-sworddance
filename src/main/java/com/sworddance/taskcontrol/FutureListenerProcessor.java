@@ -41,6 +41,7 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
     private N returnedValue;
     private Throwable throwable;
     private Exception e;
+    // Seems like there might be and advantage to processing in order. But maybe used LinkedHashSet? and do concurrency some other way?
     private List<WeakReference<FutureListener<N>>> listeners = new CopyOnWriteArrayList<WeakReference<FutureListener<N>>>();
 
     public FutureListenerProcessor() {
