@@ -140,6 +140,9 @@ public class UriFactoryImpl {
      * @return uri
      */
     public static URI createUri(Object uriStr) {
+        return createUri(uriStr, false);
+    }
+    public static URI createUri(Object uriStr, boolean forceEncoding) {
         URI uri;
         if (uriStr == null) {
             return null;
@@ -155,8 +158,10 @@ public class UriFactoryImpl {
                 // http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars requires UTF-8
 //                    String encoded = URLEncoder.encode(uriString, "UTF-8");
                 // Manually encode just ' ' to '+' but of course before we can do that we must first encode, '+'
-                if ( WHITESPACE.matcher(uriString).find()) {
+                if ( forceEncoding || WHITESPACE.matcher(uriString).find()) {
                     // only do substitution if has whitespace. Otherwise we would reencode an already encoded URI!
+                    // HOWEVER, what happens if the only 'bad' characters are in fact a '+' or '%' ?
+                    // Maybe if the URI does not exist without the encoding. Would be nice to have an automatic retry mechanism.
                     String encoded = uriString.replaceAll("%", "%25").replaceAll("\\+", "%2B").replaceAll("\\s", "+");
                     uri = URI.create(encoded);
                 } else {
