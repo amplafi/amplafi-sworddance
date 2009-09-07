@@ -249,9 +249,10 @@ public class UriFactoryImpl {
 
     /**
      * @param uri
-     * @return true if uri does not have a "mailTo" scheme
+     * @return true if uri is relative ( so scheme not supplied ), or http/https protocol.
      */
     public static boolean isWebUri(URI uri) {
-        return !"mailTo".equalsIgnoreCase(uri.getScheme());
+        String scheme = uri.getScheme();
+        return !uri.isAbsolute() || "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme);
     }
 }
