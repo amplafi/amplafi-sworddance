@@ -219,7 +219,7 @@ public class UriFactoryImpl {
     /**
      * TODO need to figure out what parts of WebLocationImpl belong here.
      * @param uri
-     * @return
+     * @return uri
      */
     public static URI getNormalizedUri(URI uri) {
         try {
