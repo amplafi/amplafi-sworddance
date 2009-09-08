@@ -24,6 +24,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.sworddance.util.CUtilities.*;
+
 /**
  * @author pmoore
  *
@@ -126,8 +128,7 @@ public class ThreadHistoryTracker {
      * @return
      */
     private List<ThreadHistory> getHistory(Long threadId) {
-        history.putIfAbsent(threadId, new CopyOnWriteArrayList<ThreadHistory>());
-        List<ThreadHistory> l = history.get(threadId);
+        List<ThreadHistory> l = get(history,threadId, new CopyOnWriteArrayList<ThreadHistory>());
         return l;
     }
 

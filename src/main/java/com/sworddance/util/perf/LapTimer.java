@@ -29,6 +29,8 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.lang.StringUtils;
 
+import static com.sworddance.util.CUtilities.*;
+
 /**
  * This class is a lightweight timer that lets developers perform many timing
  * operations including remote transmission of timers to collect data across many servers.
@@ -899,8 +901,7 @@ public class LapTimer implements Runnable, Serializable {
      */
     public static LapTimer getKeyedTimer(Object key) {
         LapTimer timer =new LapTimer();
-        keyedTimers.putIfAbsent(key, timer);
-        LapTimer t = keyedTimers.get(key);
+        LapTimer t = get(keyedTimers, key, timer);
         if (timer == t) {
             timer.start();
         }

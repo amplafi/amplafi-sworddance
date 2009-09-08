@@ -240,6 +240,17 @@ public class CUtilities {
         return get(map, key, (Callable<T>)null);
     }
 
+    /**
+     * Get a value from a map. If the value returned is null, then if defaultValue is provided, the {@link Callable#call()} is made and that value is set.
+     * If map is {@link ConcurrentMap} then the value supplied by default is set using {@link ConcurrentMap#putIfAbsent(Object, Object)}. Otherwise
+     * {@link Map#put(Object, Object)} call is made and the defaultValue-supplied value is returned (and any synchronization issues are handled by the caller).
+     * @param <K>
+     * @param <V>
+     * @param map
+     * @param key
+     * @param defaultValue
+     * @return the value in the map.
+     */
     public static <K, V> V get(Map<K,V> map, K key, Callable<V> defaultValue) {
         if ( map == null || key == null) {
             return null;
@@ -257,16 +268,26 @@ public class CUtilities {
             if ( callValue != null ) {
                 if ( map instanceof ConcurrentMap) {
                     ((ConcurrentMap<K,V>)map).putIfAbsent(key, callValue);
+                    // another thread may beat us to assigning the value.
+                    value = map.get(key);
                 } else {
+                    value = callValue;
                     map.put(key, callValue);
                 }
             }
-            // another thread may beat us to assigning the value.
-            value = map.get(key);
         }
         return value;
     }
 
+    /**
+     * Same as  {@link #get(Map, Object, Callable)} but handles creating a {@link Callable} to wrap the defaultValue.
+     * @param <K>
+     * @param <V>
+     * @param map
+     * @param key
+     * @param defaultValue
+     * @return the value in the map.
+     */
     public static <K, V> V get(Map<K,V> map, K key, final V defaultValue) {
         return get(map, key, new Callable<V>() {
             @Override
