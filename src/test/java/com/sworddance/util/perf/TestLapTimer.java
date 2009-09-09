@@ -69,7 +69,7 @@ public class TestLapTimer extends Assert {
         System.out.println(t.toCSV());
     }
     public void testCollection() throws IOException {
-        LapTimer.Collection c = new LapTimer.Collection("lap collection");
+        LapTimerCollection c = new LapTimerCollection("lap collection");
         LapTimer t = c.getNewTimer().start();
         t.lap("lap1");
         t.stop();
@@ -82,7 +82,7 @@ public class TestLapTimer extends Assert {
         w.flush();
     }
     public void testCSVOutputFormat() throws Exception {
-        LapTimer.Collection c = new LapTimer.Collection("lap collection");
+        LapTimerCollection c = new LapTimerCollection("lap collection");
         LapTimer t = c.getNewTimer("first").start();
         Thread.sleep(400);
         t.lap("lap1");
