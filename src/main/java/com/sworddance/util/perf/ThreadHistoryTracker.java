@@ -18,20 +18,25 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.sworddance.util.CUtilities.*;
+import com.sworddance.util.ConcurrentInitializedMap;
+import com.sworddance.util.InitializeWithList;
 
 /**
- * @author pmoore
+ * Stores the ThreadHistory objects by {@link Thread#getId()}
  *
  */
 public class ThreadHistoryTracker {
-    private ConcurrentMap<Long, List<ThreadHistory>> history = new ConcurrentHashMap<Long, List<ThreadHistory>>();
+    /**
+     * Map<Thread.getId(), List ( most recent first )>
+     * Should use Stack but stack add to end, will need to reverse order when copying before can use stack
+     *
+     * Stack SHOULD be used as the list because:
+     * stack is synchronized, usually only one thread is accessing the stack ( to add to it )
+     */
+    private ConcurrentMap<Long, List<ThreadHistory>> history = new ConcurrentInitializedMap<Long, List<ThreadHistory>>(new InitializeWithList<ThreadHistory>());
 
     private AtomicInteger sequence = new AtomicInteger(0);
 
@@ -39,15 +44,21 @@ public class ThreadHistoryTracker {
      *
      */
     public ThreadHistoryTracker() {
-        super();
     }
 
     public void addStartHistory(String taskName, String status, String note) {
         Thread t = Thread.currentThread();
         // TODO: use System.identityHashCode() getId() may be reused.
         Long threadId = t.getId();
-        long currentTimeMillis = System.currentTimeMillis();
+        long currentTimeMillis = getTimeInMilliseconds();
         addStartHistory(currentTimeMillis, threadId, taskName, status, note);
+    }
+
+    /**
+     * @return
+     */
+    private long getTimeInMilliseconds() {
+        return System.currentTimeMillis();
     }
 
     /**
@@ -69,7 +80,7 @@ public class ThreadHistoryTracker {
             long sequentialTime) {
         Thread t = Thread.currentThread();
         Long threadId = t.getId();
-        long currentTimeMillis = System.currentTimeMillis();
+        long currentTimeMillis = getTimeInMilliseconds();
         addStopHistory(currentTimeMillis, threadId, taskName, status, note,
                 sequentialTime);
     }
@@ -103,7 +114,7 @@ public class ThreadHistoryTracker {
     public void addHistoryStatus(String taskName, String status) {
         Thread t = Thread.currentThread();
         Long threadId = t.getId();
-        long currentTimeMillis = System.currentTimeMillis();
+        long currentTimeMillis = getTimeInMilliseconds();
         addHistoryStatus(currentTimeMillis, threadId, taskName, status);
     }
 
@@ -128,13 +139,12 @@ public class ThreadHistoryTracker {
      * @return
      */
     private List<ThreadHistory> getHistory(Long threadId) {
-        List<ThreadHistory> l = get(history,threadId, new CopyOnWriteArrayList<ThreadHistory>());
+        List<ThreadHistory> l = history.get(threadId);
         return l;
     }
 
     /**
-     * @return the set of threads with history storied here at some point in
-     *         time.
+     * @return the set of thread Ids with ThreadHistory
      */
     public Set<Long> getThreadIds() {
         return Collections.unmodifiableSet(history.keySet());
@@ -146,6 +156,13 @@ public class ThreadHistoryTracker {
      *         available.
      */
     public List<ThreadHistory> getThreadHistoryCopy(Long threadId) {
-        return history.containsKey(threadId)?new ArrayList<ThreadHistory>(history.get(threadId)):null;
+        if( history.containsKey(threadId)) {
+            List<ThreadHistory> list = history.get(threadId);
+            synchronized (list) {
+                return new ArrayList<ThreadHistory>(list);
+            }
+        } else {
+            return null;
+        }
     }
 }
