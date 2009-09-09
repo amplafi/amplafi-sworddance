@@ -137,11 +137,11 @@ public class CUtilities {
      */
     public static boolean isEmpty(Object object) {
         if (object != null ) {
-            if ( object instanceof Map ) {
+            if ( object instanceof Map<?, ?> ) {
                 if ( !((Map<?,?>)object).isEmpty()) {
                     return false;
                 }
-            } else if ( object instanceof Collection ) {
+            } else if ( object instanceof Collection<?> ) {
                 if ( !((Collection<?>)object).isEmpty()) {
                     return false;
                 }
@@ -236,7 +236,7 @@ public class CUtilities {
      * @param key maybe null
      * @return null if map or key is null
      */
-    public static <K, T> T get(Map<K,T> map, K key) {
+    public static <K, T> T get(Map<K,T> map, Object key) {
         return get(map, key, (Callable<T>)null);
     }
 
@@ -251,7 +251,8 @@ public class CUtilities {
      * @param defaultValue
      * @return the value in the map.
      */
-    public static <K, V> V get(Map<K,V> map, K key, Callable<V> defaultValue) {
+    @SuppressWarnings("unchecked")
+    public static <K, V> V get(Map<K,V> map, Object key, Callable<V> defaultValue) {
         if ( map == null || key == null) {
             return null;
         }
@@ -266,13 +267,13 @@ public class CUtilities {
                 throw new RuntimeException(e);
             }
             if ( callValue != null ) {
-                if ( map instanceof ConcurrentMap) {
-                    ((ConcurrentMap<K,V>)map).putIfAbsent(key, callValue);
+                if ( map instanceof ConcurrentMap<?, ?>) {
+                    ((ConcurrentMap<K,V>)map).putIfAbsent((K)key, callValue);
                     // another thread may beat us to assigning the value.
                     value = map.get(key);
                 } else {
                     value = callValue;
-                    map.put(key, callValue);
+                    map.put((K)key, callValue);
                 }
             }
         }
