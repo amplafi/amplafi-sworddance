@@ -30,7 +30,7 @@ public class RandomKeyGeneratorTest {
      */
     @Test
     public void testGeneration() {
-        RandomKeyGenerator rnd = new RandomKeyGenerator();
+        RandomKeyGenerator rnd = new RandomKeyGenerator(7);
         for (int i = 0; i < 1000; i++) {
             String nextKey = rnd.nextKey();
             assertNotNull(nextKey);
