@@ -19,7 +19,7 @@ import java.util.Random;
 /**
  * This utility class can be used to generate short but random strings.
  *
- * Strings are case insensitive and contain only characters [A-Z1-9]
+ * Strings are case insensitive and contain only characters [a-z1-9]
  *
  *
  */
@@ -27,14 +27,19 @@ public class RandomKeyGenerator {
 
     private Random rnd = new SecureRandom();
 
-    private char[] charTable;
+    private static final char[] charTable;
+
+    public int defaultLength;
+    public RandomKeyGenerator(int defaultLength) {
+        this.defaultLength = defaultLength;
+    }
 
     /**
      *
      * @return next key with length of 7 symbols.
      */
     public String nextKey() {
-        return nextKey(7);
+        return nextKey(this.defaultLength);
     }
 
     /**
@@ -42,10 +47,9 @@ public class RandomKeyGenerator {
      * @return a key with specified length.
      */
     public String nextKey(int length) {
-        char[] table = getCharacterTable();
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for(int i=0;i<length;i++) {
-            result.append(table[rnd.nextInt(table.length)]);
+            result.append(charTable[rnd.nextInt(charTable.length)]);
         }
         return result.toString();
     }
@@ -53,18 +57,15 @@ public class RandomKeyGenerator {
     /**
      * @return cached table with allowed characters.
      */
-    private char[] getCharacterTable() {
-        if (charTable == null) {
-            charTable = new char[35];
-            int cursor = 0;
-            for (int i = 'a'; i <= 'z'; i++) {
-                charTable[cursor++] = (char) i;
-            }
-            for(int i='1'; i <= '9'; i++) {
-                charTable[cursor++] = (char) i;
-            }
+    static {
+        charTable = new char[35];
+        int cursor = 0;
+        for (int i = 'a'; i <= 'z'; i++) {
+            charTable[cursor++] = (char) i;
         }
-        return charTable;
+        for(int i='1'; i <= '9'; i++) {
+            charTable[cursor++] = (char) i;
+        }
     }
 
 }

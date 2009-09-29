@@ -14,7 +14,6 @@
 
 package com.sworddance.util;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
@@ -25,15 +24,14 @@ import java.util.Random;
 /**
  *
  * {@link RandomGUID} will return a randomize UUID string.
- * Can be used while creating a file whitch name must be unique.
  * Useful for testing and temporary files.
  *
  */
 public class RandomGUID {
 
-    private String valueBeforeMD5 = "";
+    private String valueBeforeHash = "";
 
-    private String valueAfterMD5 = "";
+    private String valueAfterHash = "";
 
     private static Random MyRand;
 
@@ -53,69 +51,65 @@ public class RandomGUID {
 
     }
 
-    public RandomGUID() throws IOException {
+    public RandomGUID() {
         getRandomGUID(false);
     }
 
-    public RandomGUID(boolean secure) throws IOException {
+    public RandomGUID(boolean secure) {
         getRandomGUID(secure);
     }
 
-    private void getRandomGUID(boolean secure) throws IOException {
-        MessageDigest md5 = null;
-        StringBuffer sbValueBeforeMD5 = new StringBuffer();
+    private void getRandomGUID(boolean secure) {
+        MessageDigest md5;
+        StringBuilder sbValueBeforeHash = new StringBuilder();
 
         try {
-            md5 = MessageDigest.getInstance("MD5");
+            md5 = MessageDigest.getInstance("SHA-1");
         } catch (NoSuchAlgorithmException e) {
-            throw new IOException(e);
+            throw new ApplicationIllegalArgumentException(e);
         }
 
-        try {
-            long time = System.currentTimeMillis();
-            long rand = 0;
+        long time = System.nanoTime();
+        long rand = 0;
 
-            if (secure) {
-                rand = MySecureRand.nextLong();
-            } else {
-                rand = MyRand.nextLong();
-            }
-
-            // This StringBuffer can be a long as you need; the MD5
-            // hash will always return 128 bits. You can change
-            // the seed to include anything you want here.
-            // You could even stream a file through the MD5 making
-            // the odds of guessing it at least as great as that
-            // of guessing the contents of the file!
-            sbValueBeforeMD5.append(SId);
-            sbValueBeforeMD5.append(":");
-            sbValueBeforeMD5.append(Long.toString(time));
-            sbValueBeforeMD5.append(":");
-            sbValueBeforeMD5.append(Long.toString(rand));
-
-            valueBeforeMD5 = sbValueBeforeMD5.toString();
-            md5.update(valueBeforeMD5.getBytes());
-
-            byte[] array = md5.digest();
-            StringBuffer sb = new StringBuffer();
-            for (int j = 0; j < array.length; ++j) {
-                int b = array[j] & 0xFF;
-                if (b < 0x10){
-                    sb.append('0');
-                }
-                sb.append(Integer.toHexString(b));
-            }
-
-            valueAfterMD5 = sb.toString();
-
-        } catch (Exception e) {
-            throw new IOException(e);
+        if (secure) {
+            rand = MySecureRand.nextLong();
+        } else {
+            rand = MyRand.nextLong();
         }
+
+        // This StringBuffer can be a long as you need; the MD5
+        // hash will always return 128 bits. You can change
+        // the seed to include anything you want here.
+        // You could even stream a file through the MD5 making
+        // the odds of guessing it at least as great as that
+        // of guessing the contents of the file!
+        sbValueBeforeHash.append(SId);
+        sbValueBeforeHash.append(":");
+        sbValueBeforeHash.append(Long.toString(time));
+        sbValueBeforeHash.append(":");
+        sbValueBeforeHash.append(Long.toString(rand));
+
+        valueBeforeHash = sbValueBeforeHash.toString();
+        md5.update(valueBeforeHash.getBytes());
+
+        byte[] array = md5.digest();
+        StringBuffer sb = new StringBuffer();
+        for (int j = 0; j < array.length; ++j) {
+            int b = array[j] & 0xFF;
+            if (b < 0x10){
+                sb.append('0');
+            }
+            sb.append(Integer.toHexString(b));
+        }
+
+        valueAfterHash = sb.toString();
+
     }
 
     @Override
     public String toString() {
-        String raw = valueAfterMD5.toUpperCase();
+        String raw = valueAfterHash.toUpperCase();
         StringBuffer sb = new StringBuffer();
         sb.append(raw.substring(0, 8));
         sb.append(raw.substring(8, 12));
@@ -126,19 +120,19 @@ public class RandomGUID {
         return sb.toString();
     }
 
-    public String getValueBeforeMD5() {
-        return valueBeforeMD5;
+    public String getValueBeforeHash() {
+        return valueBeforeHash;
     }
 
-    public void setValueBeforeMD5(String valueBeforeMD5) {
-        this.valueBeforeMD5 = valueBeforeMD5;
+    public void setValueBeforeHash(String valueBeforeMD5) {
+        this.valueBeforeHash = valueBeforeMD5;
     }
 
-    public String getValueAfterMD5() {
-        return valueAfterMD5;
+    public String getValueAfterHash() {
+        return valueAfterHash;
     }
 
-    public void setValueAfterMD5(String valueAfterMD5) {
-        this.valueAfterMD5 = valueAfterMD5;
+    public void setValueAfterHash(String valueAfterMD5) {
+        this.valueAfterHash = valueAfterMD5;
     }
 }
