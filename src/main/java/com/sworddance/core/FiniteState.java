@@ -43,8 +43,9 @@ public interface FiniteState<T extends FiniteState<T>> {
     Collection<T> getAllowedTransitions();
 
     public class FiniteStateChecker<T extends FiniteState<T>> {
+
         public boolean isAllowedTransition(T oldFiniteState, T newFiniteState) {
-            if ( oldFiniteState == null) {
+            if ( oldFiniteState == null || oldFiniteState == newFiniteState) {
                 return true;
             } else if ( newFiniteState == null ) {
                 return false;
@@ -53,12 +54,30 @@ public interface FiniteState<T extends FiniteState<T>> {
             }
         }
 
+        /**
+         *
+         * @param oldFiniteState
+         * @param newFiniteState
+         * @return oldFiniteState if !oldFiniteState.{@link FiniteState#isAllowedTransition(FiniteState)} otherwise newFiniteState.
+         */
         public T checkToChange(T oldFiniteState, T newFiniteState) {
             if ( isAllowedTransition(oldFiniteState, newFiniteState)) {
                 return newFiniteState;
             } else {
                 return oldFiniteState;
             }
+        }
+
+        /**
+         * throws exception if !oldFiniteState.{@link FiniteState#isAllowedTransition(FiniteState)}
+         * @param oldFiniteState
+         * @param newFiniteState
+         */
+        public T checkAllowed(T oldFiniteState, T newFiniteState) {
+            if ( !isAllowedTransition(oldFiniteState, newFiniteState)) {
+                throw new IllegalStateException("cannot go from "+ oldFiniteState+" to "+newFiniteState);
+            }
+            return newFiniteState;
         }
     }
 }
