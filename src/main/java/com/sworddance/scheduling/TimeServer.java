@@ -19,6 +19,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import com.sworddance.core.ExpirationChecker;
+
 /**
  * The implementer of this interface should be used as the source of all date/time
  * related values. This allows the clock to be controlled for testing.
@@ -28,7 +30,7 @@ import java.util.TimeZone;
  *
  * @author Patrick Moore
  */
-public interface TimeServer {
+public interface TimeServer extends ExpirationChecker  {
 
     /**
      * Calendar in GMT. This is the timezone that *MUST* be used for all
