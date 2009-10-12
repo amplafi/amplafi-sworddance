@@ -29,7 +29,7 @@ public class RandomKeyGenerator {
 
     private static final char[] charTable;
 
-    public int defaultLength;
+    private int defaultLength;
     public RandomKeyGenerator(int defaultLength) {
         this.defaultLength = defaultLength;
     }
