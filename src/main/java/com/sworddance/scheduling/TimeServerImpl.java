@@ -21,6 +21,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import com.sworddance.core.Expireable;
+
 /**
  * The normal production instance of the time server. This service is to be used
  * for all date/time related methods. This way for testing purposes the "time" can be fixed.
@@ -129,6 +131,20 @@ public class TimeServerImpl implements TimeServer {
     @Override
     public String formatCurrentTime(String formatString) {
         return new SimpleDateFormat(formatString).format(getCurrentDate());
+    }
+
+
+
+    /**
+     * @see com.sworddance.core.ExpirationChecker#isExpired(com.sworddance.core.Expireable)
+     */
+    @Override
+    public boolean isExpired(Expireable expireable) {
+        Calendar expiration;
+        if ( !expireable.isExpired() && (expiration=expireable.getExpiration()) != null) {
+            expireable.setExpired(getCurrentCalendar().after(expiration));
+        }
+        return expireable.isExpired();
     }
 
     /**
