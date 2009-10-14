@@ -172,4 +172,9 @@ public class ConcurrentInitializedMap<K, V> implements ConcurrentMap<K, V>, Seri
         return map.values();
     }
 
+    @Override
+    public String toString() {
+        return this.map.toString();
+    }
+
 }
