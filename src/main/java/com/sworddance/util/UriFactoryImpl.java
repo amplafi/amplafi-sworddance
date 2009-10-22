@@ -44,10 +44,10 @@ public class UriFactoryImpl {
         return createUri(forcedSchema+"://"+baseString);
     }
 
-    public static URI createUriWithOptions(String uriStr, boolean schemaRequired, boolean pathRequired) {
+    public static URI createUriWithOptions(Object uriStr, boolean schemaRequired, boolean pathRequired) {
         URI uri = createUri(uriStr);
-        if (uri != null) {
-            String newUriStr = uriStr;
+        if (uri != null && uriStr != null) {
+            String newUriStr = uriStr.toString();
             String path = uri.getRawPath();
             if (pathRequired && isEmpty(path)) {
                 String rawQuery = uri.getRawQuery();
@@ -191,7 +191,7 @@ public class UriFactoryImpl {
      * @return {@link java.net.URI} instance produced from the string passed.
      * @throws com.sworddance.util.ApplicationIllegalStateException if URI is not parsable.
      */
-    public static URI createUriWithSchema(String uriStr) {
+    public static URI createUriWithSchema(Object uriStr) {
         return createUriWithOptions(uriStr, true, false);
     }
 
