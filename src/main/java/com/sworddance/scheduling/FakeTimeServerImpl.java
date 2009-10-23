@@ -93,6 +93,7 @@ public class FakeTimeServerImpl extends TimeServerImpl implements FakeTimeServer
     @Override
     public void setBaseTime(int year, int month, int day, int hour, int minute, int second, String timezoneId) {
         Calendar date = Calendar.getInstance();
+        date.clear();
         date.set(year, month, day, hour, minute, second);
         if (timezoneId!=null) {
             TimeZone value = TimeZone.getTimeZone(timezoneId);
