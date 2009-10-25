@@ -194,6 +194,15 @@ public class UriFactoryImpl {
     public static URI createUriWithSchema(Object uriStr) {
         return createUriWithOptions(uriStr, true, false);
     }
+    public static URI createUriWithSchema(Object uriStr, Object path) {
+
+        URI baseUri = createUriWithOptions(uriStr, true, false);
+        if ( path == null) {
+            return baseUri;
+        } else {
+            return baseUri.resolve(path.toString());
+        }
+    }
 
     /**
      * get the domain portion of the uri. For example, "http://www.goo.com/index.html" would return
@@ -255,4 +264,21 @@ public class UriFactoryImpl {
         String scheme = uri.getScheme();
         return !uri.isAbsolute() || "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme);
     }
+
+    /**
+     * Chops uri to the max length supplied if it is longer.
+     *
+     * @param uri          URI object to chop
+     * @param maxUriLength max number of characters acceptable
+     * @return corrected or initial URI object
+     */
+    public static URI chopUri(URI uri, int maxUriLength) {
+        String initialURIStr = uri.toString();
+        String cutURIStr = left(initialURIStr, maxUriLength);
+        if (!cutURIStr.equals(initialURIStr)) {
+            uri = createUri(cutURIStr);
+        }
+        return uri;
+    }
+
 }
