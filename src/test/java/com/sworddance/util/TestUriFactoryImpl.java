@@ -15,6 +15,7 @@
 package com.sworddance.util;
 
 import java.net.URI;
+import java.util.Map;
 
 import org.testng.annotations.Test;
 
@@ -58,5 +59,18 @@ public class TestUriFactoryImpl {
         assertEquals(encodedUriString, "http://localhost:8080/Application+for+scholarship%25%2B.pdf");
         URI uri1 = createUri(encodedUriString);
         assertEquals(uri1.toString(), "http://localhost:8080/Application+for+scholarship%25%2B.pdf");
+    }
+
+    @Test
+    public void testQueryMap() throws Exception {
+        URI uri = createUri("http://yuattorney.com/path/file.html?q=q_value&r=r_value&s=s_value&t=t_value");
+        assertEquals(uri.toString(), "http://yuattorney.com/path/file.html?q=q_value&r=r_value&s=s_value&t=t_value");
+        assertEquals(uri.getPath(), "/path/file.html");
+        assertEquals(uri.getQuery(), "q=q_value&r=r_value&s=s_value&t=t_value");
+        Map<String, String> qmap = getQueryMap(uri);
+        assertEquals(qmap.get("q"), "q_value");
+        assertEquals(qmap.get("r"), "r_value");
+        assertEquals(qmap.get("s"), "s_value");
+        assertEquals(qmap.get("t"), "t_value");
     }
 }

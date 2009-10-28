@@ -16,6 +16,8 @@ package com.sworddance.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -159,6 +161,7 @@ public class UriFactoryImpl {
 //                    String encoded = URLEncoder.encode(uriString, "UTF-8");
                 // Manually encode just ' ' to '+' but of course before we can do that we must first encode, '+'
                 try {
+                    // TODO -- maybe try to do new URI and then try         URLEncoder.encode(s, enc) on failure?
                     if ( forceEncoding || WHITESPACE.matcher(uriString).find()) {
                         // only do substitution if has whitespace. Otherwise we would reencode an already encoded URI!
                         // HOWEVER, what happens if the only 'bad' characters are in fact a '+' or '%' ?
@@ -279,6 +282,24 @@ public class UriFactoryImpl {
             uri = createUri(cutURIStr);
         }
         return uri;
+    }
+
+    /**
+     * convert uri.getQuery() into a map.
+     * @param uri
+     * @return map
+     */
+    public static Map<String, String> getQueryMap(URI uri) {
+        String queryStr = uri.getQuery();
+        Map<String, String> queryParametersMap = new HashMap<String, String>();
+        if ( isNotBlank(queryStr)) {
+            String[] queryParameters = queryStr.split("&");
+            for(String queryParameterStr: queryParameters) {
+                String[] queryParameter = queryParameterStr.split("=");
+                queryParametersMap.put(queryParameter[0], queryParameter[1]);
+            }
+        }
+        return queryParametersMap;
     }
 
 }
