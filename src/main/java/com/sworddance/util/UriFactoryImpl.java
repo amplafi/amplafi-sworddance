@@ -296,7 +296,8 @@ public class UriFactoryImpl {
             String[] queryParameters = queryStr.split("&");
             for(String queryParameterStr: queryParameters) {
                 String[] queryParameter = queryParameterStr.split("=");
-                queryParametersMap.put(queryParameter[0], queryParameter[1]);
+
+                queryParametersMap.put(queryParameter[0], queryParameter.length == 1?"": queryParameter[1]);
             }
         }
         return queryParametersMap;
