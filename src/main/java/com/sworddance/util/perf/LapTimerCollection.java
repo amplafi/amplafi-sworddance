@@ -114,7 +114,7 @@ import java.util.List;
          */
         public LapTimer pushNewThreadTimer(String name) {
             LapTimer timer = new LapTimer(name, null, this.lapHistorySize);
-            LapTimer.pushThreadTimer(timer);
+            LapTimer.pushThreadTimerAndStart(timer);
             this.add(timer);
             timer.setRemotable(this.remotable);
             timer.start();

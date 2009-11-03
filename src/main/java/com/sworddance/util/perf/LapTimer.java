@@ -820,7 +820,7 @@ public class LapTimer implements Runnable, Serializable {
      * @param newTimer the supplied timer.
      * @return newTimer
      */
-    public static LapTimer pushThreadTimer(LapTimer newTimer) {
+    public static LapTimer pushThreadTimerAndStart(LapTimer newTimer) {
         LapTimer timer = _getThreadTimer();
         newTimer.prevStackMember = timer;
         threadLapTimer.set(newTimer);
@@ -835,7 +835,7 @@ public class LapTimer implements Runnable, Serializable {
      *
      * @return a started LapTimer
      */
-    public static LapTimer pushNewThreadTimer() {
+    public static LapTimer pushNewStartedThreadTimer() {
         LapTimer timer = _getThreadTimer();
         String name;
         if (timer != null) {
@@ -843,7 +843,7 @@ public class LapTimer implements Runnable, Serializable {
         } else {
             name = null;
         }
-        return pushThreadTimer(new LapTimer(name));
+        return pushThreadTimerAndStart(new LapTimer(name));
     }
 
     /**
@@ -855,7 +855,7 @@ public class LapTimer implements Runnable, Serializable {
      * @return a started LapTimer
      */
     public static LapTimer pushNewThreadTimer(String name) {
-        return pushThreadTimer(new LapTimer(name));
+        return pushThreadTimerAndStart(new LapTimer(name));
     }
 
     /**

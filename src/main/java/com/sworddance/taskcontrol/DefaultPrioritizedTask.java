@@ -219,7 +219,7 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
 
     protected void startTiming() {
         if (lapTimer == null) {
-            this.lapTimer = LapTimer.pushNewThreadTimer();
+            this.lapTimer = LapTimer.pushNewStartedThreadTimer();
             lapTimer.start();
         }
     }
