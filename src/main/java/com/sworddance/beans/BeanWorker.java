@@ -25,6 +25,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.sworddance.util.ApplicationIllegalArgumentException;
+
 import static org.apache.commons.collections.CollectionUtils.*;
 
 /**
@@ -151,6 +153,9 @@ public class BeanWorker {
     protected PropertyMethodChain addPropertyMethodChainIfAbsent(Class<?> clazz, ConcurrentMap<String, PropertyMethodChain> propMap, String property, boolean readOnly) {
         if (!propMap.containsKey(property)) {
             PropertyMethodChain propertyMethodChain = newPropertyMethodChain(clazz, property, readOnly);
+            if ( propertyMethodChain == null) {
+                throw new ApplicationIllegalArgumentException(clazz, " has no property named '",property,"'");
+            }
             propMap.putIfAbsent(property, propertyMethodChain);
         }
         return propMap.get(property);
