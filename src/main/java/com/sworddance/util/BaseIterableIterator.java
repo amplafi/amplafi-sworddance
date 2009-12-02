@@ -15,10 +15,14 @@
 package com.sworddance.util;
 
 import java.lang.ref.Reference;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.collections.CollectionUtils;
 
 /**
  * Simple implementation of {@link IterableIterator}.
@@ -41,6 +45,12 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
     }
     public BaseIterableIterator(T... objects) {
         setIterator(Arrays.asList(objects).iterator());
+    }
+    public BaseIterableIterator(T first, T... objects) {
+        List<T> list = new ArrayList<T>();
+        list.add(first);
+        CollectionUtils.addAll(list, objects);
+        setIterator(list.iterator());
     }
     public BaseIterableIterator(Map<?,?> map) {
         setIterator(map.entrySet().iterator());
