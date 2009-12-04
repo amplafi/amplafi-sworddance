@@ -31,7 +31,7 @@ public class ReferenceTransformer implements Transformer {
     @Override
     public Object transform(Object input) {
         Object v = input;
-        while(v instanceof Reference) {
+        while(v instanceof Reference<?>) {
             v= ((Reference<?>)v).get();
         }
         return v;
