@@ -14,8 +14,9 @@
 
 package com.sworddance.util;
 
-import java.util.Arrays;
+import java.lang.ref.Reference;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.commons.collections.iterators.FilterIterator;
 import org.apache.commons.collections.iterators.TransformIterator;
@@ -32,11 +33,52 @@ import org.apache.commons.collections.iterators.TransformIterator;
  *
  */
 public class NotNullIterator<T> extends BaseIterableIterator<T> {
+
+    /**
+     *
+     */
+    public NotNullIterator() {
+        super();
+    }
+
+    /**
+     * Handles {@link java.lang.Iterable}<{@link java.lang.ref.Reference}<T>> case
+     * @param object
+     */
     public NotNullIterator(Object object) {
         setIterator(object);
     }
-    public NotNullIterator(T... objects) {
-        setIterator(Arrays.asList(objects).iterator());
+    /**
+     * @param iter
+     */
+    public NotNullIterator(Iterable<T> iter) {
+        super(iter);
+    }
+    /**
+     * @param iter
+     */
+    public NotNullIterator(Iterator<T> iter) {
+        super(iter);
+    }
+    /**
+     * @param map
+     */
+    public NotNullIterator(Map<?, ?> map) {
+        super(map);
+    }
+    /**
+     * @param <K>
+     * @param ref
+     */
+    public <K> NotNullIterator(Reference<K> ref) {
+        super(ref);
+    }
+    /**
+     * @param first
+     * @param objects
+     */
+    public NotNullIterator(Object first, T... objects) {
+        super((T)first, objects);
     }
     @Override
     protected void setIterator(Object iterator) {

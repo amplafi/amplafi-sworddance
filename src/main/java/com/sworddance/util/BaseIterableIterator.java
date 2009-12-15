@@ -38,7 +38,7 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
     public BaseIterableIterator() {
     }
     public BaseIterableIterator(Iterator<T> iter) {
-        this.iter = iter;
+        this.setIterator(iter);
     }
     public BaseIterableIterator(Iterable<T> iter) {
         setIterator(iter.iterator());
