@@ -18,7 +18,9 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -403,5 +405,20 @@ public class CUtilities {
             }
         }
         return changed;
+    }
+    /**
+     * because {@link Collections#reverse(List)} does not return the list.
+     * @param <T>
+     * @param list
+     * @return list
+     */
+    public static <T extends List<?>> T reverse(T list) {
+        Collections.reverse(list);
+        return list;
+    }
+    public static <T> List<T> reverse(T... elements) {
+        List<T> list = Arrays.asList(elements);
+        Collections.reverse(list);
+        return list;
     }
 }
