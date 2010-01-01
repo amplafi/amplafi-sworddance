@@ -42,6 +42,11 @@ public class ConcurrentInitializedMap<K, V> implements ConcurrentMap<K, V>, Seri
     public ConcurrentInitializedMap(Callable<V> initializer) {
         this(new ConcurrentHashMap<K, V>(), initializer);
     }
+    // TODO: Class<? extends V> does not work if V is a Map with generic info. How to do generics correctly?
+    @SuppressWarnings("unchecked")
+    public ConcurrentInitializedMap(Class clazz) {
+        this(new ConcurrentHashMap<K, V>(), new NewInstanceCallable<V>(clazz));
+    }
     /**
      *
      * @see java.util.Map#clear()
