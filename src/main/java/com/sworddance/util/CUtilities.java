@@ -271,12 +271,11 @@ public class CUtilities {
             if ( callValue != null ) {
                 if ( map instanceof ConcurrentMap<?, ?>) {
                     ((ConcurrentMap<K,V>)map).putIfAbsent((K)key, callValue);
-                    // another thread may beat us to assigning the value.
-                    value = map.get(key);
                 } else {
-                    value = callValue;
                     map.put((K)key, callValue);
                 }
+                // another thread may beat us to assigning the value.
+                value = map.get(key);
             }
         }
         return value;

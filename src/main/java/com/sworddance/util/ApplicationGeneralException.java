@@ -14,12 +14,20 @@
 
 package com.sworddance.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.sworddance.util.CUtilities.*;
+
+import static org.apache.commons.lang.StringUtils.*;
+
 /**
  * @author patmoore
  *
  */
 public class ApplicationGeneralException extends RuntimeException {
 
+    private List<Throwable> additionalThrowables;
     /**
      *
      */
@@ -48,4 +56,18 @@ public class ApplicationGeneralException extends RuntimeException {
         super(message, cause);
     }
 
+    public void add(Throwable throwable) {
+        if ( additionalThrowables == null) {
+            additionalThrowables = new ArrayList<Throwable>();
+        }
+        additionalThrowables.add(throwable);
+    }
+    @Override
+    public String toString() {
+        if ( isEmpty(additionalThrowables)) {
+            return super.toString();
+        } else {
+            return super.toString() + join(additionalThrowables, "\nAdditional:\t");
+        }
+    }
 }
