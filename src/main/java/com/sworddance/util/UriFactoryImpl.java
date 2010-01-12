@@ -151,6 +151,7 @@ public class UriFactoryImpl {
         }
         if (uriStr instanceof URI) {
             uri = (URI) uriStr;
+            // TODO handle UriSource
         } else {
             String uriString = uriStr.toString().trim();
             if (isNotBlank(uriString)) {
