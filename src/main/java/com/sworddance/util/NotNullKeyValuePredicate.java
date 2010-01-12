@@ -33,13 +33,13 @@ public class NotNullKeyValuePredicate implements Predicate {
     @Override
     public boolean evaluate(Object object) {
         Object v = object;
-        while ( v instanceof Reference) {
+        while ( v instanceof Reference<?>) {
             v = ((Reference<?>)v).get();
         }
         if ( v == null) {
             return false;
         }
-        if ( v instanceof Map.Entry) {
+        if ( v instanceof Map.Entry<?,?>) {
             Map.Entry<?, ?> entry = (Map.Entry<?, ?>) v;
             if ( entry.getKey() == null || entry.getValue() == null) {
                 return false;
