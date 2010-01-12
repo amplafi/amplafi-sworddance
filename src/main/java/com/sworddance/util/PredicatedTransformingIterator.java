@@ -71,7 +71,6 @@ public class PredicatedTransformingIterator<E> implements IterableIterator<E> {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public E next() {
         initIfNeeded();
         findNextNestedIterator();

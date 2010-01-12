@@ -17,11 +17,11 @@ package com.sworddance.util;
 /**
  * Attempt to find the Class object of T.
  * @author Patrick Moore
+ * @param <T>
  */
 public class ClassCapture<T> {
     private final Class<T> capturedClass = null;
 
-    @SuppressWarnings("unchecked")
     public ClassCapture() {
 //        Type[] types = getClass().getTypeParameters();
 //        TypeVariable<?>[] gtypes = ((TypeVariable)types[0]).getGenericDeclaration().getTypeParameters();
