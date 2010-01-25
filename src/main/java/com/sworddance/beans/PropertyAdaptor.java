@@ -166,11 +166,11 @@ public class PropertyAdaptor {
                 return getter.invoke(target);
 
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException(getter.toGenericString() +" target is a "+target.getClass().getName(), e);
+                throw new IllegalArgumentException(getter.toGenericString() +" is not allowed to be called on an object of type ="+target.getClass(), e);
             } catch (IllegalAccessException e) {
-                throw new IllegalArgumentException(getter.toGenericString() +" target is a "+target.getClass().getName(), e);
+                throw new IllegalArgumentException(getter.toGenericString() +" (private/protected method?) is not allowed to be called on an object of type ="+target.getClass(), e);
             } catch (InvocationTargetException e) {
-                throw new IllegalArgumentException(getter.toGenericString() + " target is a "+target.getClass().getName(), e.getCause());
+                throw new IllegalArgumentException(getter.toGenericString() + " target is a "+target.getClass(), e.getCause());
             }
         }
     }

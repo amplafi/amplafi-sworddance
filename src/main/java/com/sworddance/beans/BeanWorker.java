@@ -111,6 +111,15 @@ public class BeanWorker {
         PropertyMethodChain methodChain = classMethodMap.get(property);
         return methodChain;
     }
+    /**
+     * For example, "grandparent.parent.child" will return a Method
+     * chain of length 3 ( "getGrandparent().getParent().getChild()" )
+     *
+     * @param clazz
+     * @param property "grandparent.parent.child"
+     * @param readOnly
+     * @return a chain of {@link Method}s that when sequentially called will return a result.
+     */
     protected PropertyMethodChain getPropertyMethodChainAddIfAbsent(Class<?> clazz, String property, boolean readOnly) {
         ConcurrentMap<String, PropertyMethodChain> classMethodMap = getMethodMap(clazz);
         PropertyMethodChain methodChain = addPropertyMethodChainIfAbsent(clazz, classMethodMap, property, readOnly);

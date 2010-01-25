@@ -17,18 +17,27 @@ package com.sworddance.beans;
 import java.util.List;
 import java.util.Map;
 
+import com.sworddance.beans.ProxyLoader.ChildObjectNotLoadableException;
+
 /**
+ * ProxyMapper that is dependent on another {@link ProxyMapper} ( {@link RootProxyMapper} ) to get values.
  * @author patmoore
  * @param <I>
  * @param <O>
  *
  */
-public class ChildProxyMapper<I,O extends I> extends ProxyMapper<I,O> {
+public class ChildProxyMapper<I,O extends I> extends ProxyMapperImpl<I,O> {
 
     private RootProxyMapper<?,?> rootProxyMapper;
-    public ChildProxyMapper(String basePropertyPath, RootProxyMapper<?,?> rootProxyMapper, O realObject, Class<O> realClass, List<String> propertyChains) {
-        super(basePropertyPath, realObject, realClass, propertyChains);
-        this.rootProxyMapper = rootProxyMapper;
+    private ProxyMapper<?,?> baseProxyMapper;
+    // TODO: need a way to set this after deserialization.
+    private transient PropertyAdaptor propertyAdaptor;
+    @SuppressWarnings("unchecked")
+    public ChildProxyMapper(String basePropertyPath, ProxyMapperImplementor<?,?> baseProxyMapper, O realObject, PropertyAdaptor propertyAdaptor, List<String> propertyChains) {
+        super(basePropertyPath, realObject, (Class<O>)propertyAdaptor.getReturnType(), (Class<I>)propertyAdaptor.getReturnType(), baseProxyMapper.getProxyLoader(), propertyChains);
+        this.rootProxyMapper = baseProxyMapper.getRootProxyMapper();
+        this.setBaseProxyMapper(baseProxyMapper);
+        this.propertyAdaptor = propertyAdaptor;
     }
 
     /**
@@ -41,7 +50,8 @@ public class ChildProxyMapper<I,O extends I> extends ProxyMapper<I,O> {
     /**
      * @return the rootProxyMapper
      */
-    protected RootProxyMapper<?,?> getRootProxyMapper() {
+    @Override
+    public RootProxyMapper<?,?> getRootProxyMapper() {
         return rootProxyMapper;
     }
     @Override
@@ -87,8 +97,9 @@ public class ChildProxyMapper<I,O extends I> extends ProxyMapper<I,O> {
     }
 
     @Override
-    protected <CI, CO extends CI> ProxyMapper<CI, CO> getChildProxyMapper(String propertyName, PropertyAdaptor propertyAdaptor, Object base) {
-        return this.getRootProxyMapper().getChildProxyMapper(this, getTruePropertyName(propertyName), propertyAdaptor, base);
+    @SuppressWarnings("hiding")
+    protected <CI, CO extends CI> ProxyMapperImplementor<CI, CO> getChildProxyMapper(String propertyName, PropertyAdaptor propertyAdaptor, Object base, ProxyMapperImplementor<?, ?> baseProxyMapper) {
+        return this.getRootProxyMapper().getChildProxyMapper(getTruePropertyName(propertyName), propertyAdaptor, base, baseProxyMapper);
     }
     /**
      * @return the proxyLoader
@@ -100,6 +111,45 @@ public class ChildProxyMapper<I,O extends I> extends ProxyMapper<I,O> {
         } else {
             return super.getProxyLoader();
         }
+    }
+
+    @Override
+    public ProxyMethodHelper getProxyMethodHelper() {
+        if ( super.getProxyLoader() == null && this.getRootProxyMapper() != null) {
+            return this.getRootProxyMapper().getProxyMethodHelper();
+        } else {
+            return super.getProxyMethodHelper();
+        }
+
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public O getRealObject() throws ChildObjectNotLoadableException {
+        O actualObject;
+        try {
+            actualObject = super.getRealObject();
+        } catch (ChildObjectNotLoadableException e) {
+            Object baseRealObject = this.getBaseProxyMapper().getRealObject();
+            actualObject = (O) this.propertyAdaptor.read(baseRealObject);
+            setRealObject(actualObject);
+        }
+        return actualObject;
+    }
+
+    /**
+     * @param baseProxyMapper the baseProxyMapper to set
+     */
+    protected void setBaseProxyMapper(ProxyMapper<?,?> baseProxyMapper) {
+        this.baseProxyMapper = baseProxyMapper;
+    }
+
+    /**
+     * @return the baseProxyMapper
+     */
+    @Override
+    public ProxyMapper<?,?> getBaseProxyMapper() {
+        return baseProxyMapper;
     }
 
 }

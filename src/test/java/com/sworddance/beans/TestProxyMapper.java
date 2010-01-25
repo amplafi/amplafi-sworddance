@@ -34,7 +34,7 @@ public class TestProxyMapper {
         Interface1Impl child1 = new Interface1Impl(2, true, null);
         Interface1Impl child = new Interface1Impl(1, false, child1);
         Interface1Impl impl = new Interface1Impl(0, true, child);
-        Interface1 interface1 = new ProxyFactoryImpl().getProxy(impl, "goo", "child.goo");
+        Interface1 interface1 = ProxyFactoryImpl.INSTANCE.getProxy(impl, "goo", "child.goo");
         // make sure we are not looking at the original objects
         testProxyUnique(interface1, child1, child, impl);
 
@@ -44,7 +44,8 @@ public class TestProxyMapper {
 
         Interface1 returnedChild1 = returnedChild.getChild();
         testProxyUnique(returnedChild1, returnedChild, interface1, child1, child, impl);
-        assertSame(child1, ProxyMapper.getRealObject(returnedChild1));
+        Interface1 realObject = ProxyFactoryImpl.INSTANCE.getRealObject(returnedChild1);
+        assertSame(child1, realObject);
         assertTrue(returnedChild1.isGoo());
 
         assertNull(returnedChild1.getChild(), returnedChild1.getChild()+" should be null");
@@ -68,7 +69,7 @@ public class TestProxyMapper {
         Interface1Impl child1 = new Interface1Impl(2, true, null);
         Interface1Impl child = new Interface1Impl(1, false, child1);
         Interface1Impl impl = new Interface1Impl(0, true, child);
-        Interface1 interface1 = new ProxyFactoryImpl().getProxy(impl, "goo", "child.goo");
+        Interface1 interface1 = ProxyFactoryImpl.INSTANCE.getProxy(impl, "goo", "child.goo");
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(byteArrayOutputStream);
@@ -95,13 +96,13 @@ public class TestProxyMapper {
         Interface1Impl child1 = new Interface1Impl(2, true, null);
         Interface1Impl child = new Interface1Impl(1, false, child1);
         Interface1Impl impl = new Interface1Impl(0, true, child);
-        Interface1 interface1 = new ProxyFactoryImpl().getProxy(impl, "goo", "child.goo", "child.child.goo");
+        Interface1 interface1 = ProxyFactoryImpl.INSTANCE.getProxy(impl, "goo", "child.goo", "child.child.goo");
 
         assertFalse(interface1.getChild().isGoo());
         interface1.getChild().setGoo(true);
         assertTrue(interface1.getChild().isGoo());
         assertFalse(child.isGoo());
-        ProxyMapper<Object, Object> rootProxyMapper = ProxyMapper.getProxyMapper(interface1);
+        ProxyMapper<Interface1, ? extends Interface1> rootProxyMapper = ProxyFactoryImpl.INSTANCE.getProxyMapper(interface1);
         rootProxyMapper.applyToRealObject();
         assertTrue(child.isGoo());
         // applying from child proxy does not work.

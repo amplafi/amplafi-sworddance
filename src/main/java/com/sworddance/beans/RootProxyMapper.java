@@ -15,7 +15,6 @@
 package com.sworddance.beans;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,57 +24,60 @@ import java.util.concurrent.ConcurrentMap;
 import com.sworddance.util.ApplicationIllegalArgumentException;
 
 /**
+ * TODO: believe we need HibernateClass resolving here via proxyLoader.
  * @author patmoore
  * @param <I>
  * @param <O>
  */
-public class RootProxyMapper<I, O extends I> extends ProxyMapper<I, O> {
+public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
     private ProxyBehavior proxyBehavior;
-
+    // TODO: current behavior results in childProxies also being saved in this map. original purpose of originalValues was to see if there have been any changes since the original for non-child proxied objects.
     private ConcurrentMap<String, Object> originalValues;
 
     private ConcurrentMap<String, Object> newValues;
 
-    private ConcurrentMap<String, ProxyMapper<?,?>> childProxies;
+    private ConcurrentMap<String, ProxyMapperImplementor<?,?>> childProxies = new ConcurrentHashMap<String, ProxyMapperImplementor<?,?>>();
+//    @SuppressWarnings("unchecked")
+//    public RootProxyMapper(O realObject, ProxyBehavior proxyBehavior, List<String> propertyChains) {
+//        this(realObject, (Class<O>) realObject.getClass(), proxyBehavior, propertyChains);
+//    }
+
 
     /**
-     * @param realObject
+     * @param realClass
+     * @param proxyClass TODO
      * @param proxyBehavior
+     * @param proxyLoader TODO
      * @param propertyChains first property is used to determine equality
      */
-    @SuppressWarnings("unchecked")
-    public RootProxyMapper(O realObject, ProxyBehavior proxyBehavior, List<String> propertyChains) {
-        this(realObject, (Class<O>) realObject.getClass(), proxyBehavior, propertyChains);
+    public RootProxyMapper(Class<? extends O> realClass, Class<? extends I> proxyClass, ProxyBehavior proxyBehavior, ProxyLoader proxyLoader, List<String> propertyChains) {
+        this(null, realClass, proxyClass, proxyBehavior, proxyLoader, propertyChains);
     }
+//
+//    public RootProxyMapper(O realObject, List<String> propertyChains) {
+//        this(realObject, ProxyBehavior.strict, propertyChains);
+//    }
+//
+//    public RootProxyMapper(O realObject, ProxyBehavior proxyBehavior, String... propertyChains) {
+//        this(realObject, proxyBehavior, Arrays.asList(propertyChains));
+//    }
 
-    public RootProxyMapper(Class<O> realClass, ProxyBehavior proxyBehavior, List<String> propertyChains) {
-        this(null, realClass, proxyBehavior, propertyChains);
-    }
+//    public RootProxyMapper(O realObject, String... propertyChains) {
+//        this(realObject, ProxyBehavior.strict, Arrays.asList(propertyChains));
+//    }
 
-    public RootProxyMapper(O realObject, List<String> propertyChains) {
-        this(realObject, ProxyBehavior.strict, propertyChains);
-    }
-
-    public RootProxyMapper(O realObject, ProxyBehavior proxyBehavior, String... propertyChains) {
-        this(realObject, proxyBehavior, Arrays.asList(propertyChains));
-    }
-
-    public RootProxyMapper(O realObject, String... propertyChains) {
-        this(realObject, ProxyBehavior.strict, Arrays.asList(propertyChains));
-    }
-
-    public RootProxyMapper(O realObject, Class<O> realClass, ProxyBehavior proxyBehavior, List<String> propertyChains) {
-        super(null, realObject, realClass, propertyChains);
+    public RootProxyMapper(O realObject, Class<? extends O> realClass, Class<? extends I> proxyClass, ProxyBehavior proxyBehavior, ProxyLoader proxyLoader, List<String> propertyChains) {
+        super(null, realObject, realClass, proxyClass, proxyLoader, propertyChains);
         this.setProxyBehavior(proxyBehavior);
-        initValuesMap(realObject, propertyChains);
+        initValuesMap(propertyChains);
     }
 
-    public void initValuesMap(O base, List<String> propertyChains) {
+    public void initValuesMap(List<String> propertyChains) {
         originalValues = new ConcurrentHashMap<String, Object>();
         newValues = new ConcurrentHashMap<String, Object>();
-        if (base != null) {
+        if (this.getRealClass() != null) {
             for (String property : propertyChains) {
-                initValue(base, property);
+                initValue(property);
             }
         }
     }
@@ -104,13 +106,15 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapper<I, O> {
     @Override
     public Object getCachedValue(String propertyName) {
         Object o;
+        ProxyMapper<?,?> childProxy;
         if (this.getNewValues().containsKey(propertyName)) {
             o = this.getNewValues().get(propertyName);
         } else if (this.getOriginalValues().containsKey(propertyName)){
             o = this.getOriginalValues().get(propertyName);
-        } else {
-            ProxyMapper<?,?> childProxy = this.childProxies.get(propertyName);
+        } else if (( childProxy = this.childProxies.get(propertyName)) != null) {
             o = childProxy.getExternalFacingProxy();
+        } else {
+            o = null;
         }
         if ( o == NullObject) {
             o = null;
@@ -143,9 +147,9 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapper<I, O> {
      * @return existing child proxy
      */
     @SuppressWarnings("unchecked")
-    public <CI, CO extends CI> ProxyMapper<CI, CO> getExistingChildProxy(String propertyName) {
+    public <CI, CO extends CI> ProxyMapperImplementor<CI, CO> getExistingChildProxy(String propertyName) {
         if (this.childProxies != null){
-            return (ProxyMapper<CI, CO>) this.childProxies.get(propertyName);
+            return (ProxyMapperImplementor<CI, CO>) this.childProxies.get(propertyName);
         } else {
             return null;
         }
@@ -154,19 +158,14 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapper<I, O> {
      * @param propertyName
      * @param proxy
      */
-    private void setChildProxy(String propertyName, ProxyMapper<?,?> proxy) {
-        if (this.childProxies == null){
-            this.childProxies = new ConcurrentHashMap<String, ProxyMapper<?,?>>();
-        }
+    private void setChildProxy(String propertyName, ProxyMapperImplementor<?,?> proxy) {
         this.childProxies.putIfAbsent(propertyName, proxy);
     }
+
     @Override
-    public <CI, CO extends CI> ProxyMapper<CI, CO> getChildProxyMapper(String propertyName, PropertyAdaptor propertyAdaptor, Object base) {
-        return this.getChildProxyMapper(this, propertyName, propertyAdaptor, base);
-    }
     @SuppressWarnings("unchecked")
-    protected <CI, CO extends CI> ProxyMapper<CI, CO> getChildProxyMapper(ProxyMapper<?, ?> baseProxyMapper, String propertyName, PropertyAdaptor propertyAdaptor, Object base) {
-        ProxyMapper<CI,CO> childProxy = getExistingChildProxy(propertyName);
+    protected <CI, CO extends CI> ProxyMapperImplementor<CI, CO> getChildProxyMapper(String propertyName, PropertyAdaptor propertyAdaptor, Object base, ProxyMapperImplementor<?, ?> baseProxyMapper) {
+        ProxyMapperImplementor<CI,CO> childProxy = getExistingChildProxy(propertyName);
         // do not want to eagerly get the propValue unnecessarily because this may trigger expensive operations (for example hibernate db operation )
         CO propValue;
         if ( base != null && (childProxy == null || !childProxy.isRealObjectSet() )) {
@@ -180,7 +179,7 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapper<I, O> {
             }
             return childProxy;
         } else if ( propValue != null ) {
-            childProxy = new ChildProxyMapper<CI,CO>(propertyName, this, propValue, (Class<CO>)propertyAdaptor.getReturnType(), new ArrayList<String>());
+            childProxy = new ChildProxyMapper<CI,CO>(propertyName, baseProxyMapper, propValue, propertyAdaptor, new ArrayList<String>());
             setChildProxy(propertyName, childProxy);
             // multi-thread environment may mean that the object this thread created was not the
             // one actually inserted. (see use of ConcurrentMap#putIfAbsent() )
@@ -189,6 +188,10 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapper<I, O> {
         return childProxy;
     }
 
+    @Override
+    public RootProxyMapper<I, O> getRootProxyMapper() {
+        return this;
+    }
     /**
      * @param proxyBehavior the proxyBehavior to set
      */
@@ -240,4 +243,14 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapper<I, O> {
         }
         return result;
     }
+
+    /**
+     *
+     * @see com.sworddance.beans.ProxyMapperImplementor#getBaseProxyMapper()
+     */
+    @Override
+    public ProxyMapper<?, ?> getBaseProxyMapper() {
+        return null;
+    }
+
 }
