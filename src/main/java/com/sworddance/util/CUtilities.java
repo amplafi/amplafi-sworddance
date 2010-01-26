@@ -182,13 +182,13 @@ public class CUtilities {
      *
      * @param <K>
      * @param <T>
-     * @param map
-     * @param key
+     * @param map if null then nothing happens
+     * @param key if null then nothing happens
      * @param value if null then {@link Map#remove(Object)} is called, otherwise
      * @return map.{@link Map#put(Object, Object)}
      */
     public static <K, T> T put(Map<K,T> map, K key, T value) {
-        if ( map != null ) {
+        if ( map != null && key != null) {
             if ( value == null ) {
                 return map.remove(key);
             } else {
