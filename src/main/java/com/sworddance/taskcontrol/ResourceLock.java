@@ -91,6 +91,10 @@ public class ResourceLock implements Cloneable {
         originalLockType = this.lockType = lockType;
     }
 
+    /**
+     *
+     * @return true if only one {@link ResourceLocker} is allowed to have a lock on this ResourceLock
+     */
     public boolean isExclusiveLock() {
         return (lockType & EXCLUSIVE) != 0;
     }

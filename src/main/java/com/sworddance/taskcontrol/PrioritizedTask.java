@@ -22,8 +22,6 @@ package com.sworddance.taskcontrol;
  *
  * Both of these conditions are necessary to avoid hard-to-find race conditions.
  *
- * @author pmoore
- *
  */
 public interface PrioritizedTask extends Runnable, TaskGroupAware,
         ResourceLocker {

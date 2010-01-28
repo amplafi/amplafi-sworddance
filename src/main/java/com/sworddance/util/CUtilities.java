@@ -231,7 +231,7 @@ public class CUtilities {
         }
     }
     /**
-     *
+     * @see #get(Map, Object, Callable)
      * @param <K>
      * @param <T>
      * @param map maybe null
@@ -246,11 +246,11 @@ public class CUtilities {
      * Get a value from a map. If the value returned is null, then if defaultValue is provided, the {@link Callable#call()} is made and that value is set.
      * If map is {@link ConcurrentMap} then the value supplied by default is set using {@link ConcurrentMap#putIfAbsent(Object, Object)}. Otherwise
      * {@link Map#put(Object, Object)} call is made and the defaultValue-supplied value is returned (and any synchronization issues are handled by the caller).
-     * @param <K>
-     * @param <V>
-     * @param map
-     * @param key
-     * @param defaultValue
+     * @param <K> key type in map
+     * @param <V> value type in map
+     * @param map if null then null is returned
+     * @param key if null then null is returned
+     * @param defaultValue if a {@link ParameterizedCallable} then map and key are passed to {@link ParameterizedCallable#executeCall(Object...)}
      * @return the value in the map.
      */
     @SuppressWarnings("unchecked")
@@ -262,11 +262,15 @@ public class CUtilities {
         if ( value == null && defaultValue != null) {
             V callValue;
             try {
-                callValue = defaultValue.call();
+                if ( defaultValue instanceof ParameterizedCallable<?>) {
+                    callValue = ((ParameterizedCallable<V>)defaultValue).executeCall(map, key);
+                } else {
+                    callValue = defaultValue.call();
+                }
             } catch (RuntimeException e) {
                 throw e;
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new ApplicationGeneralException(e);
             }
             if ( callValue != null ) {
                 if ( map instanceof ConcurrentMap<?, ?>) {
