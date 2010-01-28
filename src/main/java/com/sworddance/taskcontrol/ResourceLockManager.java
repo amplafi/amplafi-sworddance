@@ -30,12 +30,15 @@ import java.util.Map;
 import java.util.Set;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import com.sworddance.util.ApplicationGeneralException;
 
 /**
  * Manages the lock lists for each resource.
  */
 public class ResourceLockManager {
-    private Map<String, LinkedList<ResourceLock>> lockLists = new ConcurrentHashMap<String, LinkedList<ResourceLock>>();
+    private ConcurrentMap<String, LinkedList<ResourceLock>> lockLists = new ConcurrentHashMap<String, LinkedList<ResourceLock>>();
 
     private Set<PrioritizedTask> tasksAdded = new HashSet<PrioritizedTask>();
 
@@ -338,26 +341,23 @@ public class ResourceLockManager {
      * @return actual list
      */
     private List<ResourceLock> getResourceLockList(String resourceName) {
+        // TODO : remove sync block.
         synchronized (lockLists) {
             LinkedList<ResourceLock> list = lockLists.get(resourceName);
             if (list == null) {
                 list = new LinkedList<ResourceLock>();
                 lockLists.put(resourceName, list);
 
-                LinkedList<?> globalList = lockLists
-                        .get(GLOBALRESOURCE);
+                LinkedList<ResourceLock> globalList = lockLists.get(GLOBALRESOURCE);
                 if (globalList != null) {
-                    for (ListIterator<?> iter = globalList.listIterator(); iter
-                            .hasNext();) {
-                        ResourceLock lock = (ResourceLock) iter.next();
+                    for (ListIterator<ResourceLock> iter = globalList.listIterator(); iter.hasNext();) {
+                        ResourceLock lock = iter.next();
                         if (lock.isExclusiveLock()) {
-                            ResourceLock newLock = new ResourceLock(
-                                    resourceName, lock.getLockType());
+                            ResourceLock newLock = new ResourceLock(resourceName, lock.getLockType());
                             ResourceLocker task = lock.getTask();
                             newLock.setTask(task);
-                            // if the lock is release then a released lock is
-                            // added so that way the resource
-                            // map has the complete story.
+                            // if the lock is released then a released lock is
+                            // added so the resource map has the complete history.
                             if (lock.isLockReleased()) {
                                 newLock.releaseLock();
                             }
@@ -373,10 +373,7 @@ public class ResourceLockManager {
 
     private List<ResourceLock> getResourceLockListCopy(String resourceName,
             boolean pruneReleasedLocks) {
-        List<ResourceLock> result;
-        synchronized (lockLists) {
-            result = new ArrayList<ResourceLock>(getResourceLockList(resourceName));
-        }
+        List<ResourceLock> result = new ArrayList<ResourceLock>(getResourceLockList(resourceName));
         if (pruneReleasedLocks) {
             for (Iterator<ResourceLock> iter = result.iterator(); iter.hasNext();) {
                 ResourceLock lock = iter.next();
@@ -401,8 +398,7 @@ public class ResourceLockManager {
         if (taskLocks != null) {
             for (Object name : taskLocks) {
                 ResourceLock lock = (ResourceLock) name;
-                List<ResourceLock> lockList = getResourceLockListCopy(lock.getResourceName(),
-                        pruneReleased);
+                List<ResourceLock> lockList = getResourceLockListCopy(lock.getResourceName(), pruneReleased);
                 // race condition: if the lock is released it is not going to be
                 // on the
                 // list so check after retrieving the list.
@@ -435,7 +431,7 @@ public class ResourceLockManager {
                     }
                 }
                 if (current != lock) {
-                    throw new RuntimeException(task + ": Did not find lock "
+                    throw new ApplicationGeneralException(task + ": Did not find lock "
                             + lock.getLockStr() + " on list for resource="
                             + lock.getResourceName());
                 }
@@ -453,15 +449,12 @@ public class ResourceLockManager {
         if (!lock.isSharedLock() || !current.isSharedLock()) {
             return false;
         } else {
-            DependentPrioritizedTask task = (DependentPrioritizedTask) lock
-                    .getTask();
-            DependentPrioritizedTask currentTask = (DependentPrioritizedTask) current
-                    .getTask();
+            DependentPrioritizedTask task = (DependentPrioritizedTask) lock.getTask();
+            DependentPrioritizedTask currentTask = (DependentPrioritizedTask) current.getTask();
             // shared lock but is it being shared with 'current'?
             return task.getParentTask() != null
-                    && (task.getParentTask() == currentTask
-                            .getParentTask() || task
-                            .getParentTask() == currentTask);
+                    && (task.getParentTask() == currentTask.getParentTask()
+                            || task.getParentTask() == currentTask);
         }
     }
 
