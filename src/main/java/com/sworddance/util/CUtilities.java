@@ -24,12 +24,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
+
+import static org.apache.commons.lang.StringUtils.join;
 
 /**
  * @author patmoore
@@ -371,6 +374,31 @@ public class CUtilities {
     }
 
     /**
+     * Create a map from alternating keys and values. if a key is null then it (and its
+     * corresponding value) are not placed in the map.
+     *
+     * @param <K>
+     * @param <V>
+     * @param keysAndValues
+     * @return a Map<K,V> of the values.
+     */
+    @SuppressWarnings("unchecked")
+    public static <K, V> Map<K, V> createMap(Object... keysAndValues) {
+        Map<K, V> map = new LinkedHashMap<K, V>();
+        if (keysAndValues != null && keysAndValues.length != 0) {
+            if (keysAndValues.length % 2 != 0) {
+                throw new ApplicationIllegalStateException("Non-even number of parameters to createMap. Need matched set of keys and values. got=", join(keysAndValues, ","));
+            }
+            for (int i = 0; i < keysAndValues.length; i += 2) {
+                if (keysAndValues[i] != null) {
+                    map.put((K) keysAndValues[i], (V) keysAndValues[i + 1]);
+                }
+            }
+        }
+        return map;
+    }
+
+    /**
      * conceptually equivalent to masterCollection.clear(); masterCollection.addAll(newValues);
      *
      * except that the masterCollection is only modified to the extent needed to bring it into compliance.
@@ -423,5 +451,15 @@ public class CUtilities {
         List<T> list = Arrays.asList(elements);
         Collections.reverse(list);
         return list;
+    }
+
+    public static Class<?> getClassIfPossible(String className) {
+        Class<?> clazz = null;
+        try {
+            clazz = Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            // we are quiet on purpose - may be should log
+        }
+        return clazz;
     }
 }
