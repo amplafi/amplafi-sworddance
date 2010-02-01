@@ -22,7 +22,17 @@ public class WrappedFuture extends FutureResultImpl<Object> {
         this.executeLatch = executeLatch;
     }
 
+    /**
+     * Set the actual result
+     * 
+     * @param actualResult
+     * @throws IllegalArgumentException if the calling object and passed argument are same object
+     *             references
+     */
     public void setActualResult(FutureResultImplementor<Object> actualResult) {
+        if(this == actualResult){
+            new IllegalArgumentException("Calling object and passed argument are same object references");
+        }
         this.actualResult = actualResult;
     }
 
