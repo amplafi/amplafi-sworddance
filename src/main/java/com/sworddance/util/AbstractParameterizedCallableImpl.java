@@ -14,15 +14,19 @@
 
 package com.sworddance.util;
 
-import java.util.concurrent.Callable;
-
 /**
- * For the cases where the callable needs additional information to be included in the call.
  * @author patmoore
  * @param <V>
  *
  */
-public interface ParameterizedCallable<V> extends Callable<V> {
+public abstract class AbstractParameterizedCallableImpl<V> implements ParameterizedCallable<V> {
 
-    V executeCall(Object...parameters) throws Exception;
+    /**
+     * @see java.util.concurrent.Callable#call()
+     */
+    @Override
+    public V call() throws Exception {
+        return this.executeCall();
+    }
+
 }
