@@ -93,6 +93,15 @@ public class ConcurrentInitializedMap<K, V> implements ConcurrentMap<K, V>, Seri
     }
 
     /**
+     * do not use initializer if there is no value.
+     * @param key
+     * @return may be null
+     */
+    public V getRaw(Object key) {
+        return CUtilities.get(map, key);
+    }
+
+    /**
      * @see java.util.Map#hashCode()
      */
     @Override
