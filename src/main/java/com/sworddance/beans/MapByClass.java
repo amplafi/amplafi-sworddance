@@ -20,6 +20,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.sworddance.util.CUtilities;
+import com.sworddance.util.ParameterizedCallable;
+
 /**
  * Map that is keyed by class and searches for a value by examining the class hierarchy.
  *
@@ -29,6 +32,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
 
+    // TODO : use ConcurrentInitializedMap - but need to be able to handle getRaw() somehow.
     private ConcurrentMap<Class<?>, V> byClassMap = new ConcurrentHashMap<Class<?>, V>();
 
     public MapByClass() {
@@ -86,46 +90,19 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     // TODO instead of get() == null checks should really be using containsKey() to allow for null values in the map.
     // (minor now since ConcurrentMap does not allow null values )
     public V get(Object key) {
-        if (key == null || !(key instanceof Class)) {
-            return null;
-        } else {
+        V valueByClass = null;
+        if (key instanceof Class<?>) {
             Class<?> clazz = (Class<?>) key;
-            V valueByClass = getRaw(clazz);
+            valueByClass = getRaw(clazz);
             if ( valueByClass == null ) {
-                // check just 'key' directly implemented interfaces
-                for(Class<?> interf: clazz.getInterfaces()) {
-                    valueByClass = getRaw(interf);
-                    if ( valueByClass != null ) {
-                        break;
-                    }
-                }
-
-                // check just the immediate superclass
-                // TODO? should we ignore 'java.*' classes. (optionally)
-                Class<?> superclass = clazz.getSuperclass();
-                if (valueByClass == null && superclass != null ) {
-                    valueByClass = getRaw(clazz.getSuperclass());
-                }
-                // no luck so far? check up the superclass hierarchy tree
-                if ( valueByClass == null && clazz.getSuperclass() != null ) {
-                    valueByClass = get(clazz.getSuperclass());
-                }
-                // no luck so far? check up the superinterface hierarchy tree
-                if ( valueByClass == null ) {
-                    for(Class<?> interf: clazz.getInterfaces()) {
-                        valueByClass = get(interf);
-                        if ( valueByClass != null ) {
-                            break;
-                        }
-                    }
-                }
+                valueByClass = new InitializeEntry<V>().executeCall(this, clazz);
                 if ( valueByClass != null ) {
                     // to speed up process next time.
                     byClassMap.put(clazz, valueByClass);
                 }
             }
-            return valueByClass;
         }
+        return valueByClass;
     }
 
     /**
@@ -256,5 +233,56 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     @Override
     public String toString() {
         return this.byClassMap.toString();
+    }
+
+    // TODO: use ConcurrentInitializedMap
+    static class InitializeEntry<V> implements ParameterizedCallable<V>{
+
+        /**
+         * @see com.sworddance.util.ParameterizedCallable#executeCall(java.lang.Object[])
+         */
+        @Override
+        public V executeCall(Object... parameters) {
+            MapByClass<V> mapByClass = CUtilities.get(parameters, 0);
+            // first parameter is the map, second is the key.
+            Class<?> clazz = CUtilities.get(parameters, 1);
+            V valueByClass = null;
+            // check just 'key' directly implemented interfaces
+            for(Class<?> interf: clazz.getInterfaces()) {
+                valueByClass = mapByClass.getRaw(interf);
+                if ( valueByClass != null ) {
+                    break;
+                }
+            }
+
+            // check just the immediate superclass
+            // TODO? should we ignore 'java.*' classes. (optionally)
+            Class<?> superclass = clazz.getSuperclass();
+            if (valueByClass == null && superclass != null ) {
+                valueByClass = mapByClass.getRaw(clazz.getSuperclass());
+            }
+            // no luck so far? check up the superclass hierarchy tree
+            if ( valueByClass == null && clazz.getSuperclass() != null ) {
+                valueByClass = mapByClass.get(clazz.getSuperclass());
+            }
+            // no luck so far? check up the superinterface hierarchy tree
+            if ( valueByClass == null ) {
+                for(Class<?> interf: clazz.getInterfaces()) {
+                    valueByClass = mapByClass.get(interf);
+                    if ( valueByClass != null ) {
+                        break;
+                    }
+                }
+            }
+            return valueByClass;
+        }
+
+        /**
+         * @see java.util.concurrent.Callable#call()
+         */
+        @Override
+        public V call() throws Exception {
+            return executeCall();
+        }
     }
 }
