@@ -27,6 +27,8 @@ import java.util.regex.Pattern;
 
 import com.sworddance.util.ApplicationIllegalArgumentException;
 
+import static com.sworddance.util.CUtilities.*;
+
 import static org.apache.commons.collections.CollectionUtils.*;
 
 /**
@@ -46,7 +48,7 @@ public class BeanWorker {
      * This list of property names is the list of the only properties that the BeanWorker is allowed to modify.
      * Specifically, "foo.goo" does not mean the BeanWorker is allowed to modify the "foo" property - only "foo"'s "goo" property can be modified.
      */
-    private List<String> propertyNames;
+    private List<String> propertyNames = new ArrayList<String>();
     // key = class, key = (each element in) propertyNames value = chain of methods to get to value.
     // TODO in future cache into a second map.
     private final MapByClass<ConcurrentMap<String,PropertyMethodChain>> methodsMap = new MapByClass<ConcurrentMap<String,PropertyMethodChain>>();
@@ -54,13 +56,15 @@ public class BeanWorker {
 
     }
     public BeanWorker(String... propertyNames) {
-        this.propertyNames = new ArrayList<String>( Arrays.asList(propertyNames));
+        this( Arrays.asList(propertyNames));
     }
     /**
      * @param propertyNames
      */
     public BeanWorker(Collection<String> propertyNames) {
-        this.propertyNames = new ArrayList<String>( propertyNames);
+        if (isNotEmpty(propertyNames)) {
+            this.propertyNames.addAll(propertyNames);
+        }
     }
     /**
      * @param propertyNames the propertyNames to set
@@ -86,7 +90,7 @@ public class BeanWorker {
      * @return null or the property
      */
     @SuppressWarnings("unchecked")
-    protected <T> T getValue(Object base, String property) {
+    public <T> T getValue(Object base, String property) {
         T result = null;
         if ( base != null && property != null ) {
             PropertyMethodChain methodChain = getPropertyMethodChain(base.getClass(), property);
@@ -97,7 +101,7 @@ public class BeanWorker {
         return result;
     }
 
-    protected void setValue(Object base, String property, Object value) {
+    public void setValue(Object base, String property, Object value) {
         Object result = base;
         if ( base != null && property != null ) {
             PropertyMethodChain methodChain = getPropertyMethodChain(base.getClass(), property);
@@ -155,19 +159,21 @@ public class BeanWorker {
     /**
      * @param clazz
      * @param propMap
-     * @param property
-     * @param readOnly if true and if propertyMethodChain has not bee found then only the get method is searched for.
+     * @param propertyName
+     * @param readOnly if true and if propertyMethodChain has not been found then only the get method is searched for.
      * @return the propertyMethodChain
+     * @throws ApplicationIllegalArgumentException if the propertyName is not actually a property.
      */
-    protected PropertyMethodChain addPropertyMethodChainIfAbsent(Class<?> clazz, ConcurrentMap<String, PropertyMethodChain> propMap, String property, boolean readOnly) {
-        if (!propMap.containsKey(property)) {
-            PropertyMethodChain propertyMethodChain = newPropertyMethodChain(clazz, property, readOnly);
+    protected PropertyMethodChain addPropertyMethodChainIfAbsent(Class<?> clazz, ConcurrentMap<String, PropertyMethodChain> propMap, String propertyName, boolean readOnly)
+        throws ApplicationIllegalArgumentException {
+        if (!propMap.containsKey(propertyName)) {
+            PropertyMethodChain propertyMethodChain = newPropertyMethodChain(clazz, propertyName, readOnly);
             if ( propertyMethodChain == null) {
-                throw new ApplicationIllegalArgumentException(clazz, " has no property named '",property,"'");
+                throw new ApplicationIllegalArgumentException(clazz, " has no property named '",propertyName,"'");
             }
-            propMap.putIfAbsent(property, propertyMethodChain);
+            propMap.putIfAbsent(propertyName, propertyMethodChain);
         }
-        return propMap.get(property);
+        return propMap.get(propertyName);
     }
 
 
