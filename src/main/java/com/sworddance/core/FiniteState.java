@@ -72,6 +72,7 @@ public interface FiniteState<T extends FiniteState<T>> {
          * throws exception if !oldFiniteState.{@link FiniteState#isAllowedTransition(FiniteState)}
          * @param oldFiniteState
          * @param newFiniteState
+         * @return newFiniteState
          */
         public T checkAllowed(T oldFiniteState, T newFiniteState) {
             if ( !isAllowedTransition(oldFiniteState, newFiniteState)) {
