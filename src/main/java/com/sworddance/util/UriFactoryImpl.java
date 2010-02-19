@@ -269,6 +269,19 @@ public class UriFactoryImpl {
         return !uri.isAbsolute() || "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme);
     }
 
+    public static boolean isNonLocalUri(URI uri) {
+        String host = uri.getHost();
+        if ( isBlank(host) || !uri.isAbsolute() ) {
+            return false;
+        } else {
+            // top-level domains ( .info, .com, .org, etc )  are at most 4 characters long + 1 for the dot.
+            // so checking for a '.' in the last 5 characters is a reasonable quick test to make sure the domain is
+            // a real domain.
+            int dotPos = host.lastIndexOf('.', Math.max(host.length()-5, 0));
+            return dotPos >=0;
+        }
+    }
+
     /**
      * Chops uri to the max length supplied if it is longer.
      *
