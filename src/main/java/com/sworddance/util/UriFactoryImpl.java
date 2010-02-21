@@ -277,7 +277,7 @@ public class UriFactoryImpl {
             // top-level domains ( .info, .com, .org, etc )  are at most 4 characters long + 1 for the dot.
             // so checking for a '.' in the last 5 characters is a reasonable quick test to make sure the domain is
             // a real domain.
-            int dotPos = host.lastIndexOf('.', Math.max(host.length()-5, 0));
+            int dotPos = host.substring(Math.max(host.length()-5, 0)).indexOf('.');
             return dotPos >=0;
         }
     }
