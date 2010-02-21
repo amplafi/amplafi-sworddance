@@ -14,22 +14,28 @@
 
 package com.sworddance.util;
 
+import static com.sworddance.util.ApplicationNullPointerException.notNull;
+import static org.apache.commons.lang.StringUtils.equalsIgnoreCase;
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang.StringUtils.left;
+import static org.apache.commons.lang.StringUtils.substringAfterLast;
+
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static org.apache.commons.lang.StringUtils.*;
-import static com.sworddance.util.ApplicationNullPointerException.notNull;
 
 /**
  * @author patmoore
  *
  */
 public class UriFactoryImpl {
-    private static final Pattern WHITESPACE = Pattern.compile("\\s");
 
     public static String getFilename(URI uri) {
         return uri == null ? "" : substringAfterLast(uri.getPath(), "/");
@@ -155,24 +161,14 @@ public class UriFactoryImpl {
         } else {
             String uriString = uriStr.toString().trim();
             if (isNotBlank(uriString)) {
-            	// customers may send in a url with spaces in the path part of the uri.
-                // we can't use URLEncoder on the whole uri because that would screw up the valid parts.
-            	// Will we have problem with multiple
-                // http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars requires UTF-8
-//                    String encoded = URLEncoder.encode(uriString, "UTF-8");
-                // Manually encode just ' ' to '+' but of course before we can do that we must first encode, '+'
                 try {
-                    // TODO -- maybe try to do new URI and then try         URLEncoder.encode(s, enc) on failure?
-                    if ( forceEncoding || WHITESPACE.matcher(uriString).find()) {
-                        // only do substitution if has whitespace. Otherwise we would reencode an already encoded URI!
-                        // HOWEVER, what happens if the only 'bad' characters are in fact a '+' or '%' ?
-                        // Maybe if the URI does not exist without the encoding. Would be nice to have an automatic retry mechanism.
-                        String encoded = uriString.replaceAll("%", "%25").replaceAll("\\+", "%2B").replaceAll("\\s", "+");
-                        uri = new URI(encoded);
+                    if (forceEncoding) {
+                        uri = new URI(percentEncoding(uriString));
                     } else {
                         uri = new URI(uriString);
                     }
                 } catch (URISyntaxException e) {
+                    e.printStackTrace();
                     return null;
                 }
             } else {
@@ -316,5 +312,98 @@ public class UriFactoryImpl {
         }
         return queryParametersMap;
     }
+    
+    /**
+     * Sorted list of characters which can be used without percent encoding in the URI.
+     * Please also note that all the alphanumerics can also be used without percent 
+     * encoding in the URI 
+     * @see http://www.ietf.org/rfc/rfc1738.txt (section 2.2)
+     */
+    private static final char[] safe = new char[] { '!', '$', '\'', '(', ')', '*', '+', ',', '-', '.', '_' };
 
+    /**
+     * Sorted list of characters which are reserved in a URI for a special meaning.
+     * These characters should be percent encoded only if they are used for a meaning
+     * other than their special meaning in URI. When reserved characters are used for
+     * special meaning in URI they must not be encoded. 
+     * 
+     * @see http://www.ietf.org/rfc/rfc1738.txt (section 2.2)
+     */
+    private static final char[] reserved = new char[] { '&', '/', ':', ';', '=', '?', '@'};
+
+    /**
+     * This method encodes URI string into a percent encoded string. If a URI string 
+     * or part of it is already percent encoded, that part of URI string is skipped.
+     * This method is implemented as per specifications in RFC 1738 (section 2).
+     * 
+     * I also had a look at <br/>
+     * {@link URLEncoder} does not meet out requirements <br/>
+     * {@link URI} also does not meet our requirements <br/>
+     * 
+     * 
+     *  TODO There is one issue in this implementation, RFC 1738 section 2.2,
+     *  states that a reserved character in a URI must be encoded if it is used
+     *  for a purpose other than its reserved purpose. (For example :- If a
+     *  reserved character is used in the name of file in a URI, then that reserved
+     *  character must be encoded). As of now in the current implementation we are
+     *  not encoding any reserved characters. For us it is difficult to determine
+     *  whether a reserved character is used for its reserved purpose of some other
+     *  purpose. </br>
+     *  
+     *  One possible (but costly) solution to above limitation could be, 
+     *  to start encoding all the possible combinations of reserved characters 
+     *  in the URI one at a time and see if URI starts working.
+     *  
+     * @param input, URI string which needs to be percent encoded
+     * @return percent encoded string
+     * @see http://java.sun.com/javaee/6/docs/api/javax/ws/rs/core/UriBuilder.html,
+     * probably URIBuilder does the same work we want to do below. But no of
+     * dependencies(maven) on URI are huge. So it does not look worth the effort
+     * to use URIBuilder
+     * @see http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars
+     * @see http://www.ietf.org/rfc/rfc1738.txt (section 2.2)
+     */
+    private static String percentEncoding(String input){
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if (c == '%') {
+                boolean inputHasAtleastTwoMoreChars = i + 2 < input.length();
+                if (inputHasAtleastTwoMoreChars) {
+                    String twoCharsAfterPercent = input.substring(i + 1, i + 3);
+                    if (isHexAfterPercent(twoCharsAfterPercent)) {
+                        i = i + 2;
+                        sb.append("%").append(twoCharsAfterPercent);
+                        continue;
+                    }
+                }
+            }
+            boolean isLetterOrDigit = Character.isLetterOrDigit(c);
+            boolean isSafe = Arrays.binarySearch(safe, c)>= 0;
+            boolean isReserved = Arrays.binarySearch(reserved, c) >= 0;
+            if(isLetterOrDigit || isSafe || isReserved){
+                sb.append(c);
+            } else if(c <= 0x007F) { // convert all other ASCII to percent encoding
+                sb.append("%").append(Integer.toHexString(c));
+            } else if (c <= 0x07FF) {      // non-ASCII <= 0x7FF (UTF 2 byte)
+                sb.append("%").append(Integer.toHexString(0xc0 | (c >> 6)));
+                sb.append("%").append(Integer.toHexString(0x80 | (c & 0x3F)));
+           } else {                  // 0x7FF < ch <= 0xFFFF (UTF 3 bytes)
+               sb.append("%").append(Integer.toHexString(0xe0 | (c >> 12)));
+               sb.append("%").append(Integer.toHexString(0x80 | ((c >> 6) & 0x3F)));
+               sb.append("%").append(Integer.toHexString(0x80 | (c & 0x3F)));
+           }
+        }
+        return sb.toString();
+    }
+
+    private static boolean isHexAfterPercent(String twoCharsAfterPercent) {
+        boolean isHexAfterPercent = true;
+        try {
+            Integer.valueOf(twoCharsAfterPercent, 16);
+        } catch (NumberFormatException nfe) {
+            isHexAfterPercent = false;
+        }
+        return isHexAfterPercent;
+    }
 }
