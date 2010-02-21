@@ -54,11 +54,29 @@ public class TestUriFactoryImpl {
     @Test
     public void testCreateUriCycle() {
         String uriStr = "http://localhost:8080/Application for scholarship%+.pdf";
-        URI uri0 = createUri(uriStr);
+        URI uri0 = createUri(uriStr,true);
         String encodedUriString = uri0.toString();
-        assertEquals(encodedUriString, "http://localhost:8080/Application+for+scholarship%25%2B.pdf");
-        URI uri1 = createUri(encodedUriString);
-        assertEquals(uri1.toString(), "http://localhost:8080/Application+for+scholarship%25%2B.pdf");
+        assertEquals(encodedUriString, "http://localhost:8080/Application%20for%20scholarship%25+.pdf");
+        URI uri1 = createUri(encodedUriString, true);
+        assertEquals(uri1.toString(), "http://localhost:8080/Application%20for%20scholarship%25+.pdf");
+    }
+    
+    @Test
+    public void testPercentEncoding() {
+        String uriStr = "http://localhost:8080/abc.pdf";
+        assertEquals(createUri(uriStr,true).toString(), "http://localhost:8080/abc.pdf");
+        
+        uriStr = "http://localhost:8080/abc%";
+        assertEquals(createUri(uriStr,true).toString(), "http://localhost:8080/abc%25");
+        
+        uriStr = "http://localhost:8080/abc%1T";
+        assertEquals(createUri(uriStr,true).toString(), "http://localhost:8080/abc%251T");
+        
+        uriStr = "http://localhost:8080/abc%251T";
+        assertEquals(createUri(uriStr,true).toString(), "http://localhost:8080/abc%251T");
+        
+        uriStr = "http://localhost:8080/abc!$'()*+,-._";
+        assertEquals(createUri(uriStr,true).toString(), "http://localhost:8080/abc!$'()*+,-._");        
     }
 
     @Test
