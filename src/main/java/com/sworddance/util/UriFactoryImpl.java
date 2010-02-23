@@ -312,12 +312,12 @@ public class UriFactoryImpl {
         }
         return queryParametersMap;
     }
-    
+
     /**
      * Sorted list of characters which can be used without percent encoding in the URI.
-     * Please also note that all the alphanumerics can also be used without percent 
-     * encoding in the URI 
-     * @see http://www.ietf.org/rfc/rfc1738.txt (section 2.2)
+     * Please also note that all the alphanumerics can also be used without percent
+     * encoding in the URI
+     * {@linkplain "http://www.ietf.org/rfc/rfc1738.txt"} (section 2.2)
      */
     private static final char[] safe = new char[] { '!', '$', '\'', '(', ')', '*', '+', ',', '-', '.', '_' };
 
@@ -325,22 +325,22 @@ public class UriFactoryImpl {
      * Sorted list of characters which are reserved in a URI for a special meaning.
      * These characters should be percent encoded only if they are used for a meaning
      * other than their special meaning in URI. When reserved characters are used for
-     * special meaning in URI they must not be encoded. 
-     * 
-     * @see http://www.ietf.org/rfc/rfc1738.txt (section 2.2)
+     * special meaning in URI they must not be encoded.
+     *
+     * {@linkplain "http://www.ietf.org/rfc/rfc1738.txt"} (section 2.2)
      */
     private static final char[] reserved = new char[] { '&', '/', ':', ';', '=', '?', '@'};
 
     /**
-     * This method encodes URI string into a percent encoded string. If a URI string 
+     * This method encodes URI string into a percent encoded string. If a URI string
      * or part of it is already percent encoded, that part of URI string is skipped.
      * This method is implemented as per specifications in RFC 1738 (section 2).
-     * 
+     *
      * I also had a look at <br/>
      * {@link URLEncoder} does not meet out requirements <br/>
      * {@link URI} also does not meet our requirements <br/>
-     * 
-     * 
+     *
+     *
      *  TODO There is one issue in this implementation, RFC 1738 section 2.2,
      *  states that a reserved character in a URI must be encoded if it is used
      *  for a purpose other than its reserved purpose. (For example :- If a
@@ -349,21 +349,22 @@ public class UriFactoryImpl {
      *  not encoding any reserved characters. For us it is difficult to determine
      *  whether a reserved character is used for its reserved purpose of some other
      *  purpose. </br>
-     *  
-     *  One possible (but costly) solution to above limitation could be, 
-     *  to start encoding all the possible combinations of reserved characters 
+     *
+     *  One possible (but costly) solution to above limitation could be,
+     *  to start encoding all the possible combinations of reserved characters
      *  in the URI one at a time and see if URI starts working.
-     *  
-     * @param input, URI string which needs to be percent encoded
+     *
+     * @param input URI string which needs to be percent encoded
      * @return percent encoded string
-     * @see http://java.sun.com/javaee/6/docs/api/javax/ws/rs/core/UriBuilder.html,
+     * {@linkplain "http://java.sun.com/javaee/6/docs/api/javax/ws/rs/core/UriBuilder.html"},
      * probably URIBuilder does the same work we want to do below. But no of
      * dependencies(maven) on URI are huge. So it does not look worth the effort
      * to use URIBuilder
-     * @see http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars
-     * @see http://www.ietf.org/rfc/rfc1738.txt (section 2.2)
+     * {@linkplain "http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars"}
+     * {@linkplain "http://www.ietf.org/rfc/rfc1738.txt"} (section 2.2)
+
      */
-    private static String percentEncoding(String input){
+    public static String percentEncoding(String input){
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < input.length(); i++) {
             char c = input.charAt(i);
