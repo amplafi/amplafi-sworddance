@@ -32,16 +32,15 @@ public class FakeTimeServerImpl extends TimeServerImpl implements FakeTimeServer
     private long nanoOffset;
     private Calendar currentCalendar;
 
-    @Override
-    public void initializeService() {
-        super.initializeService();
-        setBaseTime(Calendar.getInstance());
+    public FakeTimeServerImpl() {
+        initToNow();
     }
 
-    public FakeTimeServerImpl init() {
-        initializeService();
+    public FakeTimeServer initToNow() {
+        setBaseTime(Calendar.getInstance());
         return this;
     }
+
     @Override
     public long currentTimeMillis() {
         return getCurrentDate().getTime();

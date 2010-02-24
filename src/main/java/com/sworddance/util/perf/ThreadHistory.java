@@ -13,11 +13,13 @@
  */
 package com.sworddance.util.perf;
 
+import java.io.Serializable;
+
 /**
  * a record of a thread status change.
  * @author Patrick Moore
  */
-public class ThreadHistory {
+public class ThreadHistory implements Serializable {
     private long timestampInMillis;
 
     private Long threadId;
@@ -33,20 +35,21 @@ public class ThreadHistory {
      */
     private Boolean threadInUse;
 
-    private final int sequenceId;
+    private int sequenceId;
 
     private long sequentialTime;
 
+    /**
+     * only intended for deserialization
+     */
+    ThreadHistory() {
+
+    }
     ThreadHistory(long timestampInMillis, Long threadId, String taskName,
             String status, String note, Boolean threadInUse, int sequenceId) {
-        this.timestampInMillis = timestampInMillis;
-        this.threadId = threadId;
-        this.taskName = taskName;
-        this.status = status;
-        this.note = note;
-        this.threadInUse = threadInUse;
-        this.sequenceId = sequenceId;
+        this(timestampInMillis, threadId, taskName, status, note, threadInUse, 0L, sequenceId);
     }
+
     ThreadHistory(long timestampInMillis, Long threadId, String taskName,
         String status, String note, Boolean threadInUse, long sequentialTime, int sequenceId) {
         this.timestampInMillis = timestampInMillis;
@@ -60,6 +63,8 @@ public class ThreadHistory {
     }
 
     /**
+     * Used when a operation may not run continuously. For non continuous operations, comparing stop-start time
+     * calculations will not be accurate. Storing the actual sequential time allows more accurate time collection.
      * @return the sequentialTime
      */
     public long getSequentialTime() {
