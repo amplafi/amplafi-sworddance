@@ -250,7 +250,7 @@ public class LapTimer implements Runnable, Serializable {
         this.lapHistory = new long[lapHistorySize];
         this.lapNames = new String[lapHistorySize];
         this.runnable = actual;
-        this.createTime = System.currentTimeMillis();
+        this.createTime = getTimeInMillis();
     }
 
     public void setRemotable(boolean remotable) {
@@ -297,10 +297,17 @@ public class LapTimer implements Runnable, Serializable {
         if (this.isRunning()) {
             return this;
         }
-        this.lastLapTime = this.startTime = System.currentTimeMillis();
+        this.lastLapTime = this.startTime = getTimeInMillis();
         this.lapOffset = 0;
         this.running = true;
         return this;
+    }
+
+    /**
+     * @return
+     */
+    private long getTimeInMillis() {
+        return System.currentTimeMillis();
     }
 
     /**
@@ -384,7 +391,7 @@ public class LapTimer implements Runnable, Serializable {
 
         System.arraycopy(this.lapHistory, 1, this.lapHistory, 0, this.lapHistory.length - 1);
         System.arraycopy(this.lapNames, 1, this.lapNames, 0, this.lapNames.length - 1);
-        long tmp = System.currentTimeMillis();
+        long tmp = getTimeInMillis();
         if (!this.isPaused()) {
             this.lapHistory[this.lapHistory.length - 1] = this.lapOffset + (tmp - this.lastLapTime);
         } else {
@@ -533,7 +540,7 @@ public class LapTimer implements Runnable, Serializable {
         // total sum so far + time so far into the current lap + pause offset.
         if (this.isRunning()) {
             long t = this.elapsedTime + this.lapOffset;
-            return this.isPaused() ? t : t + (System.currentTimeMillis() - this.lastLapTime);
+            return this.isPaused() ? t : t + (getTimeInMillis() - this.lastLapTime);
         } else {
             return this.elapsedTime;
         }
@@ -561,13 +568,13 @@ public class LapTimer implements Runnable, Serializable {
     public long elapsedSinceCreate() {
         if (this.isStarted()) {
             if (this.isRunning()) {
-                return System.currentTimeMillis() - this.createTime;
+                return getTimeInMillis() - this.createTime;
             } else {
                 return this.endTime - this.createTime;
             }
         } else {
             // created but never started.
-            return System.currentTimeMillis() - this.createTime;
+            return getTimeInMillis() - this.createTime;
         }
     }
 
@@ -581,7 +588,7 @@ public class LapTimer implements Runnable, Serializable {
         if (this.isRunning()) {
             this.lap(lapName);
             this.running = false;
-            this.endTime = System.currentTimeMillis();
+            this.endTime = getTimeInMillis();
         }
         return this;
     }
@@ -604,7 +611,7 @@ public class LapTimer implements Runnable, Serializable {
      */
     public LapTimer pause() {
         if (!this.paused) {
-            long tmp = System.currentTimeMillis();
+            long tmp = getTimeInMillis();
             this.lapOffset += tmp - this.lastLapTime;
             this.paused = true;
         }
@@ -624,10 +631,10 @@ public class LapTimer implements Runnable, Serializable {
             this.running = true;
             this.paused = false;
             this.endTime = 0;
-            this.lastLapTime = System.currentTimeMillis();
+            this.lastLapTime = getTimeInMillis();
         } else if (this.isPaused()) {
             this.paused = false;
-            this.lastLapTime = System.currentTimeMillis() - this.lapOffset;
+            this.lastLapTime = getTimeInMillis() - this.lapOffset;
             this.lapOffset = 0;
         }
         return this;

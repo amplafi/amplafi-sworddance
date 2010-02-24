@@ -32,7 +32,7 @@ import com.sworddance.core.Expireable;
 public class TimeServerImpl implements TimeServer {
     private TimeZone gmtTimeZone;
     private List<TimeZone> timeZones;
-    public void initializeService() {
+    public TimeServerImpl() {
         gmtTimeZone = TimeZone.getTimeZone("GMT");
         timeZones = new ArrayList<TimeZone>();
         for(String id: TimeZone.getAvailableIDs()) {

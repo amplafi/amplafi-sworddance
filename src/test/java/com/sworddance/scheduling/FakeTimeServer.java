@@ -45,6 +45,12 @@ import java.util.concurrent.TimeUnit;
  */
 public interface FakeTimeServer extends TimeServer {
     /**
+     * initialize the FakeTimeServer to the current real time. (when FakeTimeServerImpl is created this happens automatically )
+     * Use this method if after creation the FakeTimeServer needs to be reinitialized.
+     * @return this
+     */
+    FakeTimeServer initToNow();
+    /**
      * @param baseTime the baseTime to set
      */
     public void setBaseTime(Date baseTime);

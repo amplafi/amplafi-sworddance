@@ -32,6 +32,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 
+import com.sworddance.scheduling.TimeServer;
+import com.sworddance.scheduling.TimeServerImpl;
 import com.sworddance.util.perf.CSVThreadHistoryTrackerFormatter;
 import com.sworddance.util.perf.ThreadHistoryTracker;
 
@@ -107,7 +109,7 @@ public class TaskGroup<T> implements NotificationObject {
     private Set<PrioritizedTask> runningTasks = Collections.newSetFromMap(new ConcurrentHashMap<PrioritizedTask, Boolean>());
     private String latestStatsFilename;
 
-    public TaskGroup(String name, Comparator<PrioritizedTask> taskComparator, FutureResultImplementor<T> result) {
+    public TaskGroup(String name, Comparator<PrioritizedTask> taskComparator, FutureResultImplementor<T> result, TimeServer timeServer) {
         this.name = name;
         this.taskComparator = taskComparator;
         this.result = result;
@@ -124,10 +126,10 @@ public class TaskGroup<T> implements NotificationObject {
      * @param name
      */
     public TaskGroup(String name) {
-        this(name, new PossibleWorkItemComparator(), new FutureResultImpl<T>());
+        this(name, new PossibleWorkItemComparator(), new FutureResultImpl<T>(), new TimeServerImpl());
     }
     public TaskGroup(String name, FutureResultImplementor<T> result) {
-        this(name, new PossibleWorkItemComparator(), result);
+        this(name, new PossibleWorkItemComparator(), result, new TimeServerImpl());
     }
 
     /**
@@ -208,7 +210,7 @@ public class TaskGroup<T> implements NotificationObject {
 
     public void addTaskStatus(PrioritizedTask task, String status) {
         String id = getTaskId(task);
-        threadHistoryTracker.addHistoryStatus(id, status);
+        threadHistoryTracker.addHistoryStatus(id, status, null);
     }
 
     /**

@@ -14,6 +14,7 @@
 
 package com.sworddance.util.perf;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,6 +22,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.sworddance.scheduling.TimeServer;
+import com.sworddance.scheduling.TimeServerImpl;
 import com.sworddance.util.ConcurrentInitializedMap;
 import com.sworddance.util.InitializeWithList;
 
@@ -28,7 +31,7 @@ import com.sworddance.util.InitializeWithList;
  * Stores the ThreadHistory objects by {@link Thread#getId()}
  *
  */
-public class ThreadHistoryTracker {
+public class ThreadHistoryTracker implements Serializable {
     /**
      * Map<Thread.getId(), List ( most recent first )>
      * Should use Stack but stack add to end, will need to reverse order when copying before can use stack
@@ -40,10 +43,16 @@ public class ThreadHistoryTracker {
 
     private AtomicInteger sequence = new AtomicInteger(0);
 
+    private transient TimeServer timeServer;
+
     /**
      *
      */
     public ThreadHistoryTracker() {
+        this(new TimeServerImpl());
+    }
+    public ThreadHistoryTracker(TimeServer timeServer) {
+        this.timeServer = timeServer;
     }
 
     public void addStartHistory(String taskName, String status, String note) {
@@ -58,7 +67,7 @@ public class ThreadHistoryTracker {
      * @return
      */
     private long getTimeInMilliseconds() {
-        return System.currentTimeMillis();
+        return timeServer.currentTimeMillis();
     }
 
     /**
@@ -111,11 +120,11 @@ public class ThreadHistoryTracker {
         l.add(0, threadHistory);
     }
 
-    public void addHistoryStatus(String taskName, String status) {
+    public void addHistoryStatus(String taskName, String status, String note) {
         Thread t = Thread.currentThread();
         Long threadId = t.getId();
         long currentTimeMillis = getTimeInMilliseconds();
-        addHistoryStatus(currentTimeMillis, threadId, taskName, status);
+        addHistoryStatus(currentTimeMillis, threadId, taskName, status, note);
     }
 
     /**
@@ -126,9 +135,10 @@ public class ThreadHistoryTracker {
      * @param threadId
      * @param taskName
      * @param status
+     * @param note TODO
      */
     public void addHistoryStatus(long currentTimeMillis, Long threadId,
-            String taskName, String status) {
+            String taskName, String status, String note) {
         ThreadHistory threadHistory = new ThreadHistory(currentTimeMillis,
                 threadId, taskName, status, null, Boolean.TRUE, this.sequence.incrementAndGet());
         addHistoryStatus(threadId, threadHistory);
