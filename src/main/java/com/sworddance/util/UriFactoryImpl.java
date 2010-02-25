@@ -142,14 +142,30 @@ public class UriFactoryImpl {
     }
 
     /**
-     * Odd comment : can't resolve because this is also used for "mailto:"
-     *
-     * @param uriStr
-     * @return uri
+     *  Odd comment : can't resolve because this is also used for "mailto:" </br>
+     * 
+     *  This meththod creates the {@link URI} from the given argument.
+     *  
+     *  The default behaviour of this method is changed on (25-Feb-2010), now
+     *  create URI encodes the URI. No thorough testing has been done for existing
+     *  callers of this method. In case you face any issues with existing callers
+     *  of this method and you want to disable encoding, 
+     *  please call {@link UriFactoryImpl#createUri(Object, boolean)}
+     *  
+     * @param uriStr, {@link Object} from which {@link URI} has to be created
+     * @return uri, percent encoded {@link URI}
      */
     public static URI createUri(Object uriStr) {
-        return createUri(uriStr, false);
+        return createUri(uriStr, true);
     }
+    
+    /**
+     * This meththod creates the {@link URI} from the given argument.
+     *  
+     * @param uriStr, {@link Object} from which {@link URI} has to be created
+     * @param forceEncoding, true if URI has to be encoded
+     * @return {@link URI}
+     */
     public static URI createUri(Object uriStr, boolean forceEncoding) {
         URI uri;
         if (uriStr == null) {
