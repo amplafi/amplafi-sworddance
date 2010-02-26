@@ -143,25 +143,25 @@ public class UriFactoryImpl {
 
     /**
      *  Odd comment : can't resolve because this is also used for "mailto:" </br>
-     * 
+     *
      *  This meththod creates the {@link URI} from the given argument.
-     *  
+     *
      *  The default behaviour of this method is changed on (25-Feb-2010), now
      *  create URI encodes the URI. No thorough testing has been done for existing
      *  callers of this method. In case you face any issues with existing callers
-     *  of this method and you want to disable encoding, 
+     *  of this method and you want to disable encoding,
      *  please call {@link UriFactoryImpl#createUri(Object, boolean)}
-     *  
+     *
      * @param uriStr, {@link Object} from which {@link URI} has to be created
      * @return uri, percent encoded {@link URI}
      */
     public static URI createUri(Object uriStr) {
         return createUri(uriStr, true);
     }
-    
+
     /**
      * This meththod creates the {@link URI} from the given argument.
-     *  
+     *
      * @param uriStr, {@link Object} from which {@link URI} has to be created
      * @param forceEncoding, true if URI has to be encoded
      * @return {@link URI}
@@ -327,6 +327,20 @@ public class UriFactoryImpl {
             }
         }
         return queryParametersMap;
+    }
+
+    public static String createQueryString(Map<String,String> map) {
+        int i=0;
+        StringBuilder uriBuilder = new StringBuilder();
+        for (Map.Entry<String, String> entry: map.entrySet()) {
+            String keyStr = UriFactoryImpl.percentEncoding(entry.getKey());
+            String valueStr = UriFactoryImpl.percentEncoding(entry.getValue());
+            uriBuilder.append(keyStr).append("=").append(valueStr);
+            if ( ++i < map.size()) {
+                uriBuilder.append("&");
+            }
+        }
+        return uriBuilder.toString();
     }
 
     /**
