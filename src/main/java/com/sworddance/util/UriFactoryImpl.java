@@ -78,7 +78,7 @@ public class UriFactoryImpl {
      * @param uriStr input uri string
      * @return converted URI
      */
-    public static URI createUriWithPath(String uriStr) {
+    public static URI createUriWithPath(Object uriStr) {
         return createUriWithOptions(uriStr, false, true);
     }
 
