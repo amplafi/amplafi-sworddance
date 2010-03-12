@@ -15,6 +15,7 @@
 package com.sworddance.beans;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,43 +33,28 @@ import com.sworddance.util.ApplicationIllegalArgumentException;
 public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
     private ProxyBehavior proxyBehavior;
     // TODO: current behavior results in childProxies also being saved in this map. original purpose of originalValues was to see if there have been any changes since the original for non-child proxied objects.
-    private ConcurrentMap<String, Object> originalValues;
+    private Map<String, Object> originalValues;
 
-    private ConcurrentMap<String, Object> newValues;
+    private Map<String, Object> newValues;
 
     private ConcurrentMap<String, ProxyMapperImplementor<?,?>> childProxies = new ConcurrentHashMap<String, ProxyMapperImplementor<?,?>>();
-//    @SuppressWarnings("unchecked")
-//    public RootProxyMapper(O realObject, ProxyBehavior proxyBehavior, List<String> propertyChains) {
-//        this(realObject, (Class<O>) realObject.getClass(), proxyBehavior, propertyChains);
-//    }
-
 
     /**
+     * @param realObject
      * @param realClass
      * @param proxyClass TODO
      * @param proxyBehavior
      * @param proxyLoader TODO
      * @param propertyChains first property is used to determine equality
+     * @param originalValues TODO
+     * @param newValues TODO
      */
-    public RootProxyMapper(Class<? extends O> realClass, Class<? extends I> proxyClass, ProxyBehavior proxyBehavior, ProxyLoader proxyLoader, List<String> propertyChains) {
-        this(null, realClass, proxyClass, proxyBehavior, proxyLoader, propertyChains);
-    }
-//
-//    public RootProxyMapper(O realObject, List<String> propertyChains) {
-//        this(realObject, ProxyBehavior.strict, propertyChains);
-//    }
-//
-//    public RootProxyMapper(O realObject, ProxyBehavior proxyBehavior, String... propertyChains) {
-//        this(realObject, proxyBehavior, Arrays.asList(propertyChains));
-//    }
-
-//    public RootProxyMapper(O realObject, String... propertyChains) {
-//        this(realObject, ProxyBehavior.strict, Arrays.asList(propertyChains));
-//    }
-
-    public RootProxyMapper(O realObject, Class<? extends O> realClass, Class<? extends I> proxyClass, ProxyBehavior proxyBehavior, ProxyLoader proxyLoader, List<String> propertyChains) {
+    public RootProxyMapper(O realObject, Class<? extends O> realClass, Class<? extends I> proxyClass, ProxyBehavior proxyBehavior, ProxyLoader proxyLoader, List<String> propertyChains, Map<String, Object> originalValues, Map<String, Object> newValues) {
         super(null, realObject, realClass, proxyClass, proxyLoader, propertyChains);
         this.setProxyBehavior(proxyBehavior);
+        // TODO: resolve when the initValuesMap happens. - may continuing from earlier use of ProxyMapper.
+        this.newValues = newValues;
+        this.originalValues = originalValues;
         initValuesMap(propertyChains);
     }
 
@@ -82,7 +68,7 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
         }
     }
     @Override
-    public boolean containsKey(String propertyName) {
+    public boolean containsKey(Object propertyName) {
         return this.getNewValues().containsKey(propertyName) || this.getOriginalValues().containsKey(propertyName) || this.childProxies.containsKey(propertyName);
     }
     /**
@@ -94,7 +80,7 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
         if (propertyName == null) {
             throw new ApplicationIllegalArgumentException( "propertyName cannot be null");
         }
-        this.getOriginalValues().put(propertyName, result==null?NullObject:result);
+        this.getOriginalValuesMap().put(propertyName, result==null?NullObject:result);
     }
     @Override
     protected void putNewValues(String propertyName, Object result) {
@@ -216,6 +202,9 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
     }
     @Override
     public Map<String, Object> getOriginalValues() {
+        return Collections.unmodifiableMap(this.getOriginalValuesMap());
+    }
+    protected Map<String, Object> getOriginalValuesMap() {
         return this.originalValues;
     }
 

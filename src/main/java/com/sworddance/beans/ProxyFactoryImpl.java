@@ -18,6 +18,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author patmoore
@@ -35,10 +36,12 @@ public class ProxyFactoryImpl implements ProxyFactory {
         this.defaultProxyMethodHelper = defaultProxyMethodHelper;
     }
 
+    @Override
     public <I,O extends I> I getProxy(O realObject, String...propertyChains) {
         return getProxy(realObject, ProxyBehavior.leafStrict, Arrays.asList(propertyChains));
     }
 
+    @Override
     public <I,O extends I> I getProxy(O realObject, Class<O>realClass,  String...propertyChains) {
         return getProxy(realObject, realClass, ProxyBehavior.leafStrict, Arrays.asList(propertyChains));
     }
@@ -47,26 +50,20 @@ public class ProxyFactoryImpl implements ProxyFactory {
         return getProxy(realClass, proxyBehavior, Arrays.asList(propertyChains));
     }
 
-    public <I,O extends I> I getProxy(O realObject, ProxyBehavior proxyBehavior, String...propertyChains) {
-        return getProxy(realObject, proxyBehavior, Arrays.asList(propertyChains));
-    }
-
     public <I,O extends I> I getProxy(O realObject, List<String>propertyChains) {
         return getProxy(realObject, ProxyBehavior.leafStrict, propertyChains);
     }
 
     @SuppressWarnings("unchecked")
     public <I,O extends I> I getProxy(O realObject, ProxyBehavior proxyBehavior, List<String>propertyChains) {
-        Class realClass = defaultProxyLoader.getRealClass(realObject);
+        Class realClass = this.getDefaultProxyLoader().getRealClass(realObject);
         return (I) getProxy(realObject, realClass, proxyBehavior, propertyChains);
     }
     public <I,O extends I> I getProxy(Class<? extends O> realClass, ProxyBehavior proxyBehavior, List<String> propertyChains) {
-        Class<? extends I> proxyClass = this.getDefaultProxyLoader().getProxyClassFromClass(realClass);
-        RootProxyMapper<I, O> proxyMapper = new RootProxyMapper<I, O>(realClass, proxyClass, proxyBehavior, defaultProxyLoader, propertyChains);
-        initProxyMapper(proxyMapper);
-        return proxyMapper.getExternalFacingProxy();
+        return getProxy(null, realClass, proxyBehavior, propertyChains);
     }
     /**
+     * The method that does the real work.
      * @param <O>
      * @param <I>
      * @param realObject
@@ -77,7 +74,9 @@ public class ProxyFactoryImpl implements ProxyFactory {
      */
     public <I,O extends I> I getProxy(O realObject, Class<O> realClass, ProxyBehavior proxyBehavior, List<String> propertyChains) {
         Class<? extends I> proxyClass = this.getDefaultProxyLoader().getProxyClassFromClass(realClass);
-        RootProxyMapper<I, O> proxyMapper = new RootProxyMapper<I, O>(realObject, realClass, proxyClass, proxyBehavior, defaultProxyLoader, propertyChains);
+        Map<String, Object> newValues = null;
+        Map<String, Object> originalValues = null;
+        RootProxyMapper<I, O> proxyMapper = new RootProxyMapper<I, O>(realObject, realClass, proxyClass, proxyBehavior, defaultProxyLoader, propertyChains, originalValues, newValues );
         initProxyMapper(proxyMapper);
         return proxyMapper.getExternalFacingProxy();
     }
@@ -123,7 +122,7 @@ public class ProxyFactoryImpl implements ProxyFactory {
      * @param <O>
      * @param proxyMapper
      */
-    private <I, O extends I> void initProxyMapper(ProxyMapperImplementor<I, O> proxyMapper) {
+    private <I, O extends I> void initProxyMapper(RootProxyMapper<I, O> proxyMapper) {
         if ( proxyMapper.getProxyLoader() == null) {
             proxyMapper.setProxyLoader(defaultProxyLoader);
         }

@@ -23,10 +23,18 @@ public interface ProxyMapper<I, O extends I> {
 
     Object getCachedValue(String propertyName);
 
-    boolean containsKey(String propertyName);
+    boolean containsKey(Object propertyName);
 
+    /**
+     *
+     * @return unmodifiable map to the new values
+     */
     Map<String, Object> getNewValues();
 
+    /**
+     *
+     * @return unmodifiable map to the original values
+     */
     Map<String, Object> getOriginalValues();
 
     ProxyBehavior getProxyBehavior();
@@ -59,6 +67,11 @@ public interface ProxyMapper<I, O extends I> {
 
     Object getKeyExpression();
 
+    /**
+     * Use the property mappings copy the values stored in {@link #getNewValues()} back to the
+     * {@link #getRealObject()} object.
+     * @return the real object.
+     */
     O applyToRealObject();
 
     /**
