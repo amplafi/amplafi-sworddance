@@ -23,8 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.commons.lang.StringUtils.*;
+
 import com.sworddance.beans.ProxyLoader.ChildObjectNotLoadableException;
 import com.sworddance.util.CurrentIterator;
+import com.sworddance.util.WeakProxy;
 
 /**
  * enables a controlled access to an object tree that also supports caching.
@@ -245,26 +248,6 @@ java.lang.AssertionError: isSubtype 15
      */
     protected abstract void putOriginalValues(String propertyName, Object result);
     protected abstract void putNewValues(String propertyName, Object result);
-    /**
-     * @see com.sworddance.beans.ProxyMapper#getCachedValue(java.lang.String)
-     */
-    public abstract Object getCachedValue(String propertyName);
-    /**
-     * @see com.sworddance.beans.ProxyMapper#containsKey(java.lang.String)
-     */
-    public abstract boolean containsKey(String propertyName);
-    /**
-     * @see com.sworddance.beans.ProxyMapper#getNewValues()
-     */
-    public abstract Map<String, Object> getNewValues();
-    /**
-     * @see com.sworddance.beans.ProxyMapper#getOriginalValues()
-     */
-    public abstract Map<String, Object> getOriginalValues();
-    /**
-     * @see com.sworddance.beans.ProxyMapper#getProxyBehavior()
-     */
-    public abstract ProxyBehavior getProxyBehavior();
 
     /**
      * @see com.sworddance.beans.ProxyMapper#clear()
@@ -331,11 +314,15 @@ java.lang.AssertionError: isSubtype 15
      * @param propertyName
      * @return "{@link #basePropertyPath}.propertyName"
      */
-    protected String getTruePropertyName(String propertyName) {
-        if ( this.basePropertyPath == null) {
-            return propertyName;
+    protected String getTruePropertyName(Object propertyName) {
+        if ( propertyName == null) {
+            return null;
+        }
+        String propertyNameString = propertyName.toString();
+        if ( isBlank(this.getBasePropertyPath())) {
+            return propertyNameString;
         } else {
-            return this.basePropertyPath+"."+propertyName;
+            return this.getBasePropertyPath()+"."+propertyNameString;
         }
     }
 
@@ -359,11 +346,11 @@ java.lang.AssertionError: isSubtype 15
                 this.setRealObject(actualObject);
             }
         }
-        return this.realObject == null? null: this.realObject.get();
+        return WeakProxy.getActual(this.realObject);
     }
 
     public void setRealObject(O realObject) {
-        this.realObject = realObject == null?null: new WeakReference<O>(realObject);
+        this.realObject = WeakProxy.getWeakReference(realObject);
         this.realObjectSet = true;
     }
 

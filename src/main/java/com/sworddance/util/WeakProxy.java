@@ -14,6 +14,8 @@
 
 package com.sworddance.util;
 
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -46,34 +48,60 @@ public class WeakProxy {
                 clazz = actualReferent.getClass();
                 interfaces = clazz.getInterfaces();
             }
-            T t = (T) Proxy.newProxyInstance(clazz.getClassLoader(), interfaces, new ProxyInvocationHandler<T>(actualReferent));
+            Reference <T>objectRef = getWeakReference((T)referent);
+            T t = (T) Proxy.newProxyInstance(clazz.getClassLoader(), interfaces, new ProxyInvocationHandler<T>(objectRef));
             return t;
         }
     }
 
+    /**
+     *
+     * @param proxy a {@link Reference} or proxy created by {@link #newProxyInstance(Object, Class...)}
+     * @return true if there is an actual object to access.
+     */
     public static boolean isWired(Object proxy) {
-        if ( proxy != null && Proxy.isProxyClass(proxy.getClass())){
-            InvocationHandler invocationHandler = Proxy.getInvocationHandler(proxy);
-            if ( invocationHandler instanceof ProxyInvocationHandler<?>) {
-                return ((ProxyInvocationHandler<?>)invocationHandler).isWired();
-            }
-        }
-        return false;
+        return getActual(proxy) != null;
     }
+    /**
+     *
+     * @param <T>
+     * @param proxy
+     * @return the actual object that is wrapped by {@link Reference} and {@link #newProxyInstance(Object, Class...)} created
+     * objects.
+     */
     @SuppressWarnings("unchecked")
     public static <T> T getActual(Object proxy) {
-        if ( proxy != null && Proxy.isProxyClass(proxy.getClass())){
+        if ( proxy == null) {
+            return null;
+        } else if ( Proxy.isProxyClass(proxy.getClass())){
             InvocationHandler invocationHandler = Proxy.getInvocationHandler(proxy);
             if ( invocationHandler instanceof ProxyInvocationHandler<?>) {
                 return (T) ((ProxyInvocationHandler<?>)invocationHandler).getActual();
             }
+        } else if ( proxy instanceof Reference<?>) {
+            return getActual(((Reference<T>)proxy).get());
         }
         return (T) proxy;
     }
+
+    public static <T> WeakReference<T> getWeakReference(T referent) {
+        if (referent == null) {
+            return null;
+        } else {
+            return new WeakReference<T>(referent);
+        }
+    }
+    public static <T> SoftReference<T> getSoftReference(T referent) {
+        if (referent == null) {
+            return null;
+        } else {
+            return new SoftReference<T>(referent);
+        }
+    }
     protected static class ProxyInvocationHandler<T> implements InvocationHandler {
-        private final WeakReference<T> objectRef;
-        protected ProxyInvocationHandler(Object referent) {
-            objectRef = new WeakReference<T>((T)referent);
+        private final Reference<T> objectRef;
+        protected ProxyInvocationHandler(Reference<T> objectRef) {
+            this.objectRef = objectRef;
         }
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -88,10 +116,14 @@ public class WeakProxy {
          * @return the objectRef
          */
         public T getActual() {
-            return objectRef.get();
+            if (objectRef == null) {
+                return null;
+            } else {
+                return objectRef.get();
+            }
         }
         public boolean isWired() {
-            return objectRef != null && getActual() != null;
+            return getActual() != null;
         }
     }
 }

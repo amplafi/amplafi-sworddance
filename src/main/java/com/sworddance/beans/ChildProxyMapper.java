@@ -75,7 +75,7 @@ public class ChildProxyMapper<I,O extends I> extends ProxyMapperImpl<I,O> {
         return this.getRootProxyMapper().getCachedValue(getTruePropertyName(propertyName));
     }
     @Override
-    public boolean containsKey(String propertyName) {
+    public boolean containsKey(Object propertyName) {
         return this.getRootProxyMapper().containsKey(getTruePropertyName(propertyName));
     }
 
