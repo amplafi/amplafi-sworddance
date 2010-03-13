@@ -25,7 +25,7 @@ public interface Listable {
      *
      */
     public static final String LIST_DISPLAY_VALUE = "listDisplayValue";
-    public static ListableComparator COMPARATOR = new ListableComparator();
+    public static final ListableComparator COMPARATOR = new ListableComparator();
     /**
      * @return the string that is suitable when implementer is displayed in a list of similar items.
      */

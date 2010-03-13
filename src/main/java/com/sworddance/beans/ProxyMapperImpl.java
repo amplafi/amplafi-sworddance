@@ -336,6 +336,7 @@ java.lang.AssertionError: isSubtype 15
     /**
      * @see com.sworddance.beans.ProxyMapper#getRealObject()
      */
+    @SuppressWarnings("unchecked")
     public O getRealObject() throws ChildObjectNotLoadableException {
 
         if ( !this.isRealObjectSet()) {
@@ -346,7 +347,7 @@ java.lang.AssertionError: isSubtype 15
                 this.setRealObject(actualObject);
             }
         }
-        return WeakProxy.getActual(this.realObject);
+        return (O) WeakProxy.getActual(this.realObject);
     }
 
     public void setRealObject(O realObject) {
