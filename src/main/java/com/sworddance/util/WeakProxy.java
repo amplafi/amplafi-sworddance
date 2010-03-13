@@ -79,7 +79,7 @@ public class WeakProxy {
                 return (T) ((ProxyInvocationHandler<?>)invocationHandler).getActual();
             }
         } else if ( proxy instanceof Reference<?>) {
-            return getActual(((Reference<T>)proxy).get());
+            return (T) getActual(((Reference<T>)proxy).get());
         }
         return (T) proxy;
     }
