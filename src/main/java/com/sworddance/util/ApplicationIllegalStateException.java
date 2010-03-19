@@ -38,5 +38,16 @@ public class ApplicationIllegalStateException extends IllegalStateException {
     public ApplicationIllegalStateException(String message, Throwable cause) {
         super(message, cause);
     }
-
+    /**
+     * @param failMessageParts any number of objects that are concatenated and converted to strings only if message is thrown.
+     * @param validResult if true then return null. Otherwise throw {@link ApplicationIllegalArgumentException}.
+     * @return null always
+     * @throws ApplicationIllegalStateException if validResult is false.
+     */
+    public static ApplicationIllegalStateException valid(boolean validResult, Object... failMessageParts) {
+        if (!validResult) {
+            throw new ApplicationIllegalStateException(failMessageParts);
+        }
+        return null;
+    }
 }
