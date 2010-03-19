@@ -60,23 +60,23 @@ public class TestUriFactoryImpl {
         URI uri1 = createUri(encodedUriString, true);
         assertEquals(uri1.toString(), "http://localhost:8080/Application%20for%20scholarship%25+.pdf");
     }
-    
+
     @Test
     public void testPercentEncoding() {
         String uriStr = "http://localhost:8080/abc.pdf";
         assertEquals(createUri(uriStr,true).toString(), "http://localhost:8080/abc.pdf");
-        
+
         uriStr = "http://localhost:8080/abc%";
         assertEquals(createUri(uriStr,true).toString(), "http://localhost:8080/abc%25");
-        
+
         uriStr = "http://localhost:8080/abc%1T";
         assertEquals(createUri(uriStr,true).toString(), "http://localhost:8080/abc%251T");
-        
+
         uriStr = "http://localhost:8080/abc%251T";
         assertEquals(createUri(uriStr,true).toString(), "http://localhost:8080/abc%251T");
-        
+
         uriStr = "http://localhost:8080/abc!$'()*+,-._";
-        assertEquals(createUri(uriStr,true).toString(), "http://localhost:8080/abc!$'()*+,-._");        
+        assertEquals(createUri(uriStr,true).toString(), "http://localhost:8080/abc!$'()*+,-._");
     }
 
     @Test
@@ -90,5 +90,28 @@ public class TestUriFactoryImpl {
         assertEquals(qmap.get("r"), "r_value");
         assertEquals(qmap.get("s"), "s_value");
         assertEquals(qmap.get("t"), "t_value");
+    }
+
+    @Test
+    public void testUriResolutionWithBase() throws Exception {
+        URI uri = new URI("http://amplafi.net/us/msg");
+
+        assertEquals(absolutize("test.html",uri,"msg").toString(), "http://amplafi.net/us/msg/test.html");
+        assertEquals(absolutize("http://amplafi.com",uri,"msg").toString(), "http://amplafi.com");
+        assertEquals(absolutize("http://amplafi.com/",uri,"msg").toString(), "http://amplafi.com/");
+        assertEquals(absolutize("javascript:alert();",uri,"msg").toString(), "javascript:alert();");
+        assertEquals(absolutize(null,uri,"msg").toString(), "http://amplafi.net/us/msg/");
+    }
+
+    @Test
+    public void testUriResolutionWithoutBase() throws Exception {
+        URI uri = new URI("http://amplafi.net/us/msg");
+
+        assertEquals(absolutize("test.html", uri, null).toString(), "http://amplafi.net/us/test.html");
+        assertEquals(absolutize("http://amplafi.com", uri, null).toString(), "http://amplafi.com");
+        assertEquals(absolutize("http://amplafi.com/", uri, null).toString(), "http://amplafi.com/");
+        assertEquals(absolutize("javascript:alert();", uri, null).toString(), "javascript:alert();");
+        assertEquals(absolutize(null, uri, null).toString(), "http://amplafi.net/us/");
+
     }
 }
