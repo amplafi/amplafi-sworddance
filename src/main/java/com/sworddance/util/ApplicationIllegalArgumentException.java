@@ -46,5 +46,16 @@ public class ApplicationIllegalArgumentException extends
     public ApplicationIllegalArgumentException(Object... failMessage) {
         super(join(failMessage));
     }
-
+    /**
+     * @param failMessageParts any number of objects that are concatenated and converted to strings only if message is thrown.
+     * @param validResult if true then return null. Otherwise throw {@link ApplicationIllegalArgumentException}.
+     * @return null always
+     * @throws ApplicationIllegalArgumentException if validResult is false.
+     */
+    public static ApplicationIllegalArgumentException valid(boolean validResult, Object... failMessageParts) {
+        if (!validResult) {
+            throw new ApplicationIllegalArgumentException(failMessageParts);
+        }
+        return null;
+    }
 }
