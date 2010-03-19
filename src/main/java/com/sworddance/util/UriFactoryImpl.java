@@ -34,6 +34,8 @@ import java.util.regex.Pattern;
 /**
  * @author patmoore
  *
+ * TODO: Most of these methods should be rolled into a UriSourceImplementor.
+ *
  */
 public class UriFactoryImpl {
 
@@ -436,5 +438,58 @@ public class UriFactoryImpl {
             isHexAfterPercent = false;
         }
         return isHexAfterPercent;
+    }
+    /**
+     *
+     * @param baseUri
+     * @param relativeUriString may be an absolute uri when converted to a URI
+     * @return
+     */
+    public static String absolutize(URI baseUri, String relativeUriString) {
+        URI relativeUri = UriFactoryImpl.createUri(relativeUriString);
+        if ( relativeUri != null && relativeUri.isAbsolute()) {
+            return relativeUri.toString();
+        }
+
+        notNull(baseUri, "uri should not be null");
+        if (relativeUriString == null) {
+            ApplicationIllegalArgumentException.valid(baseUri.isAbsolute(),baseUri,": uri must be absolute because there is no relativeUriString.");
+            return baseUri.resolve(".").toString();
+        }
+        return baseUri.resolve(relativeUri).toString();
+    }
+    /**
+     * Converts the given href value to an absolute uri.
+     * The html document's {@link #getBase() base} and
+     * {@link #getUri() uri} are used in order to derive the
+     * correct location of the resource.
+     *
+     * @param href accepts null
+     * @param baseUri
+     * @param baseHtmlElement
+     * @return the URI
+     *
+     * @throws IllegalArgumentException if the uri resolution encounters
+     * {@link URI#create(String) problems}.
+     */
+    public static URI absolutize(String href, URI baseUri, String baseHtmlElement) {
+        if (href==null) {
+            href="";
+        }
+        URI uri = createUri(href);
+        if (uri != null && uri.isAbsolute()) {
+            return uri;
+        }
+
+        String start = absolutize(baseUri, baseHtmlElement);
+        if (!start.endsWith("/")) {
+            start += "/";
+        }
+        URI startUri = createUri(start);
+        if ( uri != null ) {
+            return startUri.resolve(uri);
+        } else {
+            return startUri;
+        }
     }
 }
