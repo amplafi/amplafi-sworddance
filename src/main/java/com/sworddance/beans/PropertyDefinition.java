@@ -14,79 +14,51 @@
 
 package com.sworddance.beans;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * This provides more detail than is available via reflection. Specifically, what is the exact class of the keys and values in {@link Map}s or the elements of a {@link List}.
  * @author patmoore
  *
  */
-public class PropertyDefinition {
+public interface PropertyDefinition {
 
-    private PropertyDefinition keyPropertyDefinition;
-    private PropertyDefinition elementPropertyDefinition;
-    private Class<?> propertyClass;
-    public PropertyDefinition() {
-
-    }
-    public PropertyDefinition(Class<?> propertyClass, PropertyDefinition keyPropertyDefinition, PropertyDefinition elementPropertyDefinition) {
-        this.propertyClass = propertyClass;
-        this.keyPropertyDefinition = keyPropertyDefinition;
-        this.elementPropertyDefinition = elementPropertyDefinition;
-    }
     /**
      * @param keyPropertyDefinition the keyPropertyDefinition to set
      */
-    public void setKeyPropertyDefinition(PropertyDefinition keyPropertyDefinition) {
-        this.keyPropertyDefinition = keyPropertyDefinition;
-    }
+    void setKeyPropertyDefinition(PropertyDefinition keyPropertyDefinition);
+
     /**
      * @return the keyPropertyDefinition
      */
-    public PropertyDefinition getKeyPropertyDefinition() {
-        return keyPropertyDefinition;
-    }
-    public boolean isKeyPropertyDefinitionSet() {
-        return this.keyPropertyDefinition != null;
-    }
+    PropertyDefinition getKeyPropertyDefinition();
+
+    boolean isKeyPropertyDefinitionSet();
+
     /**
      * @param elementPropertyDefinition the elementPropertyDefinition to set
      */
-    public void setElementPropertyDefinition(PropertyDefinition elementPropertyDefinition) {
-        this.elementPropertyDefinition = elementPropertyDefinition;
-    }
+    void setElementPropertyDefinition(PropertyDefinition elementPropertyDefinition);
+
     /**
      * @return the elementPropertyDefinition
      */
-    public PropertyDefinition getElementPropertyDefinition() {
-        return elementPropertyDefinition;
-    }
-    public boolean isElementPropertyDefinitionSet() {
-        return this.elementPropertyDefinition != null;
-    }
+    PropertyDefinition getElementPropertyDefinition();
+
+    boolean isElementPropertyDefinitionSet();
+
     /**
      * @param propertyClass the propertyClass to set
      */
-    public void setPropertyClass(Class<?> propertyClass) {
-        this.propertyClass = propertyClass;
-    }
+    void setPropertyClass(Class<?> propertyClass);
+
     /**
      * @return the propertyClass
      */
-    public Class<?> getPropertyClass() {
-        return propertyClass;
-    }
-    public boolean isPropertyClassDefined() {
-        return propertyClass != null;
-    }
+    Class<?> getPropertyClass();
 
-    public boolean isSameDataClass(PropertyDefinition propertyDefinition) {
-        return propertyDefinition != null && this.propertyClass == propertyDefinition.propertyClass;
-    }
+    boolean isPropertyClassDefined();
 
-    public boolean isAssignableFrom(PropertyDefinition propertyDefinition) {
-        return propertyClass.isAssignableFrom(propertyDefinition.propertyClass);
-    }
+    boolean isSameDataClass(PropertyDefinition propertyDefinition);
+
+    boolean isAssignableFrom(PropertyDefinition propertyDefinition);
 
 }
