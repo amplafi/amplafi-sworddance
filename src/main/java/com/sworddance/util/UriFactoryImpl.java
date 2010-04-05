@@ -101,7 +101,7 @@ public class UriFactoryImpl {
      *
      * Please add the cases if you found anything else we may suffer from on redirect matter.
      *
-     * One more note. Why this couldn't be done in a regular method {@link #createUriWithSchemaAndPath(String)} ,
+     * One more note. Why this couldn't be done in a regular method {@link #createUriWithSchemaAndPath(Object)} ,
      * why we need separate one. Regular one deals with user input with no URI context built in. Redirect case
      * ALWAYS has context - the page it was redirected from. User meaning of something.page is (try it in browser!)
      * http://something.page. Redirect meaning of the same is most likely http://theHostRedirectCameFrom/something.page.
@@ -135,11 +135,11 @@ public class UriFactoryImpl {
      * constructs new URI with default "http" scheme. If path requested is null (amplafi.com) it will append default
      * http path: http://amplafi.com/
      *
-     * @param uriStr string to compose URI object from
+     * @param uriStr object to compose URI object from
      * @return {@link java.net.URI} instance produced from the string passed.
      * @throws com.sworddance.util.ApplicationIllegalStateException if URI is not parsable.
      */
-    public static URI createUriWithSchemaAndPath(String uriStr) {
+    public static URI createUriWithSchemaAndPath(Object uriStr) {
         return createUriWithOptions(uriStr, true, true);
     }
 
