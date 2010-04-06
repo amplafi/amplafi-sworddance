@@ -182,7 +182,7 @@ public class CUtilities {
     }
 
     /**
-     *
+     * This is a safe put when using {@link java.util.concurrent.ConcurrentMap} which throw exceptions if key or value is null
      * @param <K>
      * @param <T>
      * @param map if null then nothing happens
