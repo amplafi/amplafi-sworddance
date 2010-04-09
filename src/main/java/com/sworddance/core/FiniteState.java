@@ -16,6 +16,10 @@ package com.sworddance.core;
 
 import java.util.Collection;
 
+import com.sworddance.util.ApplicationIllegalStateException;
+
+import static com.sworddance.util.CUtilities.*;
+
 /**
  * implementers are classes that represent a finite state ( usually enums ) with allowed transitions.
  * @author patmoore
@@ -31,7 +35,7 @@ public interface FiniteState<T extends FiniteState<T>> {
     /**
      *
      * @param newFiniteState
-     * @return true if the tranistion to newFiniteState is permitted.
+     * @return true if the transition to newFiniteState is permitted.
      */
     boolean isAllowedTransition(T newFiniteState);
     /**
@@ -47,11 +51,19 @@ public interface FiniteState<T extends FiniteState<T>> {
         public boolean isAllowedTransition(T oldFiniteState, T newFiniteState) {
             if ( oldFiniteState == null || oldFiniteState == newFiniteState) {
                 return true;
-            } else if ( newFiniteState == null ) {
+            } else if ( newFiniteState == null || isTerminalState(oldFiniteState)) {
                 return false;
             } else {
-                return oldFiniteState.isAllowedTransition(newFiniteState);
+                return oldFiniteState.getAllowedTransitions().contains(newFiniteState);
             }
+        }
+
+        /**
+         * @param finiteState
+         * @return true if finiteState != null and there are no allowed transitions.
+         */
+        public boolean isTerminalState(T finiteState) {
+            return finiteState != null && (isEmpty(finiteState.getAllowedTransitions()));
         }
 
         /**
@@ -73,11 +85,11 @@ public interface FiniteState<T extends FiniteState<T>> {
          * @param oldFiniteState
          * @param newFiniteState
          * @return newFiniteState
+         * @throws ApplicationIllegalStateException if the transition is not permitted.
          */
-        public T checkAllowed(T oldFiniteState, T newFiniteState) {
-            if ( !isAllowedTransition(oldFiniteState, newFiniteState)) {
-                throw new IllegalStateException("cannot go from "+ oldFiniteState+" to "+newFiniteState);
-            }
+        public T checkAllowed(T oldFiniteState, T newFiniteState) throws ApplicationIllegalStateException {
+            ApplicationIllegalStateException.valid(isAllowedTransition(oldFiniteState, newFiniteState),
+                "cannot go from ", oldFiniteState," to ", newFiniteState);
             return newFiniteState;
         }
     }
