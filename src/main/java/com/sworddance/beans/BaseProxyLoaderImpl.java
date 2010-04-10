@@ -33,6 +33,7 @@ public class BaseProxyLoaderImpl implements ProxyLoader {
     @SuppressWarnings("unchecked")
     protected BaseProxyLoaderImpl() {
         try {
+            // avoids explicit Hibernate dependency
             this.hibernateProxyAnnotationClazz = (Class<? extends Annotation>) Class.forName("org.hibernate.annotations.Proxy");
             this.hibernateProxyAnnotationMethod = this.hibernateProxyAnnotationClazz.getMethod("proxyClass");
         } catch (ClassNotFoundException e) {
