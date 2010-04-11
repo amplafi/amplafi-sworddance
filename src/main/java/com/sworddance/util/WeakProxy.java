@@ -21,6 +21,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import static org.apache.commons.lang.StringUtils.*;
+
 import static com.sworddance.util.CUtilities.*;
 
 /**
@@ -49,7 +51,7 @@ public class WeakProxy {
                 interfaces = clazz.getInterfaces();
             }
             Reference <T>objectRef = getWeakReference((T)referent);
-            T t = (T) Proxy.newProxyInstance(clazz.getClassLoader(), interfaces, new ProxyInvocationHandler<T>(objectRef));
+            T t = (T) Proxy.newProxyInstance(clazz.getClassLoader(), interfaces, new ProxyInvocationHandler<T>(objectRef, interfaces));
             return t;
         }
     }
@@ -100,8 +102,10 @@ public class WeakProxy {
     }
     protected static class ProxyInvocationHandler<T> implements InvocationHandler {
         private final Reference<T> objectRef;
-        protected ProxyInvocationHandler(Reference<T> objectRef) {
+        private final String stringDescription;
+        protected ProxyInvocationHandler(Reference<T> objectRef, Class<?>[] interfaces) {
             this.objectRef = objectRef;
+            this.stringDescription = "implements = {"+join(interfaces, ", ")+"}";
         }
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -124,6 +128,10 @@ public class WeakProxy {
         }
         public boolean isWired() {
             return getActual() != null;
+        }
+        @Override
+        public String toString() {
+            return this.stringDescription+ " object="+this.getActual();
         }
     }
 }
