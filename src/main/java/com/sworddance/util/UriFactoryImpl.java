@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.ObjectUtils;
+
 /**
  * @author patmoore
  *
@@ -491,5 +493,24 @@ public class UriFactoryImpl {
         } else {
             return startUri;
         }
+    }
+
+    /**
+     * @param root
+     * @param filePath
+     * @return resolvedUri
+     */
+    public static URI resolve(Object root, Object filePath) {
+        URI rootUri = createUriWithSchemaAndPath(root);
+        ApplicationNullPointerException.notNull(rootUri, root);
+
+        String filePathStr = ObjectUtils.toString(filePath);
+        URI uri;
+        if ( isNotBlank(filePathStr)) {
+            uri = rootUri.resolve("./"+filePathStr);
+        } else {
+            uri = rootUri;
+        }
+        return uri;
     }
 }
