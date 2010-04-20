@@ -498,9 +498,17 @@ public class UriFactoryImpl {
     /**
      * @param root
      * @param filePath
-     * @return resolvedUri
+     * @return {@link #resolveWithDefaultFile(Object, Object, String)} - using "index.html" as the defaultFileName
      */
     public static URI resolve(Object root, Object filePath) {
+        return resolveWithDefaultFile(root, filePath, "index.html");
+    }
+    /**
+     * @param root
+     * @param filePath
+     * @return resolvedUri
+     */
+    public static URI resolveWithDefaultFile(Object root, Object filePath, String defaultFileName) {
         URI rootUri = createUriWithSchemaAndPath(root);
         ApplicationNullPointerException.notNull(rootUri, root);
 
@@ -510,6 +518,9 @@ public class UriFactoryImpl {
             uri = rootUri.resolve("./"+filePathStr);
         } else {
             uri = rootUri;
+        }
+        if ( uri.toString().endsWith("/")) {
+            uri = uri.resolve("./"+defaultFileName);
         }
         return uri;
     }
