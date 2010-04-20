@@ -58,4 +58,7 @@ public class ApplicationIllegalArgumentException extends
         }
         return null;
     }
+    public static ApplicationIllegalArgumentException notNull(Object notNullArgument, Object... failMessageParts) {
+        return valid(notNullArgument != null, failMessageParts);
+    }
 }
