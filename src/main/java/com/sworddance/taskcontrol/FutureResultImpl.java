@@ -38,15 +38,15 @@ import java.util.concurrent.TimeoutException;
 public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultImplementor<T> {
 
     private final FutureListenerProcessor<T, ?> processor;
+
     public FutureResultImpl() {
-        this(new FutureListenerProcessor<T,T>());
+        this(new NullCallable<T>(), new FutureListenerProcessor<T,T>());
     }
-    public FutureResultImpl(FutureListenerProcessor<T, ?> processor) {
-        super(new Callable<T>() {
-            @SuppressWarnings("unused")
-            public T call() throws Exception {
-                return null;
-            }});
+    public FutureResultImpl(Callable<T> callable) {
+        this(callable, new FutureListenerProcessor<T,T>());
+    }
+    public FutureResultImpl(Callable<T> callable, FutureListenerProcessor<T, ?> processor) {
+        super(callable);
         this.processor = processor;
     }
     public void addFutureListener(FutureListener futureListener) {
@@ -119,4 +119,9 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
             return null;
         }
     }
+    public static class NullCallable<T> implements Callable<T> {
+        @SuppressWarnings("unused")
+        public T call() throws Exception {
+            return null;
+        }};
 }
