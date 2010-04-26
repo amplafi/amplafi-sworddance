@@ -15,7 +15,7 @@
 package com.sworddance.beans;
 
 /**
- * This provides more detail than is available via reflection. Specifically, what is the exact class of the keys and values in {@link Map}s or the elements of a {@link List}.
+ * This provides more detail than is available via reflection. Specifically, what is the exact class of the keys and values in {@link java.util.Map}s or the elements of a {@link java.util.List}.
  * @author patmoore
  *
  */

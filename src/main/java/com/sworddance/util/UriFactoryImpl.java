@@ -445,7 +445,7 @@ public class UriFactoryImpl {
      *
      * @param baseUri
      * @param relativeUriString may be an absolute uri when converted to a URI
-     * @return
+     * @return absolute Uri
      */
     public static String absolutize(URI baseUri, String relativeUriString) {
         URI relativeUri = UriFactoryImpl.createUri(relativeUriString);
@@ -462,8 +462,8 @@ public class UriFactoryImpl {
     }
     /**
      * Converts the given href value to an absolute uri.
-     * The html document's {@link #getBase() base} and
-     * {@link #getUri() uri} are used in order to derive the
+     * The html document's baseHtmlElement and
+     * baseUri are used in order to derive the
      * correct location of the resource.
      *
      * @param href accepts null
