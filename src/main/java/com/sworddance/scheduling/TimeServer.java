@@ -39,14 +39,19 @@ public interface TimeServer extends ExpirationChecker  {
      */
     public Calendar getCurrentStandardCalendar();
     /**
+     * Do NOT use for values that are stored in the database. Use {@link #getApproximateCalendar()}.
+     * If this is accidently used there will be bugs during the create transaction when comparing the generated calendar with other calendar objects.
+     * This will occur because db as a lower precision than the calendar returned by this method. So before/after comparison will be different.
+     *
      * @return the current calendar with the highest possible accuracy.
      */
     public Calendar getCurrentCalendar();
 
     /**
+     * Use for date information going into the database.
      * @return the current calendar
-     * - with seconds and milliseconds zeroed. This is
-     *  an accuracy such that all parts of the system
+     * with milliseconds zeroed. This is
+     * an accuracy such that all parts of the system
      * can handle.
      *
      */

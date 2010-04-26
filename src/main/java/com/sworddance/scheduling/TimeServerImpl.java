@@ -75,6 +75,7 @@ public class TimeServerImpl implements TimeServer {
     public Calendar getZeroedCalendar() {
         Calendar zero = getApproximateCalendar();
         zero.set(0, 0, 0, 0, 0);
+        zero.set(Calendar.SECOND, 0);
         return zero;
     }
     /**
@@ -121,10 +122,9 @@ public class TimeServerImpl implements TimeServer {
     }
 
     /**
-     * Rounds time to the latest minute.
+     * Truncate time information less than the second.
      */
     protected void approximate(Calendar original) {
-        original.set(Calendar.SECOND, 0);
         original.set(Calendar.MILLISECOND, 0);
     }
 
