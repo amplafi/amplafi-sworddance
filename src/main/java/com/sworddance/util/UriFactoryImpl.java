@@ -281,23 +281,29 @@ public class UriFactoryImpl {
      * @return true if uri is relative ( so scheme not supplied ), or http/https protocol.
      */
     public static boolean isWebUri(URI uri) {
-        String scheme = uri.getScheme();
-        return !uri.isAbsolute() || "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme);
-    }
-
-    public static boolean isNonLocalUri(URI uri) {
-        String host = uri.getHost();
-        if ( isBlank(host) || !uri.isAbsolute() ) {
+        if ( uri == null ) {
             return false;
         } else {
-            // top-level domains ( .info, .com, .org, etc )  are at most 4 characters long + 1 for the dot.
-            // so checking for a '.' in the last 5 characters is a reasonable quick test to make sure the domain is
-            // a real domain.
-            int dotPos = host.substring(Math.max(host.length()-5, 0)).indexOf('.');
-            return dotPos >=0;
+            String scheme = uri.getScheme();
+            return !uri.isAbsolute() || "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme);
         }
     }
-
+    public static boolean isNonLocalUri(URI uri) {
+        if ( uri == null ) {
+            return false;
+        } else {
+            String host = uri.getHost();
+            if ( isBlank(host) || !uri.isAbsolute() ) {
+                return false;
+            } else {
+                // top-level domains ( .info, .com, .org, etc )  are at most 4 characters long + 1 for the dot.
+                // so checking for a '.' in the last 5 characters is a reasonable quick test to make sure the domain is
+                // a real domain.
+                int dotPos = host.substring(Math.max(host.length()-5, 0)).indexOf('.');
+                return dotPos >=0;
+            }
+        }
+    }
     /**
      * Chops uri to the max length supplied if it is longer.
      *
