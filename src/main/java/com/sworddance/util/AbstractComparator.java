@@ -17,7 +17,9 @@ package com.sworddance.util;
 import java.util.Comparator;
 
 /**
+ * because I always forget what should be negative / positive and the javadoc on Comparator always confuses me esp. wrt nulls :-P
  * @author patmoore
+ * @param <T>
  *
  */
 public abstract class AbstractComparator<T> implements Comparator<T> {
@@ -26,7 +28,7 @@ public abstract class AbstractComparator<T> implements Comparator<T> {
      * do the null checks
      * @param o1
      * @param o2
-     * @return o1 < o2
+     * @return negative number: o1 < o2, o1 == null o2 != null; positive number o1 != null and o2 == null or o1 > o2; 0 otherwise.
      */
     protected Integer doCompare(T o1, T o2) {
         if ( o1 == o2) {
