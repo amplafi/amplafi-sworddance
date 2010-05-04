@@ -521,12 +521,12 @@ public class UriFactoryImpl {
         String filePathStr = ObjectUtils.toString(filePath);
         URI uri;
         if ( isNotBlank(filePathStr)) {
-            uri = rootUri.resolve("./"+filePathStr);
+            uri = rootUri.resolve("./"+percentEncoding(filePathStr));
         } else {
             uri = rootUri;
         }
         if ( uri.toString().endsWith("/")) {
-            uri = uri.resolve("./"+defaultFileName);
+            uri = uri.resolve("./"+percentEncoding(defaultFileName));
         }
         return uri;
     }

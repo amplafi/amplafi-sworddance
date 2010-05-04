@@ -97,6 +97,7 @@ public class TestUriFactoryImpl {
         URI uri = new URI("http://amplafi.net/us/msg");
 
         assertEquals(absolutize("test.html",uri,"msg").toString(), "http://amplafi.net/us/msg/test.html");
+        assertEquals(absolutize("local events.html",uri,"msg").toString(), "http://amplafi.net/us/msg/local%20events.html");
         assertEquals(absolutize("http://amplafi.com",uri,"msg").toString(), "http://amplafi.com");
         assertEquals(absolutize("http://amplafi.com/",uri,"msg").toString(), "http://amplafi.com/");
         assertEquals(absolutize("javascript:alert();",uri,"msg").toString(), "javascript:alert();");
@@ -112,6 +113,13 @@ public class TestUriFactoryImpl {
         assertEquals(absolutize("http://amplafi.com/", uri, null).toString(), "http://amplafi.com/");
         assertEquals(absolutize("javascript:alert();", uri, null).toString(), "javascript:alert();");
         assertEquals(absolutize(null, uri, null).toString(), "http://amplafi.net/us/");
+    }
 
+    @Test
+    public void testResolve() throws Exception {
+        URI uri = new URI("http://amplafi.net/us/msg");
+
+        assertEquals(resolve(uri, "test.html").toString(), "http://amplafi.net/us/test.html");
+        assertEquals(resolve(uri, "local events.html").toString(), "http://amplafi.net/us/local%20events.html");
     }
 }
