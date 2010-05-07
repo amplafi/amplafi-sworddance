@@ -44,10 +44,13 @@ public class ApplicationIllegalStateException extends IllegalStateException {
      * @return null always
      * @throws ApplicationIllegalStateException if validResult is false.
      */
-    public static ApplicationIllegalStateException valid(boolean validResult, Object... failMessageParts) {
+    public static ApplicationIllegalStateException checkState(boolean validResult, Object... failMessageParts) {
         if (!validResult) {
             throw new ApplicationIllegalStateException(failMessageParts);
         }
         return null;
+    }
+    public static ApplicationIllegalStateException notNull(Object mustBeNotNull,Object... failMessageParts) {
+        return checkState(mustBeNotNull != null, failMessageParts);
     }
 }
