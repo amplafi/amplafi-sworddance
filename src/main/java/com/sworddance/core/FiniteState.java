@@ -15,13 +15,40 @@
 package com.sworddance.core;
 
 import java.util.Collection;
-
 import com.sworddance.util.ApplicationIllegalStateException;
 
 import static com.sworddance.util.CUtilities.*;
 
 /**
  * implementers are classes that represent a finite state ( usually enums ) with allowed transitions.
+ *
+ * Standard Template: (replace 'ManagerState' with actual enum name )
+ *
+ * <pre>
+        private List<ManagerState> allowedTransitions;
+
+        public static final FiniteStateChecker<ManagerState> STATE_CHECKER = new FiniteStateChecker<ManagerState>();
+
+        @Override
+        public ManagerState checkToChange(ManagerState newFiniteState) {
+            return STATE_CHECKER.checkToChange(this, newFiniteState);
+        }
+
+        @Override
+        public Collection<ManagerState> getAllowedTransitions() {
+            return this.allowedTransitions;
+        }
+
+        @Override
+        public boolean isAllowedTransition(ManagerState newFiniteState) {
+            return STATE_CHECKER.isAllowedTransition(this, newFiniteState);
+        }
+
+        @Override
+        public boolean isTerminalState() {
+            return STATE_CHECKER.isTerminalState(this);
+        }
+ * </pre>
  * @author patmoore
  * @param <T> the missing parameter
  *
@@ -88,7 +115,7 @@ public interface FiniteState<T extends FiniteState<T>> {
          * @throws ApplicationIllegalStateException if the transition is not permitted.
          */
         public T checkAllowed(T oldFiniteState, T newFiniteState) throws ApplicationIllegalStateException {
-            ApplicationIllegalStateException.valid(isAllowedTransition(oldFiniteState, newFiniteState),
+            ApplicationIllegalStateException.checkState(isAllowedTransition(oldFiniteState, newFiniteState),
                 "cannot go from ", oldFiniteState," to ", newFiniteState);
             return newFiniteState;
         }
