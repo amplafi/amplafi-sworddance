@@ -41,6 +41,11 @@ import org.apache.commons.lang.ObjectUtils;
  */
 public class UriFactoryImpl {
 
+    /**
+     * pattern to strip off all the protocol from a URI. Useful for forcing the URI protocol to a specific protocol.
+     */
+    public static final Pattern stripProtocol = Pattern.compile("^\\p{Alpha}+://(.+)$");
+
     public static String getFilename(URI uri) {
         return uri == null ? "" : substringAfterLast(uri.getPath(), "/");
     }
@@ -197,11 +202,6 @@ public class UriFactoryImpl {
         }
         return uri;
     }
-
-    /**
-     * pattern to strip off all the protocol from a URI. Useful for forcing the URI protocol to a specific protocol.
-     */
-    public static final Pattern stripProtocol = Pattern.compile("^\\p{Alpha}+://(.+)$");
 
     /**
      * Creates URI object from String and verifies that scheme is not null. For null schemes it
@@ -529,5 +529,31 @@ public class UriFactoryImpl {
             uri = uri.resolve("./"+percentEncoding(defaultFileName));
         }
         return uri;
+    }
+    /**
+     * remove all trailing/leading '.' and '/' and whitespace
+     * @param path
+     * @return
+     */
+    public static String sanitizePath(String path) {
+        if ( path != null ) {
+            path = path.trim();
+            int i;
+            for (i = 0; i < path.length(); i++) {
+                char ch = path.charAt(i);
+                if ( ch != '.' && ch != '/' && ch != '\\') {
+                    break;
+                }
+            }
+            int j;
+            for ( j = path.length()-1; j >=i; j--) {
+                char ch = path.charAt(j);
+                if ( ch != '.' && ch != '/' && ch != '\\') {
+                    break;
+                }
+            }
+            return path.substring(i,j+1);
+        }
+        return "";
     }
 }
