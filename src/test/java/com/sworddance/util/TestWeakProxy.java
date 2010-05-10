@@ -17,6 +17,7 @@ package com.sworddance.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
@@ -39,8 +40,39 @@ public class TestWeakProxy {
 
         }
         Collection<?> list = WeakProxy.newProxyInstance(new ArrayList<String>(), Collection.class);
+    }
+    @Test
+    public void testTransitive() {
         Bar o = new TestObject();
-        Foo bar = WeakProxy.newProxyInstance(o);
+        Bar bar = WeakProxy.newProxyInstance(o, Bar.class);
+        assertFalse(bar instanceof Foo);
+        Foo foo = WeakProxy.newProxyInstance(bar, Foo.class);
+        assertNotNull(foo);
+    }
+
+    @Test
+    public void testChainProxies() {
+        Foo expected = new Foo() {};
+        Foo foo = WeakProxy.newProxyInstance(expected);
+        Foo foo1 = WeakProxy.newProxyInstance(foo);
+        Foo actual = WeakProxy.getActual(foo1);
+        assertSame(actual, expected);
+    }
+
+    @Test
+    public void testRestore() {
+        final Foo expected = new Foo() {};
+        Foo foo = WeakProxy.newProxyInstance(null, new Callable<Foo>(){
+
+            @Override
+            public Foo call() throws Exception {
+                return expected;
+            }
+
+        }, Foo.class);
+        Foo foo1 = WeakProxy.newProxyInstance(foo);
+        Foo actual = WeakProxy.getActual(foo1);
+        assertSame(actual, expected);
     }
     interface Foo {
 

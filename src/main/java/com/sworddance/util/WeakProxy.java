@@ -15,11 +15,11 @@
 package com.sworddance.util;
 
 import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.concurrent.Callable;
 
 import static org.apache.commons.lang.StringUtils.*;
 
@@ -27,6 +27,7 @@ import static com.sworddance.util.CUtilities.*;
 
 /**
  * Weakly held object. Allows surrounding code to be unaware of WeakReference usage.
+
  * @author patmoore
  *
  */
@@ -39,19 +40,30 @@ public class WeakProxy {
      * @param interfaces optional - uses referent.getClass().getInterfaces() if not supplied.
      * @return null if referent == null otherwise returns a proxy implementing the interfaces
      */
-    @SuppressWarnings("unchecked")
     public static <T> T newProxyInstance(final Object referent, Class<?>...interfaces) {
-        if ( referent == null ) {
+        return newProxyInstance(referent, null, interfaces);
+    }
+    public static <T> T newProxyInstance(Callable<T> restoreCallable, Class<?>...interfaces) {
+        return newProxyInstance(null, restoreCallable, interfaces);
+    }
+    @SuppressWarnings("unchecked")
+    public static <T> T newProxyInstance(final Object referent, Callable<T> restoreCallable, Class<?>...interfaces) {
+        if ( referent == null && restoreCallable == null ) {
             return null;
         } else {
-            Object actualReferent = getActual(referent);
             Class<?> clazz = getFirst(interfaces);
-            if ( clazz == null) {
+            T actualReferent = (T) getActual(referent);
+            if ( clazz == null ) {
+                if ( actualReferent == null ) {
+                    actualReferent = invokeCallable(restoreCallable);
+                }
+                ApplicationIllegalArgumentException.notNull(actualReferent, "referent must be not null if there are no listed classes");
                 clazz = actualReferent.getClass();
                 interfaces = clazz.getInterfaces();
             }
-            Reference <T>objectRef = getWeakReference((T)referent);
-            T t = (T) Proxy.newProxyInstance(clazz.getClassLoader(), interfaces, new ProxyInvocationHandler<T>(objectRef, interfaces));
+            Reference <T>objectRef = getWeakReference(actualReferent);
+            ProxyInvocationHandler<T> invocationHandler = new ProxyInvocationHandler<T>(objectRef, restoreCallable, interfaces);
+            T t = invocationHandler.newProxyInstance(clazz.getClassLoader());
             return t;
         }
     }
@@ -73,17 +85,38 @@ public class WeakProxy {
      */
     @SuppressWarnings("unchecked")
     public static <T> T getActual(Object proxy) {
-        if ( proxy == null) {
-            return null;
-        } else if ( Proxy.isProxyClass(proxy.getClass())){
-            InvocationHandler invocationHandler = Proxy.getInvocationHandler(proxy);
-            if ( invocationHandler instanceof ProxyInvocationHandler<?>) {
-                return (T) ((ProxyInvocationHandler<?>)invocationHandler).getActual();
+        Object actual = proxy;
+        while(actual != null) {
+            if ( Proxy.isProxyClass(actual.getClass())){
+                InvocationHandler invocationHandler = Proxy.getInvocationHandler(actual);
+                if ( invocationHandler instanceof ProxyInvocationHandler<?>) {
+                    actual = ((ProxyInvocationHandler<?>)invocationHandler).getActual();
+                } else {
+                    break;
+                }
+            } else if ( actual instanceof Reference<?>) {
+                actual = getActual(((Reference<T>)proxy).get());
+            } else {
+                break;
             }
-        } else if ( proxy instanceof Reference<?>) {
-            return (T) getActual(((Reference<T>)proxy).get());
         }
-        return (T) proxy;
+        return (T) actual;
+    }
+    /**
+     * @param actual
+     * @return
+     */
+    private static <T> T invokeCallable(Callable<T> restoreCallable) {
+        if ( restoreCallable == null) {
+            return null;
+        }
+        try {
+            return restoreCallable.call();
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationGeneralException(e);
+        }
     }
 
     public static <T> WeakReference<T> getWeakReference(T referent) {
@@ -93,19 +126,16 @@ public class WeakProxy {
             return new WeakReference<T>(referent);
         }
     }
-    public static <T> SoftReference<T> getSoftReference(T referent) {
-        if (referent == null) {
-            return null;
-        } else {
-            return new SoftReference<T>(referent);
-        }
-    }
     protected static class ProxyInvocationHandler<T> implements InvocationHandler {
-        private final Reference<T> objectRef;
+        private final Callable<T> restoreCallable;
+        private Reference<T> objectRef;
         private final String stringDescription;
-        protected ProxyInvocationHandler(Reference<T> objectRef, Class<?>[] interfaces) {
+        private final Class<?>[] interfaces;
+        protected ProxyInvocationHandler(Reference<T> objectRef, Callable<T> restoreCallable, Class<?>[] interfaces) {
+            this.restoreCallable = restoreCallable;
             this.objectRef = objectRef;
             this.stringDescription = "implements = {"+join(interfaces, ", ")+"}";
+            this.interfaces = interfaces;
         }
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -117,14 +147,52 @@ public class WeakProxy {
             }
         }
         /**
+         * @param objectRef the objectRef to set
+         * @return this
+         */
+        @SuppressWarnings("hiding")
+        public ProxyInvocationHandler<T> initObjectRef(Reference<T> objectRef) {
+            this.setObjectRef(objectRef);
+            return this;
+        }
+        /**
+         * @param objectRef the objectRef to set
+         */
+        public void setObjectRef(Reference<T> objectRef) {
+            this.objectRef = objectRef;
+        }
+        /**
+         * @return the objectRef
+         */
+        public Reference<T> getObjectRef() {
+            return objectRef;
+        }
+        /**
          * @return the objectRef
          */
         public T getActual() {
-            if (objectRef == null) {
-                return null;
-            } else {
-                return objectRef.get();
+            T actual = null;
+            if (getObjectRef() != null) {
+                actual = getObjectRef().get();
             }
+            if ( actual == null ) {
+                actual = invokeCallable(restoreCallable);
+                setActual(actual);
+            }
+            return actual;
+        }
+        public void setActual(T actual) {
+            if ( actual != null ) {
+                setObjectRef(new WeakReference<T>(actual));
+            } else {
+                objectRef = null;
+            }
+        }
+        /**
+         * @return the interfaces
+         */
+        public Class<?>[] getInterfaces() {
+            return interfaces;
         }
         public boolean isWired() {
             return getActual() != null;
@@ -132,6 +200,10 @@ public class WeakProxy {
         @Override
         public String toString() {
             return this.stringDescription+ " object="+this.getActual();
+        }
+        @SuppressWarnings("unchecked")
+        public T newProxyInstance(ClassLoader classLoader) {
+            return (T) Proxy.newProxyInstance(classLoader, interfaces, this);
         }
     }
 }
