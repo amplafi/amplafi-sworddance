@@ -171,36 +171,30 @@ public class UriFactoryImpl {
     /**
      * This method creates the {@link URI} from the given argument.
      *
-     * @param uriStr {@link Object} from which {@link URI} has to be created
+     * @param uriStr {@link Object} from which {@link URI} has to be created. Allowed to be relative URI.
      * @param forceEncoding true if URI has to be encoded
      * @return {@link URI}
      */
     public static URI createUri(Object uriStr, boolean forceEncoding) {
-        URI uri;
-        if (uriStr == null) {
-            return null;
-        }
-        if (uriStr instanceof URI) {
-            uri = (URI) uriStr;
+        if (uriStr == null || uriStr instanceof URI) {
             // TODO handle UriSource
+            return (URI) uriStr;
         } else {
+            URI uri = null;
             String uriString = uriStr.toString().trim();
+            if (forceEncoding) {
+                uriString = percentEncoding(uriString);
+            }
             if (isNotBlank(uriString)) {
                 try {
-                    if (forceEncoding) {
-                        uri = new URI(percentEncoding(uriString));
-                    } else {
-                        uri = new URI(uriString);
-                    }
+                    uri = new URI(uriString);
                 } catch (URISyntaxException e) {
+                    // TODO: log some how?
                     e.printStackTrace();
-                    return null;
                 }
-            } else {
-                return null;
             }
+            return uri;
         }
-        return uri;
     }
 
     /**
@@ -512,6 +506,7 @@ public class UriFactoryImpl {
     /**
      * @param root
      * @param filePath
+     * @param defaultFileName
      * @return resolvedUri
      */
     public static URI resolveWithDefaultFile(Object root, Object filePath, String defaultFileName) {
