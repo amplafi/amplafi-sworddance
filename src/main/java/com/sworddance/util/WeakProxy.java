@@ -41,7 +41,7 @@ public class WeakProxy {
      * @return null if referent == null otherwise returns a proxy implementing the interfaces
      */
     public static <T> T newProxyInstance(final Object referent, Class<?>...interfaces) {
-        return newProxyInstance(referent, null, interfaces);
+        return (T) newProxyInstance(referent, null, interfaces);
     }
     public static <T> T newProxyInstance(Callable<T> restoreCallable, Class<?>...interfaces) {
         return newProxyInstance(null, restoreCallable, interfaces);
