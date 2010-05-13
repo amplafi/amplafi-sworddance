@@ -34,6 +34,8 @@ public class TimeServerImpl implements TimeServer {
     private List<TimeZone> timeZones;
     public TimeServerImpl() {
         gmtTimeZone = TimeZone.getTimeZone("GMT");
+        TimeZone.setDefault(gmtTimeZone);
+        
         timeZones = new ArrayList<TimeZone>();
         for(String id: TimeZone.getAvailableIDs()) {
             timeZones.add(TimeZone.getTimeZone(id));
