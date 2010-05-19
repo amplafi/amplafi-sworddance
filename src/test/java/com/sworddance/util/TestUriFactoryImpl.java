@@ -27,6 +27,15 @@ import static org.testng.Assert.*;
  *
  */
 public class TestUriFactoryImpl {
+    /**
+     *
+     */
+    private static final String NEW_TOP = "new_top";
+    /**
+     *
+     */
+    private static final String REMOVE_FIRST_SLASH = "remove/first/slash";
+
     @Test
     public void testCreateUriForRedirect(){
         String host = "http://test.com";
@@ -119,7 +128,33 @@ public class TestUriFactoryImpl {
     public void testResolve() throws Exception {
         URI uri = new URI("http://amplafi.net/us/msg");
 
-        assertEquals(resolve(uri, "test.html").toString(), "http://amplafi.net/us/test.html");
-        assertEquals(resolve(uri, "local events.html").toString(), "http://amplafi.net/us/local%20events.html");
+        assertEquals(resolveWithDefaultFile(uri, "test.html").toString(), "http://amplafi.net/us/test.html");
+        assertEquals(resolveWithDefaultFile(uri, "local events.html").toString(), "http://amplafi.net/us/local%20events.html");
+    }
+
+    @Test
+    public void testSanitizePath() {
+        String sanitized = sanitizePath("/" + REMOVE_FIRST_SLASH);
+        assertEquals(sanitized, REMOVE_FIRST_SLASH);
+        // check meaningless './'
+        sanitized = sanitizePath("././././"+REMOVE_FIRST_SLASH);
+        assertEquals(sanitized, REMOVE_FIRST_SLASH);
+        // check for '../' legally embedded.
+        sanitized = sanitizePath("top/middle/../.././" + NEW_TOP);
+        assertEquals(sanitized, NEW_TOP);
+        // check for '../' ILlegally embedded.
+        sanitized = sanitizePath("../top/../middle/../.././" + NEW_TOP);
+        assertEquals(sanitized, NEW_TOP);
+    }
+
+    /**
+     * make sure that the relative uri's are not accidently converted absolute paths.
+     */
+    @Test
+    public void testCreateUriScheme() {
+        URI uri = createUriWithSchema("foo.com/path/index.html");
+        assertEquals(uri.toString(), "http://foo.com/path/index.html");
+        uri = createUriWithSchema("/path/index.html");
+        assertEquals(uri.toString(), "/path/index.html");
     }
 }

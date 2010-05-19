@@ -15,23 +15,17 @@
 package com.sworddance.util;
 
 import static com.sworddance.util.ApplicationNullPointerException.notNull;
-import static org.apache.commons.lang.StringUtils.equalsIgnoreCase;
-import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.StringUtils.isEmpty;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.apache.commons.lang.StringUtils.left;
-import static org.apache.commons.lang.StringUtils.substringAfterLast;
-
+import static org.apache.commons.lang.StringUtils.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.lang.ObjectUtils;
 
 /**
  * @author patmoore
@@ -68,9 +62,10 @@ public class UriFactoryImpl {
             String path = uri.getRawPath();
             if (pathRequired && isEmpty(path)) {
                 String rawQuery = uri.getRawQuery();
-                newUriStr = newUriStr + "/" + (rawQuery == null ? "" : rawQuery);
+                newUriStr += "/" + (rawQuery == null ? "" : rawQuery);
             }
-            if (schemaRequired && isEmpty(uri.getScheme())) {
+            if (schemaRequired && !uri.isAbsolute() && !newUriStr.startsWith("/")) {
+                // TODO: check for a relative uri! will produce something like http:/httpdocs/demo if newUriStr does not have host information.
                 newUriStr = "http://" + newUriStr;
             }
             //noinspection StringEquality
@@ -500,7 +495,7 @@ public class UriFactoryImpl {
      * @param filePath
      * @return {@link #resolveWithDefaultFile(Object, Object, String)} - using "index.html" as the defaultFileName
      */
-    public static URI resolve(Object root, Object filePath) {
+    public static URI resolveWithDefaultFile(Object root, Object filePath) {
         return resolveWithDefaultFile(root, filePath, "index.html");
     }
     /**
@@ -513,7 +508,7 @@ public class UriFactoryImpl {
         URI rootUri = createUriWithSchemaAndPath(root);
         ApplicationNullPointerException.notNull(rootUri, root);
 
-        String filePathStr = ObjectUtils.toString(filePath);
+        String filePathStr = sanitizePath(filePath);
         URI uri;
         if ( isNotBlank(filePathStr)) {
             uri = rootUri.resolve("./"+percentEncoding(filePathStr));
@@ -526,29 +521,36 @@ public class UriFactoryImpl {
         return uri;
     }
     /**
-     * remove all trailing/leading '.' and '/' and whitespace
-     * @param path
-     * @return
+     * manually handle '..' path elements to ensure that the path cannot be used to access
+     * a directory above its root.
+     * '.' and blank elements are removed.
+     * @param filePath
+     * @return the sanitized path with no blank, '..' or '.' components.
      */
-    public static String sanitizePath(String path) {
-        if ( path != null ) {
-            path = path.trim();
-            int i;
-            for (i = 0; i < path.length(); i++) {
-                char ch = path.charAt(i);
-                if ( ch != '.' && ch != '/' && ch != '\\') {
-                    break;
+    public static String sanitizePath(Object filePath) {
+        if ( filePath != null ) {
+            String path = filePath.toString();
+
+            // chop up path and look for '..' and '.' and remove or collapse them.
+            String[] pathParts = path.split("[/\\\\]");
+            List<String> pathArr = new ArrayList<String>();
+            int index = -1;
+            for(String pathPart: pathParts) {
+                pathPart = pathPart.trim();
+                if ( pathPart.isEmpty() || ".".equals(pathPart)) {
+                    continue;
+                } else if ( "..".equals(pathPart)) {
+                    if ( index >= 0 ) {
+                        pathArr.remove(index--);
+                    }
+                } else {
+                    pathArr.add(pathPart);
+                    index++;
                 }
             }
-            int j;
-            for ( j = path.length()-1; j >=i; j--) {
-                char ch = path.charAt(j);
-                if ( ch != '.' && ch != '/' && ch != '\\') {
-                    break;
-                }
-            }
-            return path.substring(i,j+1);
+            return join(pathArr, "/");
+        } else {
+            return "";
         }
-        return "";
     }
 }
