@@ -29,8 +29,6 @@ import com.sworddance.util.ApplicationIllegalArgumentException;
 
 import static com.sworddance.util.CUtilities.*;
 
-import static org.apache.commons.collections.CollectionUtils.*;
-
 /**
  * Provides some general utility methods so that bean operations can be used more easily.
  *
