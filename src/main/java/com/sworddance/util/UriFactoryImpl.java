@@ -348,7 +348,11 @@ public class UriFactoryImpl {
      * encoding in the URI
      * {@linkplain "http://www.ietf.org/rfc/rfc1738.txt"} (section 2.2)
      */
-    private static final char[] safe = new char[] { '!', '$', '\'', '(', ')', '*', '+', ',', '-', '.', '_' };
+    private static final char[] safe;
+    static {
+        safe = new char[] { '!', '$', '\'', '(', ')', '*', '+', ',', '-', '.', '_' };
+        Arrays.sort(safe);
+    }
 
     /**
      * Sorted list of characters which are reserved in a URI for a special meaning.
@@ -358,7 +362,11 @@ public class UriFactoryImpl {
      *
      * {@linkplain "http://www.ietf.org/rfc/rfc1738.txt"} (section 2.2)
      */
-    private static final char[] reserved = new char[] { '&', '/', ':', ';', '=', '?', '@'};
+    private static final char[] reserved;
+    static {
+        reserved = new char[] { '&', '/', ':', ';', '=', '?', '@', '#'};
+        Arrays.sort(reserved);
+    }
 
     /**
      * This method encodes URI string into a percent encoded string. If a URI string

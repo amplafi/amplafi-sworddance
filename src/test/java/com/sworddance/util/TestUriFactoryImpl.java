@@ -70,6 +70,9 @@ public class TestUriFactoryImpl {
         assertEquals(uri1.toString(), "http://localhost:8080/Application%20for%20scholarship%25+.pdf");
     }
 
+    /**
+     * Test to make sure reserved characters are not encoded.
+     */
     @Test
     public void testPercentEncoding() {
         String uriStr = "http://localhost:8080/abc.pdf";
@@ -86,6 +89,15 @@ public class TestUriFactoryImpl {
 
         uriStr = "http://localhost:8080/abc!$'()*+,-._";
         assertEquals(createUri(uriStr,true).toString(), "http://localhost:8080/abc!$'()*+,-._");
+
+        uriStr = "http://localhost:8080/abc ";
+        assertEquals(createUri(uriStr,true).toString(), "http://localhost:8080/abc");
+        uriStr = "http://localhost:8080/abc c";
+        assertEquals(createUri(uriStr,true).toString(), "http://localhost:8080/abc%20c");
+
+        uriStr = "http://localhost:8080/abc#";
+        assertEquals(createUri(uriStr,true).toString(), "http://localhost:8080/abc#");
+
     }
 
     @Test
