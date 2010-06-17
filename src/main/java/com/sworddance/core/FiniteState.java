@@ -14,7 +14,10 @@
 
 package com.sworddance.core;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+
 import com.sworddance.util.ApplicationIllegalStateException;
 
 import static com.sworddance.util.CUtilities.*;
@@ -74,12 +77,18 @@ public interface FiniteState<T extends FiniteState<T>> {
     Collection<T> getAllowedTransitions();
 
     public class FiniteStateChecker<T extends FiniteState<T>> {
+        private final List<T> alwaysAllowedTransitions;
+        public FiniteStateChecker(T... alwaysAllowedTransitions) {
+            this.alwaysAllowedTransitions = Arrays.asList(alwaysAllowedTransitions);
+        }
 
         public boolean isAllowedTransition(T oldFiniteState, T newFiniteState) {
             if ( oldFiniteState == null || oldFiniteState == newFiniteState) {
                 return true;
             } else if ( newFiniteState == null || isTerminalState(oldFiniteState)) {
                 return false;
+            } else if ( this.alwaysAllowedTransitions.contains(newFiniteState)) {
+                return true;
             } else {
                 return oldFiniteState.getAllowedTransitions().contains(newFiniteState);
             }
@@ -100,7 +109,8 @@ public interface FiniteState<T extends FiniteState<T>> {
          * @return oldFiniteState if !oldFiniteState.{@link FiniteState#isAllowedTransition(FiniteState)} otherwise newFiniteState.
          */
         public T checkToChange(T oldFiniteState, T newFiniteState) {
-            if ( isAllowedTransition(oldFiniteState, newFiniteState)) {
+            // we want to go through the enum's isAllowedTransition() just in case it has extended behavior.
+            if ( oldFiniteState == null || oldFiniteState.isAllowedTransition(newFiniteState)) {
                 return newFiniteState;
             } else {
                 return oldFiniteState;
