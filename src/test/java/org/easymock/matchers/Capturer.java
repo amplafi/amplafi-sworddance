@@ -89,8 +89,11 @@ public class Capturer<T> implements IArgumentMatcher, IAnswer<T>
      */
     public static <T> T capture(Capturer<T> capturer)
     {
-        reportMatcher(capturer);
+        return capturer.capture();
+    }
 
+    public T capture() {
+        reportMatcher(this);
         return null;
     }
 

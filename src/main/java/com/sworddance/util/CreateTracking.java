@@ -17,26 +17,48 @@ package com.sworddance.util;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+
+import static org.apache.commons.lang.StringUtils.*;
+
 
 /**
  * Simple class to track where an object was created.
  * @author Patrick Moore
  */
 public class CreateTracking implements Serializable {
-    public static final boolean ENABLE = Boolean.getBoolean("create-tracking");
+    private static final boolean ENABLE;
+    private static final List<String> classNames;
     private String createStr;
     private Exception e;
+    static {
+        String property = System.getProperty("create-tracking");
+        ENABLE = Boolean.parseBoolean(property);
+        classNames = new ArrayList<String>();
+        if ( !ENABLE && isNotBlank(property)) {
+            String[] classNamesArr = property.split("\\s*,\\s*");
+            classNames.addAll(Arrays.asList(classNamesArr));
+        }
+    }
     public CreateTracking() {
         e = new Exception(new Date().toString());
     }
 
     public static CreateTracking getInstance() {
-        return getInstance(null);
+        return getInstance(null, null);
     }
-    public static CreateTracking getInstance(Boolean create) {
+    public static CreateTracking getInstance(Class<?> clazz) {
+        return getInstance(null, clazz);
+    }
+    public static CreateTracking getInstance(Boolean create, Class<?> clazz) {
         if ( create == null ) {
             create = ENABLE;
+        }
+        if ( !create && clazz != null) {
+            create = classNames.contains( clazz.getName());
         }
         return create?new CreateTracking():null;
     }
