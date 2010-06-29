@@ -181,6 +181,39 @@ public class CUtilities {
         return !isEmpty(object);
     }
 
+    public static <T> T[] addToArray(Object...objects) {
+        Class<T> componentType = null;
+        return addToArray(componentType, objects);
+    }
+
+    /**
+     * @param <T>
+     * @param componentType
+     * @param objects
+     * @return
+     */
+    public static <T> T[] addToArray(Class<T> componentType, Object... objects) {
+        List<T> list = new ArrayList<T>();
+        for(Object object:objects) {
+            if (object != null && object.getClass().isArray()) {
+                T[] array = (T[]) addToArray(componentType, (Object[])object);
+                if ( array != null) {
+                    list.addAll(Arrays.asList(array));
+                }
+            } else {
+                if (object != null && componentType == null) {
+                    componentType = (Class<T>) object.getClass();
+                }
+                list.add((T)object);
+            }
+        }
+        if ( componentType == null ) {
+            return (T[]) list.toArray();
+        }
+        T[] newArray = (T[]) Array.newInstance(componentType, list.size());
+        return list.toArray(newArray);
+    }
+
     /**
      * This is a safe put when using {@link java.util.concurrent.ConcurrentMap} which throw exceptions if key or value is null
      * @param <K>

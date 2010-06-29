@@ -44,6 +44,15 @@ public class TestUtilities {
         assertEquals(iterator.next(), "b");
     }
 
+    public void testAddToArray() {
+        String[] result = addToArray("foo", "bar", new String[] {"nested1", "nested2"});
+        assertTrue(Arrays.deepEquals(result, new String[] {"foo", "bar", "nested1", "nested2"}));
+
+        Object[] args = new Object[] {null, "bar", new String[] {"nested1", "nested2"}};
+        result = addToArray(args);
+        assertTrue(Arrays.deepEquals(result, new String[] {null, "bar", "nested1", "nested2"}), Arrays.asList(result).toString());
+    }
+
     /**
      * test to make sure that get does not alter the map,
      * callables works right
