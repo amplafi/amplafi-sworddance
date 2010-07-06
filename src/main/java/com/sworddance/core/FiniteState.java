@@ -124,9 +124,9 @@ public interface FiniteState<T extends FiniteState<T>> {
          * @return newFiniteState
          * @throws ApplicationIllegalStateException if the transition is not permitted.
          */
-        public T checkAllowed(T oldFiniteState, T newFiniteState) throws ApplicationIllegalStateException {
+        public T checkAllowed(T oldFiniteState, T newFiniteState, Object...messages) throws ApplicationIllegalStateException {
             ApplicationIllegalStateException.checkState(isAllowedTransition(oldFiniteState, newFiniteState),
-                "cannot go from ", oldFiniteState," to ", newFiniteState);
+                "cannot go from ", oldFiniteState," to ", newFiniteState, messages);
             return newFiniteState;
         }
     }
