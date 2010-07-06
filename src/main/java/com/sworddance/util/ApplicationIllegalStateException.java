@@ -15,6 +15,7 @@
 package com.sworddance.util;
 
 import static org.apache.commons.lang.StringUtils.join;
+import static com.sworddance.util.CUtilities.*;
 
 public class ApplicationIllegalStateException extends IllegalStateException {
 
@@ -28,7 +29,7 @@ public class ApplicationIllegalStateException extends IllegalStateException {
     }
 
     public ApplicationIllegalStateException(Object... messages) {
-        super(join(messages));
+        super(join(addToArray(Object.class, messages)));
     }
 
     public ApplicationIllegalStateException(Throwable cause) {
