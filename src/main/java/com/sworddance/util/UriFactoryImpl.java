@@ -184,8 +184,7 @@ public class UriFactoryImpl {
                 try {
                     uri = new URI(uriString);
                 } catch (URISyntaxException e) {
-                    // TODO: log some how?
-                    e.printStackTrace();
+                    // just ignore, uri may be coming from user input.
                 }
             }
             return uri;
