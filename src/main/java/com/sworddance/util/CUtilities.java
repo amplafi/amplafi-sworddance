@@ -495,4 +495,12 @@ public class CUtilities {
         }
         return clazz;
     }
+    public static <T> void removeIfNotPresent(Collection<T> collection, Collection<T> permitted) {
+        for(Iterator<T> iter = collection.iterator(); iter.hasNext(); ) {
+            T element = iter.next();
+            if ( !permitted.contains(element)) {
+                iter.remove();
+            }
+        }
+    }
 }
