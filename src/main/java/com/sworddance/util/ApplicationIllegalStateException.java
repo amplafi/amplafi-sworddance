@@ -29,7 +29,7 @@ public class ApplicationIllegalStateException extends IllegalStateException {
     }
 
     public ApplicationIllegalStateException(Object... messages) {
-        super(join(addToArray(Object.class, messages)));
+        super(join(combineToSpecifiedClass(Object.class, messages)));
     }
 
     public ApplicationIllegalStateException(Throwable cause) {

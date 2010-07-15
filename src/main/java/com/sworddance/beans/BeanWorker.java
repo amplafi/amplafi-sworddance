@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.sworddance.util.ApplicationIllegalArgumentException;
+import com.sworddance.util.NotNullIterator;
 
 import static com.sworddance.util.CUtilities.*;
 
@@ -149,7 +150,7 @@ public class BeanWorker {
         }
         propMap = methodsMap.get(clazz);
 
-        for(String property: propertyNames) {
+        for(String property: new NotNullIterator<String>( propertyNames)) {
             addPropertyMethodChainIfAbsent(clazz, propMap, property, false);
         }
         return propMap;

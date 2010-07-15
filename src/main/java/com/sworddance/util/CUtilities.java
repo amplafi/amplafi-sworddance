@@ -181,37 +181,55 @@ public class CUtilities {
         return !isEmpty(object);
     }
 
-    public static <T> T[] addToArray(Object...objects) {
+    /**
+     * Combine multiple arrays into a single array.
+     * A ClassCastException will probably result on the return if there is not at least 1 non-null object or array in the objects parameter list.
+     * use {@link #combineToSpecifiedClass(Class, Object...)} and supply the expected class for a more certain result.
+     * @param <T>
+     * @param objects objects of <T> or arrays of <T> objects.
+     * @return a single array of <T> objects. nulls are preserved.
+     */
+    public static <T> T[] combine(Object...objects) {
         Class<T> componentType = null;
-        return addToArray(componentType, objects);
+        return combineToSpecifiedClass(componentType, objects);
     }
 
     /**
      * @param <T>
-     * @param componentType
-     * @param objects
-     * @return
+     * @param componentType if null then the component type is attempted to be determined.
+     * @param objects objects of <T> or arrays of <T> objects.
+     * @return a single array of <T> objects. nulls are preserved.
      */
-    public static <T> T[] addToArray(Class<T> componentType, Object... objects) {
+    public static <T> T[] combineToSpecifiedClass(Class<T> componentType, Object... objects) {
         List<T> list = new ArrayList<T>();
-        for(Object object:objects) {
-            if (object != null && object.getClass().isArray()) {
-                T[] array = (T[]) addToArray(componentType, (Object[])object);
-                if ( array != null) {
-                    list.addAll(Arrays.asList(array));
+        if ( objects != null) {
+            if ( componentType == null && objects.getClass().getComponentType() != Object.class) {
+                componentType = (Class<T>) objects.getClass().getComponentType();
+            }
+            for(Object object:objects) {
+                if (object != null && object.getClass().isArray()) {
+                    if ( componentType == null) {
+                        componentType = (Class<T>) object.getClass().getComponentType();
+                    }
+                    T[] array = combineToSpecifiedClass(componentType, (Object[])object);
+                    if ( array != null) {
+                        list.addAll(Arrays.asList(array));
+                    }
+                } else {
+                    if (object != null && componentType == null) {
+                        componentType = (Class<T>) object.getClass();
+                    }
+                    list.add((T)object);
                 }
-            } else {
-                if (object != null && componentType == null) {
-                    componentType = (Class<T>) object.getClass();
-                }
-                list.add((T)object);
             }
         }
         if ( componentType == null ) {
+            // probably will always fail?
             return (T[]) list.toArray();
+        } else {
+            T[] newArray = (T[]) Array.newInstance(componentType, list.size());
+            return list.toArray(newArray);
         }
-        T[] newArray = (T[]) Array.newInstance(componentType, list.size());
-        return list.toArray(newArray);
     }
 
     /**
