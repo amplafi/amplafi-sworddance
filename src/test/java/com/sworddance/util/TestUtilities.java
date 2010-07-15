@@ -10,8 +10,8 @@ import org.testng.annotations.Test;
 /**
  * Tests for {@link CUtilities}.
  */
-@Test
 public class TestUtilities {
+    @Test
     public void testGetFirst() {
         assertNull(getFirst(null));
         assertEquals(getFirst(new String[]{"a"}), "a");
@@ -21,6 +21,7 @@ public class TestUtilities {
         assertEquals(getFirst(new TreeSet<String>(Arrays.asList("a", "b"))), "a");
     }
 
+    @Test
     public void testCloneArrayList() {
         List<String> list = new ArrayList<String>();
         list.add("a");
@@ -32,6 +33,7 @@ public class TestUtilities {
         assertEquals(list2.get(1), "b");
     }
 
+    @Test
     public void testCloneTreeSet() {
         Set<String> set = new TreeSet<String>();
         set.add("a");
@@ -44,12 +46,18 @@ public class TestUtilities {
         assertEquals(iterator.next(), "b");
     }
 
-    public void testAddToArray() {
-        String[] result = addToArray("foo", "bar", new String[] {"nested1", "nested2"});
+    @Test
+    public void testCombine() {
+        String[] checkNullCase  = combine(null, null, new String[] { null, null });
+        assertTrue(Arrays.deepEquals( checkNullCase, new String[] { null,null,null,null} ));
+        // all nulls needs an explicit class supplied.
+        checkNullCase  = combineToSpecifiedClass(String.class, (String)null, null, null, null );
+        assertTrue(Arrays.deepEquals( checkNullCase, new String[] { null,null,null,null} ));
+        String[] result = combine("foo", "bar", new String[] {"nested1", "nested2"});
         assertTrue(Arrays.deepEquals(result, new String[] {"foo", "bar", "nested1", "nested2"}));
 
         Object[] args = new Object[] {null, "bar", new String[] {"nested1", "nested2"}};
-        result = addToArray(args);
+        result = combine(args);
         assertTrue(Arrays.deepEquals(result, new String[] {null, "bar", "nested1", "nested2"}), Arrays.asList(result).toString());
     }
 
@@ -57,6 +65,7 @@ public class TestUtilities {
      * test to make sure that get does not alter the map,
      * callables works right
      */
+    @Test
     public void testGet() {
         // use concurrent map because it does not allow null keys or values
         ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
@@ -91,6 +100,7 @@ public class TestUtilities {
         }), "bar");
     }
 
+    @Test
     public void testIsEmpty() {
         assertTrue(isEmpty(null));
         assertTrue(isEmpty(""));
