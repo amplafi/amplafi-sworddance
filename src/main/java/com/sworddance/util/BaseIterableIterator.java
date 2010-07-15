@@ -22,8 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
-
 /**
  * Simple implementation of {@link IterableIterator}.
  * @param <T> type returned by iteration.
@@ -41,7 +39,7 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
         this.setIterator(iter);
     }
     public BaseIterableIterator(Iterable<T> iter) {
-        setIterator(iter.iterator());
+        setIterator(iter!=null?iter.iterator():null);
     }
     public BaseIterableIterator(T... objects) {
         setIterator(Arrays.asList(objects).iterator());
@@ -49,11 +47,11 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
     public BaseIterableIterator(T first, T... objects) {
         List<T> list = new ArrayList<T>();
         list.add(first);
-        CollectionUtils.addAll(list, objects);
+        list.addAll(Arrays.asList(objects));
         setIterator(list.iterator());
     }
     public BaseIterableIterator(Map<?,?> map) {
-        setIterator(map.entrySet().iterator());
+        setIterator(map !=null?map.entrySet().iterator():null);
     }
     public <K> BaseIterableIterator(Reference<K> ref) {
         setIterator(ref);
