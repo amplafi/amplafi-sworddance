@@ -309,10 +309,12 @@ public class CUtilities {
      */
     @SuppressWarnings("unchecked")
     public static <K, V> V get(Map<K,V> map, Object key, Callable<V> defaultValue) {
-        if ( map == null || key == null) {
-            return null;
+        V value;
+        if ( map != null && key != null) {
+            value = map.get(key);
+        } else {
+            value = null;
         }
-        V value = map.get(key);
         if ( value == null && defaultValue != null) {
             V callValue;
             try {
