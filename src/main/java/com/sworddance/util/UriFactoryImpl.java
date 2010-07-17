@@ -41,7 +41,24 @@ public class UriFactoryImpl {
     public static final Pattern stripProtocol = Pattern.compile("^\\p{Alpha}+://(.+)$");
 
     public static String getFilename(URI uri) {
-        return uri == null ? "" : substringAfterLast(uri.getPath(), "/");
+        String fileName = null;
+        if (  uri != null ) {
+            fileName = substringAfterLast(uri.getPath(), "/");
+        }
+        if ( isNotBlank(fileName)) {
+            return fileName;
+        } else {
+            return null;
+        }
+    }
+    /**
+     * @param httpUri
+     * @return
+     */
+    public static URI getRootDirectory(URI httpUri) {
+        String path = httpUri.getPath();
+        URI base = httpUri.resolve(substringBeforeLast(path, "/") + "/");
+        return base;
     }
 
     public static URI createUriWithSpecificSchema(String uriStr, String forcedSchema) {
