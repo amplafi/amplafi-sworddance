@@ -328,7 +328,7 @@ public class CUtilities {
             } catch (Exception e) {
                 throw new ApplicationGeneralException(e);
             }
-            if ( callValue != null ) {
+            if ( callValue != null && map != null && key != null ) {
                 if ( map instanceof ConcurrentMap<?, ?>) {
                     ((ConcurrentMap<K,V>)map).putIfAbsent((K)key, callValue);
                 } else {
@@ -336,6 +336,8 @@ public class CUtilities {
                 }
                 // another thread may beat us to assigning the value.
                 value = map.get(key);
+            } else {
+                value = callValue;
             }
         }
         return value;

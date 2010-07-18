@@ -98,6 +98,10 @@ public class TestUtilities {
             }
 
         }), "bar");
+
+        // test returning of default value even if map or key is null
+        Integer i = get(null, null, 1);
+        assertEquals(i, Integer.valueOf(1));
     }
 
     @Test
