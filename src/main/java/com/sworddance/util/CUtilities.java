@@ -80,7 +80,16 @@ public class CUtilities {
     public static <T> boolean add(Collection<T> collection, T object) {
         return object != null && collection != null && collection.add(object);
     }
-
+    /**
+     * Add a anotherCollection to a collection provided both the collection and the anotherCollection are not null.
+     * @param <T>
+     * @param collection
+     * @param anotherCollection
+     * @return true if the value was added
+     */
+    public static <T> boolean addAll(Collection<T> collection, Collection<T> anotherCollection) {
+        return anotherCollection != null && collection != null && collection.addAll(anotherCollection);
+    }
     /**
      * returns the object at index supplied. returns null if list is null or
      * smaller than the index supplied.
