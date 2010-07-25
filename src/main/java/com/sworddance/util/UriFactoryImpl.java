@@ -36,11 +36,15 @@ import java.util.regex.Pattern;
 public class UriFactoryImpl {
 
     /**
+     *
+     */
+    private static final String DEFAULT_FILENAME = "index.html";
+    /**
      * pattern to strip off all the protocol from a URI. Useful for forcing the URI protocol to a specific protocol.
      */
     public static final Pattern stripProtocol = Pattern.compile("^\\p{Alpha}+://(.+)$");
 
-    public static String getFilename(URI uri) {
+    public static String getFilename(URI uri, String defaultFileName) {
         String fileName = null;
         if (  uri != null ) {
             fileName = substringAfterLast(uri.getPath(), "/");
@@ -48,8 +52,11 @@ public class UriFactoryImpl {
         if ( isNotBlank(fileName)) {
             return fileName;
         } else {
-            return null;
+            return defaultFileName;
         }
+    }
+    public static String getFilename(URI uri) {
+        return getFilename(uri, DEFAULT_FILENAME);
     }
     /**
      * @param httpUri
@@ -520,7 +527,7 @@ public class UriFactoryImpl {
      * @return {@link #resolveWithDefaultFile(Object, Object, String)} - using "index.html" as the defaultFileName
      */
     public static URI resolveWithDefaultFile(Object root, Object filePath) {
-        return resolveWithDefaultFile(root, filePath, "index.html");
+        return resolveWithDefaultFile(root, filePath, DEFAULT_FILENAME);
     }
     /**
      * @param root
@@ -548,6 +555,11 @@ public class UriFactoryImpl {
      * manually handle '..' path elements to ensure that the path cannot be used to access
      * a directory above its root.
      * '.' and blank elements are removed.
+     *
+     * '../foo/./index.html' becomes '/foo/index.html'
+     * '/foo/../../index.html' becomes '/index.html'
+     * 'foo////bar.html' becomes 'foo/bar.html'
+     *
      * @param filePath
      * @return the sanitized path with no blank, '..' or '.' components.
      */
