@@ -25,18 +25,26 @@ import java.util.Comparator;
 public abstract class AbstractComparator<T> implements Comparator<T> {
 
     /**
-     * do the null checks
+     * second argument comes before the first when sorting
+     */
+    protected static final int BEFORE = -1;
+    /**
+     * second argument comes after the first when sorting
+     */
+    protected static final int AFTER = 1;
+    /**
+     * do the null checks, nulls sort to the end
      * @param o1
      * @param o2
      * @return negative number: o1 < o2, o1 == null o2 != null; positive number o1 != null and o2 == null or o1 > o2; 0 otherwise.
      */
-    protected Integer doCompare(T o1, T o2) {
+    protected Integer doCompare(Object o1, Object o2) {
         if ( o1 == o2) {
             return 0;
         } else if ( o1 == null ) {
-            return -1;
+            return BEFORE;
         } else if ( o2 == null ) {
-            return 1;
+            return AFTER;
         } else {
             return null;
         }

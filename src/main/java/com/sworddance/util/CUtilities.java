@@ -313,7 +313,7 @@ public class CUtilities {
      * @param <V> value type in map
      * @param map if null then null is returned
      * @param key if null then null is returned
-     * @param defaultValue if a {@link ParameterizedCallable} then map and key are passed to {@link ParameterizedCallable#executeCall(Object...)}
+     * @param defaultValue if a {@link ParameterizedCallable} then map and key are passed to {@link ParameterizedCallable#executeCall(Object...)}(map,key)
      * @return the value in the map.
      */
     @SuppressWarnings("unchecked")
