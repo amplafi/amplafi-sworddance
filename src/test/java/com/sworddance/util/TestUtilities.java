@@ -125,4 +125,15 @@ public class TestUtilities {
         assertFalse(isEmpty(new Object[] { new Object()}));
     }
 
+    @Test
+    public void testGetClassSafely() {
+        Class<?> clazz = getClassSafely(null, "foo");
+        assertEquals(clazz, String.class);
+        clazz = getClassSafely(new Object(), "foo");
+        assertEquals(clazz, Object.class);
+        clazz = getClassSafely();
+        assertEquals(clazz, null);
+        clazz = getClassSafely(null);
+        assertEquals(clazz, null);
+    }
 }

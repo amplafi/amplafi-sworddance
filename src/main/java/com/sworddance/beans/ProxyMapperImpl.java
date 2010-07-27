@@ -17,7 +17,9 @@ package com.sworddance.beans;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.apache.commons.lang.StringUtils.*;
 
 import com.sworddance.beans.ProxyLoader.ChildObjectNotLoadableException;
+import com.sworddance.util.ApplicationNullPointerException;
 import com.sworddance.util.CurrentIterator;
 import com.sworddance.util.WeakProxy;
 
@@ -278,7 +281,7 @@ java.lang.AssertionError: isSubtype 15
                     if ( method.getReturnType() == Void.class || args != null && args.length > 1) {
                         O actualObject = getRealObject();
                         // or more than 1 argument (therefore not java bean property )
-                        return method.invoke(actualObject, args);
+                        return doInvoke(method, args);
                     } else {
                         return initValue(propertyName);
                     }
@@ -296,14 +299,34 @@ java.lang.AssertionError: isSubtype 15
             case strict:
                 throw new IllegalStateException("");
             default:
-                O actualObject = getRealObject();
-                if ( actualObject != null) {
-                    return method.invoke(actualObject, args);
-                } else {
-                    // TODO : this maybe o.k. if the
-                    return null;
-                }
+                return doInvoke(method, args);
             }
+        }
+    }
+
+    /**
+     * @param method
+     * @param args
+     * @param actualObject
+     * @return
+     * @throws IllegalAccessException
+     * @throws InvocationTargetException
+     */
+    private Object doInvoke(Method method, Object[] args) throws IllegalAccessException, InvocationTargetException {
+        O actualObject;
+        if ( (method.getModifiers() & Modifier.STATIC) != Modifier.STATIC) {
+            // not a static method
+            actualObject = getRealObject();
+            ApplicationNullPointerException.notNull(actualObject, "need object to call a non-static method ", method);
+        } else {
+            actualObject = null;
+        }
+        try {
+            return method.invoke(actualObject, args);
+        } catch(RuntimeException e) {
+            // would like to log or annotate somehow ..
+            // changing type of exception is bad so don't want to wrap and rethrow.
+            throw e;
         }
     }
     public String getKeyProperty() {
