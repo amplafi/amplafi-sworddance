@@ -140,6 +140,18 @@ public class CUtilities {
     public static <T> T getFirst(Object collection) {
         return (T) get(collection, 0);
     }
+    public static <T> T getFirstNonNull(Object collection) {
+        T result = getFirst(collection);
+        if ( result == null) {
+            for(int i = 1; i < size(collection); i++) {
+                result = get(collection, i);
+                if ( result != null) {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
 
     /**
      * a universal isEmpty check that can handle arrays, {@link Collection}s, {@link Map}s, {@link CharSequence} or objects.
@@ -533,5 +545,16 @@ public class CUtilities {
                 iter.remove();
             }
         }
+    }
+
+    public static Class<?> getClassSafely(Object...objects) {
+        if ( objects != null) {
+            for(Object object: objects) {
+                if (object != null) {
+                    return object.getClass();
+                }
+            }
+        }
+        return null;
     }
 }
