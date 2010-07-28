@@ -141,10 +141,10 @@ public class CUtilities {
         return (T) get(collection, 0);
     }
     public static <T> T getFirstNonNull(Object collection) {
-        T result = getFirst(collection);
+        T result = (T)getFirst(collection);
         if ( result == null) {
             for(int i = 1; i < size(collection); i++) {
-                result = get(collection, i);
+                result = (T)get(collection, i);
                 if ( result != null) {
                     break;
                 }
