@@ -20,8 +20,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.sworddance.util.AbstractParameterizedCallableImpl;
 import com.sworddance.util.CUtilities;
-import com.sworddance.util.ParameterizedCallable;
 
 /**
  * Map that is keyed by class and searches for a value by examining the class hierarchy.
@@ -31,8 +31,7 @@ import com.sworddance.util.ParameterizedCallable;
  *
  */
 public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
-
-    // TODO : use ConcurrentInitializedMap - but need to be able to handle getRaw() somehow.
+    // TODO : should be able to use ConcurrentInitializedMap now
     private ConcurrentMap<Class<?>, V> byClassMap = new ConcurrentHashMap<Class<?>, V>();
 
     public MapByClass() {
@@ -236,7 +235,7 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     }
 
     // TODO: use ConcurrentInitializedMap
-    static class InitializeEntry<V> implements ParameterizedCallable<V>{
+    static class InitializeEntry<V> extends AbstractParameterizedCallableImpl<V>{
 
         /**
          * @see com.sworddance.util.ParameterizedCallable#executeCall(java.lang.Object[])
@@ -275,14 +274,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
                 }
             }
             return valueByClass;
-        }
-
-        /**
-         * @see java.util.concurrent.Callable#call()
-         */
-        @Override
-        public V call() throws Exception {
-            return executeCall();
         }
     }
 }
