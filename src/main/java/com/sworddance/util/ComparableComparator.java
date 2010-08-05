@@ -23,7 +23,7 @@ public class ComparableComparator extends AbstractComparator<Comparable<?>> {
 
     public static final ComparableComparator INSTANCE = new ComparableComparator();
     /**
-     *
+     * nulls are sorted to be greater than non-nulls.
      * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
      * @return if comparison cannot be done then 0 for equals is returned.
      */
@@ -56,6 +56,12 @@ public class ComparableComparator extends AbstractComparator<Comparable<?>> {
     public boolean less(int o1, int o2) {
         return compare(o1, o2) < 0;
     }
+    /**
+     *
+     * @param o1
+     * @param o2
+     * @return true if o1 != null and (o2 == null or o1.compareTo(o2) < 0)
+     */
     public boolean less(Comparable<?> o1, Comparable<?>  o2) {
         Integer result = doCompare(o1, o2);
         return result != null && result < 0;
@@ -69,13 +75,27 @@ public class ComparableComparator extends AbstractComparator<Comparable<?>> {
         Integer result = doCompare(o1, new Integer(o2));
         return result != null && result > 0;
     }
-    
+
     public boolean greater(int o1, int o2) {
         return compare(o1, o2) > 0;
     }
+
+    /**
+     *
+     * note that is has slightly different behavior than {@link #compare(Comparable, Comparable)} wrt o1 being null.
+     * @param o1
+     * @param o2
+     * @return true if o1 != null and (o2 == null or o1.compareTo(o2) > 0)
+     */
     public boolean greater(Comparable<?> o1, Comparable<?>  o2) {
-        Integer result = doCompare(o1, o2);
-        return result != null && result > 0;
+        if ( o1 == null ) {
+            return false;
+        } else if ( o2 == null) {
+            return true;
+        } else {
+            Integer result = doCompare(o1, o2);
+            return result != null && result > 0;
+        }
     }
     public boolean equals(Comparable<?> o1, Comparable<?>  o2) {
         Integer result = doCompare(o1, o2);
@@ -84,5 +104,28 @@ public class ComparableComparator extends AbstractComparator<Comparable<?>> {
     public boolean equalsIgnoreCase(CharSequence o1, CharSequence o2) {
         Integer result = doCompare(o1, o2);
         return result != null && result == 0;
+    }
+
+    public <T extends Comparable<?>> T min(T...values) {
+        T result = null;
+        if ( values != null) {
+            for(T value : values) {
+                if (value != null && less(value, result)) {
+                    result = value;
+                }
+            }
+        }
+        return result;
+    }
+    public <T extends Comparable<?>> T max(T...values) {
+        T result = null;
+        if ( values != null) {
+            for(T value : values) {
+                if (value != null && greater(value, result)) {
+                    result = value;
+                }
+            }
+        }
+        return result;
     }
 }
