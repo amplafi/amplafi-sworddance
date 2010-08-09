@@ -15,6 +15,7 @@
 package com.sworddance.util;
 
 import static com.sworddance.util.ApplicationNullPointerException.notNull;
+import static com.sworddance.util.CUtilities.*;
 import static org.apache.commons.lang.StringUtils.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -343,9 +344,10 @@ public class UriFactoryImpl {
         if ( isNotBlank(queryStr)) {
             String[] queryParameters = queryStr.split("&");
             for(String queryParameterStr: queryParameters) {
-                String[] queryParameter = queryParameterStr.split("=");
-
-                queryParametersMap.put(queryParameter[0], queryParameter.length == 1?"": queryParameter[1]);
+                if (isNotBlank(queryParameterStr)) {
+                    String[] queryParameter = queryParameterStr.split("=");
+                    queryParametersMap.put(queryParameter[0], queryParameter.length < 2 ?"": queryParameter[1]);
+                }
             }
         }
         return queryParametersMap;
