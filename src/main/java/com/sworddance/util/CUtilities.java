@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -90,6 +89,29 @@ public class CUtilities {
     public static <T> boolean addAll(Collection<T> collection, Collection<T> anotherCollection) {
         return anotherCollection != null && collection != null && collection.addAll(anotherCollection);
     }
+    /**
+     * @param <T>
+     * @param collection
+     * @param newValues
+     * @return collection
+     */
+    public static <T> boolean addAllNotNull(Collection<T> collection, T... newValues) {
+        if ( collection != null ) {
+            return addAllNotNull(collection, Arrays.asList(newValues));
+        } else {
+            return false;
+        }
+    }
+    public static <T> boolean addAllNotNull(Collection<T> collection, Collection<T> newValues) {
+        boolean result = false;
+        if ( collection != null ) {
+            for(T newValue: new NotNullIterator<T>(newValues)) {
+                result |= collection.add(newValue);
+            }
+        }
+        return result;
+    }
+
     /**
      * returns the object at index supplied. returns null if list is null or
      * smaller than the index supplied.
@@ -162,40 +184,31 @@ public class CUtilities {
      * TODO (Any or All? which is better?)
      */
     public static boolean isEmpty(Object object) {
-        if (object != null ) {
-            if ( object instanceof Map<?, ?> ) {
-                if ( !((Map<?,?>)object).isEmpty()) {
-                    return false;
-                }
-            } else if ( object instanceof Collection<?> ) {
-                if ( !((Collection<?>)object).isEmpty()) {
-                    return false;
-                }
-            } else if ( object.getClass().isArray()) {
-                if ( ((Object[])object).length != 0) {
-                    return false;
-                }
-            } else if ( object instanceof CharSequence) {
-                if ( ((CharSequence)object).length() != 0) {
-                    return false;
-                }
-            } else {
-                Method empty;
-                try {
-                    empty = object.getClass().getMethod("isEmpty", new Class<?>[0]);
-                    return (Boolean) empty.invoke(object);
-                } catch (NoSuchMethodException e) {
-                } catch (IllegalArgumentException e) {
-                } catch (IllegalAccessException e) {
-                    throw new ApplicationIllegalStateException(e);
-                } catch (InvocationTargetException e) {
-                    throw new ApplicationIllegalStateException(e);
-                }
-                // singleton object is always "not-empty"
-                return false;
+        if (object == null ) {
+            return true;
+        } else if ( object instanceof Map<?, ?> ) {
+            return ((Map<?,?>)object).isEmpty();
+        } else if ( object instanceof Collection<?> ) {
+            return ((Collection<?>)object).isEmpty();
+        } else if ( object.getClass().isArray()) {
+            return ((Object[])object).length == 0;
+        } else if ( object instanceof CharSequence) {
+            return ((CharSequence)object).length() == 0;
+        } else {
+            Method empty;
+            try {
+                empty = object.getClass().getMethod("isEmpty", new Class<?>[0]);
+                return (Boolean) empty.invoke(object);
+            } catch (NoSuchMethodException e) {
+            } catch (IllegalArgumentException e) {
+            } catch (IllegalAccessException e) {
+                throw new ApplicationIllegalStateException(e);
+            } catch (InvocationTargetException e) {
+                throw new ApplicationIllegalStateException(e);
             }
+            // singleton object is always "not-empty"
+            return false;
         }
-        return true;
     }
 
     public static boolean isNotEmpty(Object object) {
@@ -417,11 +430,7 @@ public class CUtilities {
      */
     public static <T> List<T> newList(T...newValues) {
         List<T> l = new ArrayList<T>();
-        for(T newValue: newValues) {
-            if ( newValue != null) {
-                l.add(newValue);
-            }
-        }
+        addAllNotNull(l, newValues);
         return l;
     }
 
@@ -432,21 +441,8 @@ public class CUtilities {
      */
     public static <T> Set<T> newSet(T...newValues) {
         Set<T> s = new HashSet<T>();
-        for(T newValue: newValues) {
-            if ( newValue != null) {
-                s.add(newValue);
-            }
-        }
+        addAllNotNull(s, newValues);
         return s;
-    }
-
-    /**
-     * @param <K>
-     * @param <V>
-     * @return an new {@link Map}.
-     */
-    public static <K, V> Map<K, V> newMap() {
-        return new HashMap<K, V>();
     }
 
     /**
