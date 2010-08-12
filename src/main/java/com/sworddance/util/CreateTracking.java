@@ -18,7 +18,7 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -40,7 +40,7 @@ public class CreateTracking implements Serializable {
         classNames = new ArrayList<String>();
         if ( !ENABLE && isNotBlank(property)) {
             String[] classNamesArr = property.split("\\s*,\\s*");
-            classNames.addAll(Arrays.asList(classNamesArr));
+            Collections.addAll(classNames,classNamesArr);
         }
     }
     public CreateTracking() {
