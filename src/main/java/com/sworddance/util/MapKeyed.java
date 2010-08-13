@@ -15,6 +15,7 @@ package com.sworddance.util;
 
 /**
  * Implementers supply their own key if stored in a map.
+ * TODO : would rather do this as an annotation.
  * @author patmoore
  *
  * @param <K> Key value's class
