@@ -16,6 +16,7 @@ package com.sworddance.util;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -191,4 +192,7 @@ public class ConcurrentInitializedMap<K, V> implements ConcurrentMap<K, V>, Seri
         return this.map.toString();
     }
 
+    public static <K,V> ConcurrentInitializedMap<K, List<V>> newConcurrentInitializedMapWithList() {
+        return new ConcurrentInitializedMap<K, List<V>>(InitializeWithList.INSTANCE);
+    }
 }

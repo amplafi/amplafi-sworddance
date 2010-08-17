@@ -39,6 +39,10 @@ public class UriFactoryImpl {
     /**
      *
      */
+    private static final String PATH_SEPARATOR = "/";
+    /**
+     *
+     */
     private static final String DEFAULT_FILENAME = "index.html";
     /**
      * pattern to strip off all the protocol from a URI. Useful for forcing the URI protocol to a specific protocol.
@@ -48,7 +52,7 @@ public class UriFactoryImpl {
     public static String getFilename(URI uri, String defaultFileName) {
         String fileName = null;
         if (  uri != null ) {
-            fileName = substringAfterLast(uri.getPath(), "/");
+            fileName = substringAfterLast(uri.getPath(), PATH_SEPARATOR);
         }
         if ( isNotBlank(fileName)) {
             return fileName;
@@ -61,11 +65,11 @@ public class UriFactoryImpl {
     }
     /**
      * @param httpUri
-     * @return
+     * @return root URI
      */
     public static URI getRootDirectory(URI httpUri) {
         String path = httpUri.getPath();
-        URI base = httpUri.resolve(substringBeforeLast(path, "/") + "/");
+        URI base = httpUri.resolve(substringBeforeLast(path, PATH_SEPARATOR) + PATH_SEPARATOR);
         return base;
     }
 
@@ -87,9 +91,9 @@ public class UriFactoryImpl {
             String path = uri.getRawPath();
             if (pathRequired && isEmpty(path)) {
                 String rawQuery = uri.getRawQuery();
-                newUriStr += "/" + (rawQuery == null ? "" : rawQuery);
+                newUriStr += PATH_SEPARATOR + (rawQuery == null ? "" : rawQuery);
             }
-            if (schemaRequired && !uri.isAbsolute() && !newUriStr.startsWith("/")) {
+            if (schemaRequired && !uri.isAbsolute() && !newUriStr.startsWith(PATH_SEPARATOR)) {
                 // TODO: check for a relative uri! will produce something like http:/httpdocs/demo if newUriStr does not have host information.
                 newUriStr = "http://" + newUriStr;
             }
@@ -151,8 +155,8 @@ public class UriFactoryImpl {
 
         // if we're failed with ideal case - let's try other ways
         notNull(hostRedirectedFrom, "Host we came from shouldn't be null");
-        if(!redirectTo.startsWith("/")){
-            redirectTo = "/" + redirectTo;
+        if(!redirectTo.startsWith(PATH_SEPARATOR)){
+            redirectTo = PATH_SEPARATOR + redirectTo;
         }
         return createUriWithSchema(hostRedirectedFrom + redirectTo);
     }
@@ -268,7 +272,7 @@ public class UriFactoryImpl {
             String path = uri.getPath();
 
             // see WebLocationImpl ( this implementation here may not be correct )
-            return new URI(uri.getScheme(), uri.getHost(), path==null?"/":"/"+ path, uri.getQuery());
+            return new URI(uri.getScheme(), uri.getHost(), path==null?PATH_SEPARATOR:PATH_SEPARATOR+ path, uri.getQuery());
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException(e);
         }
@@ -512,8 +516,8 @@ public class UriFactoryImpl {
         }
 
         String start = absolutize(baseUri, baseHtmlElement);
-        if (!start.endsWith("/")) {
-            start += "/";
+        if (!start.endsWith(PATH_SEPARATOR)) {
+            start += PATH_SEPARATOR;
         }
         URI startUri = createUri(start);
         if ( uri != null ) {
@@ -548,8 +552,8 @@ public class UriFactoryImpl {
         } else {
             uri = rootUri;
         }
-        if ( uri.toString().endsWith("/")) {
-            uri = uri.resolve("./"+percentEncoding(defaultFileName));
+        if ( uri.toString().endsWith(PATH_SEPARATOR)) {
+            uri = uri.resolve("."+PATH_SEPARATOR+percentEncoding(defaultFileName));
         }
         return uri;
     }
@@ -586,7 +590,7 @@ public class UriFactoryImpl {
                     index++;
                 }
             }
-            return join(pathArr, "/");
+            return join(pathArr, PATH_SEPARATOR);
         } else {
             return "";
         }

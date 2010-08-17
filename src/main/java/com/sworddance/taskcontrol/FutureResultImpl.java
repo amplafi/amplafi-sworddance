@@ -21,6 +21,10 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.sworddance.util.ApplicationGeneralException;
+import com.sworddance.util.ApplicationInterruptedException;
+import com.sworddance.util.ApplicationTimeoutException;
+
 /**
  * add some convenience to the {@link FutureTask} class.
  *
@@ -89,6 +93,36 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public T getUnchecked(long timeout, TimeUnit unit, boolean returnNullIfTimeout) {
+        try {
+            return get(timeout, unit);
+        } catch (ExecutionException e) {
+            return (T)doTimeoutBehavior(returnNullIfTimeout, e);
+        } catch (TimeoutException e) {
+            return (T)doTimeoutBehavior(returnNullIfTimeout, e);
+        } catch (InterruptedException e) {
+            throw new ApplicationInterruptedException(e);
+        }
+    }
+
+    /**
+     * @param returnNullIfTimeout
+     * @param e
+     * @return
+     */
+    protected Object doTimeoutBehavior(boolean returnNullIfTimeout, Throwable e) {
+        Throwable t = e; // TODO: move Defense to sworddance
+        if (t instanceof TimeoutException || t instanceof ApplicationTimeoutException) {
+            if (returnNullIfTimeout) {
+                return null;
+            } else {
+                throw new ApplicationTimeoutException(e);
+            }
+        } else {
+            throw new ApplicationGeneralException(e); //            throw rethrow(e);
+        }
+    }
     /**
      * Note that ! isFailed() != {@link #isSuccessful()} because the request may not be done.
      * @return {@link #isDone()} && ! {@link #isCancelled()} &&
