@@ -25,7 +25,7 @@ import java.util.concurrent.Callable;
  *
  */
 public class InitializeWithList<V> implements Callable<List<V>> {
-
+    public static final InitializeWithList INSTANCE = new InitializeWithList();
     /**
      * @see java.util.concurrent.Callable#call()
      */

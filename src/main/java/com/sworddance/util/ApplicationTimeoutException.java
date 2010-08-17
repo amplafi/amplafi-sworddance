@@ -13,16 +13,23 @@
  */
 
 package com.sworddance.util;
+
+import java.util.concurrent.TimeUnit;
+
 /**
  * wraps a {@link java.util.concurrent.TimeoutException} as a runtime exception
  *
  */
 public class ApplicationTimeoutException extends ApplicationIllegalStateException {
 
+    private final long time;
+    private final TimeUnit timeUnit;
     /**
      *
      */
     public ApplicationTimeoutException() {
+        time = -1;
+        timeUnit = TimeUnit.MILLISECONDS;
     }
 
     /**
@@ -30,6 +37,8 @@ public class ApplicationTimeoutException extends ApplicationIllegalStateExceptio
      */
     public ApplicationTimeoutException(String s) {
         super(s);
+        time = -1;
+        timeUnit = TimeUnit.MILLISECONDS;
     }
 
     /**
@@ -37,6 +46,8 @@ public class ApplicationTimeoutException extends ApplicationIllegalStateExceptio
      */
     public ApplicationTimeoutException(Throwable cause) {
         super(cause);
+        time = -1;
+        timeUnit = TimeUnit.MILLISECONDS;
     }
 
     /**
@@ -45,6 +56,22 @@ public class ApplicationTimeoutException extends ApplicationIllegalStateExceptio
      */
     public ApplicationTimeoutException(String message, Throwable cause) {
         super(message, cause);
+        time = -1;
+        timeUnit = TimeUnit.MILLISECONDS;
+    }
+
+    /**
+     * @return the time
+     */
+    public long getTime() {
+        return time;
+    }
+
+    /**
+     * @return the timeUnit
+     */
+    public TimeUnit getTimeUnit() {
+        return timeUnit;
     }
 
 }
