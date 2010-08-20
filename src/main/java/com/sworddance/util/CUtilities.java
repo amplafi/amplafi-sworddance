@@ -486,7 +486,7 @@ public class CUtilities {
         // avoid updating with self.
         if ( masterCollection != newValues) {
             if ( isEmpty(newValues)) {
-                if ( !masterCollection.isEmpty()) {
+                if ( isNotEmpty(masterCollection)) {
                     masterCollection.clear();
                     changed = true;
                 }
