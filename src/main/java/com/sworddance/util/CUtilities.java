@@ -89,6 +89,13 @@ public class CUtilities {
     public static <T> boolean addAll(Collection<T> collection, Collection<T> anotherCollection) {
         return anotherCollection != null && collection != null && collection.addAll(anotherCollection);
     }
+    public static <T> boolean addIfNotContains(Collection<T> collection, T value) {
+        if (  collection != null && value != null && !collection.contains(value)) {
+            return collection.add(value);
+        } else {
+            return false;
+        }
+    }
     /**
      * @param <T>
      * @param collection
