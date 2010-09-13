@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.sworddance.scheduling.TimeServer;
 import com.sworddance.scheduling.TimeServerImpl;
 import com.sworddance.util.ConcurrentInitializedMap;
-import com.sworddance.util.InitializeWithList;
 
 /**
  * Stores the ThreadHistory objects by {@link Thread#getId()}
@@ -39,7 +38,7 @@ public class ThreadHistoryTracker implements Serializable {
      * Stack SHOULD be used as the list because:
      * stack is synchronized, usually only one thread is accessing the stack ( to add to it )
      */
-    private ConcurrentMap<Long, List<ThreadHistory>> history = new ConcurrentInitializedMap<Long, List<ThreadHistory>>(new InitializeWithList<ThreadHistory>());
+    private ConcurrentMap<Long, List<ThreadHistory>> history = ConcurrentInitializedMap.newConcurrentInitializedMapWithList();
 
     private AtomicInteger sequence = new AtomicInteger(0);
 
