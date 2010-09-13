@@ -17,6 +17,7 @@ package com.sworddance.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Used to provide create a List when initialization is required.
@@ -25,14 +26,30 @@ import java.util.concurrent.Callable;
  *
  */
 public class InitializeWithList<V> implements Callable<List<V>> {
-    public static final InitializeWithList INSTANCE = new InitializeWithList();
+    @SuppressWarnings("unchecked")
+    public static final InitializeWithList INSTANCE = new InitializeWithList(false);
+    @SuppressWarnings("unchecked")
+    public static final InitializeWithList INSTANCE_THREAD_SAFE = new InitializeWithList(true);
+    private final boolean threadsafe;
+
+
+    /**
+     * @param threadsafe
+     */
+    public InitializeWithList(boolean threadsafe) {
+        this.threadsafe=threadsafe;
+    }
+
+
     /**
      * @see java.util.concurrent.Callable#call()
      */
-    @SuppressWarnings("unused")
     @Override
     public List<V> call() throws Exception {
-        return new ArrayList<V>();
+        return this.threadsafe?new CopyOnWriteArrayList<V>(): new ArrayList<V>();
     }
 
+    public static <V> InitializeWithList<V> get(boolean threadsafe) {
+        return threadsafe?INSTANCE_THREAD_SAFE:INSTANCE;
+    }
 }

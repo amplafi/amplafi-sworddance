@@ -193,6 +193,9 @@ public class ConcurrentInitializedMap<K, V> implements ConcurrentMap<K, V>, Seri
     }
 
     public static <K,V> ConcurrentInitializedMap<K, List<V>> newConcurrentInitializedMapWithList() {
-        return new ConcurrentInitializedMap<K, List<V>>(InitializeWithList.INSTANCE);
+        return new ConcurrentInitializedMap<K, List<V>>(InitializeWithList.<V>get(false));
+    }
+    public static <K,V> ConcurrentInitializedMap<K, Set<V>> newConcurrentInitializedMapWithSet(boolean threadsafe) {
+        return new ConcurrentInitializedMap<K, Set<V>>(InitializeWithSet.<V>get(threadsafe));
     }
 }
