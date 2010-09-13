@@ -47,6 +47,11 @@ import static java.util.concurrent.TimeUnit.*;
  * @param <T> the type of the results object.
  */
 public class TaskGroup<T> implements NotificationObject {
+    /**
+     *
+     */
+    private static final String DATE_IN_FILENAME = "yyyy-MM-dd-HH-mm-ss";
+
     private TaskControl taskControl;
 
     private ResourceLockManager resourceManager = new ResourceLockManager();
@@ -73,8 +78,6 @@ public class TaskGroup<T> implements NotificationObject {
     private String statsFileDirectory;
 
     private boolean debugEnabled;
-    private static final SimpleDateFormat FORMATER = new SimpleDateFormat(
-            "yyyy-MM-dd-HH-mm-ss");
 
     /**
      * These are tasks that can never run. This list is used as a holding bin
@@ -147,17 +150,14 @@ public class TaskGroup<T> implements NotificationObject {
     private void taskStart(PrioritizedTask task) {
         String id = getTaskId(task);
         if (task instanceof DefaultDependentPrioritizedTask) {
-            threadHistoryTracker.addStartHistory(id, "starting",
-                    ((DefaultDependentPrioritizedTask) task)
-                            .getDependenciesStr());
+            threadHistoryTracker.addStartHistory(id, "starting", ((DefaultDependentPrioritizedTask) task).getDependenciesStr());
         } else {
             threadHistoryTracker.addStartHistory(id, "starting", null);
         }
     }
 
     private String getTaskId(PrioritizedTask task) {
-        return task.getName() != null ? task.getName() : task.getClass()
-                .getName()
+        return task.getName() != null ? task.getName() : task.getClass().getName()
                 + ":" + System.identityHashCode(task);
     }
 
@@ -183,8 +183,7 @@ public class TaskGroup<T> implements NotificationObject {
                         + "ms",
                         ((DefaultPrioritizedTask) task).getElapsedInMillis());
             } else {
-                threadHistoryTracker.addStopHistory(id,
-                        task.getError().toString(), null, 0);
+                threadHistoryTracker.addStopHistory(id, task.getError().toString(), null, 0);
             }
         } else {
             if (task instanceof DefaultPrioritizedTask) {
@@ -266,8 +265,7 @@ public class TaskGroup<T> implements NotificationObject {
     public void addTask(PrioritizedTask task, Comparator<ResourceLock> insertionPoint) {
         // this method is the only place where tasksToBeRun is to be updated.
         if (task.isDone()) {
-            throw new IllegalStateException(task
-                    + ": Task already has a result.");
+            throw new IllegalStateException(task + ": Task already has a result.");
         }
         task.setNotification(this);
         synchronized (tasksToBeRun) {
@@ -306,20 +304,17 @@ public class TaskGroup<T> implements NotificationObject {
             if (task instanceof DefaultDependentPrioritizedTask) {
                 sb.append(task.getName()).append('[');
                 sb.append("resource={");
-                Collection l = this.resourceManager.getDependentTasks(
-                        (DependentPrioritizedTask) task, true);
+                Collection l = this.resourceManager.getDependentTasks((DependentPrioritizedTask) task, true);
                 for (DependentPrioritizedTask dependency: (Collection<DependentPrioritizedTask>) l) {
                     if (!dependency.isDone()) {
                         sb.append(dependency.getName()).append(' ');
                     }
                 }
                 sb.append("} direct={");
-                ((DefaultDependentPrioritizedTask) task)
-                        .showUnsatisfiedDependencies(sb);
+                ((DefaultDependentPrioritizedTask) task).showUnsatisfiedDependencies(sb);
                 sb.append("}]\n");
             } else {
-                sb.append("readyToRun = ").append(task.isReadyToRun()).append(
-                        '\n');
+                sb.append("readyToRun = ").append(task.isReadyToRun()).append('\n');
             }
         }
         return sb.toString();
@@ -338,8 +333,7 @@ public class TaskGroup<T> implements NotificationObject {
             for (PrioritizedTask task : deadTasks) {
                 if (task instanceof DefaultDependentPrioritizedTask) {
                     sb.append(task.getName()).append("[dep=");
-                    ((DefaultDependentPrioritizedTask) task)
-                            .showUnsatisfiedDependencies(sb);
+                    ((DefaultDependentPrioritizedTask) task).showUnsatisfiedDependencies(sb);
                     sb.append("]\n");
                 } else {
                     sb.append("readyToRun = ").append(task.isReadyToRun());
@@ -395,8 +389,7 @@ public class TaskGroup<T> implements NotificationObject {
                         // most such cases should be caught by above code.
                         deadTasks.add(task);
                         newDeadTasks = true;
-                        warning(task.getName()
-                                + ": has result but has never run. Moved to dead pile.");
+                        warning(task.getName() + ": has result but has never run. Moved to dead pile.");
                         tasksToBeRun.remove(task);
                     }
                 }
@@ -432,8 +425,7 @@ public class TaskGroup<T> implements NotificationObject {
         synchronized (tasksToBeRun) {
             Collections.sort(eligibleTasks, taskComparator);
             PrioritizedTask nextTask = null;
-            // skip tasks that may be running (and thus have not release their
-            // locks)
+            // skip tasks that may be running (and thus have not release their locks)
             for (int i = 0; i < eligibleTasks.size(); i++) {
                 nextTask = eligibleTasks.get(i);
                 if (tasksToBeRun.contains(nextTask)) {
@@ -463,8 +455,7 @@ public class TaskGroup<T> implements NotificationObject {
     public void setTaskControl(TaskControl taskControl) {
         // this is a potential threading problem if not checked for.
         if (this.taskControl != null && taskControl != this.taskControl) {
-            throw new IllegalStateException("TaskGroup: '" + getName()
-                    + "' already assigned to '" + taskControl.toString() + "'");
+            throw new IllegalStateException("TaskGroup: '" + getName() + "' already assigned to '" + taskControl.toString() + "'");
         }
         this.taskControl = taskControl;
     }
@@ -509,15 +500,13 @@ public class TaskGroup<T> implements NotificationObject {
                 String msg = getUnrunTasksListStr();
                 warning(tasksToBeRun.size() + " tasks were never run :\n" + msg);
                 if (this.result.getException() == null) {
-                    this.result.setException(new IllegalStateException(
-                            tasksToBeRun.size() + " tasks were never run"));
+                    this.result.setException(new IllegalStateException( tasksToBeRun.size() + " tasks were never run"));
                 }
             }
             tasksToBeRun.clear();
         }
         if (isDebugEnabled()) {
-            debug(this.tasksCompletedInfo.size()
-                    + " completed tasks. Statuses:");
+            debug(this.tasksCompletedInfo.size() + " completed tasks. Statuses:");
             for (String info: tasksCompletedInfo) {
                 debug(info);
             }
@@ -543,34 +532,27 @@ public class TaskGroup<T> implements NotificationObject {
     public void dumpStats() {
         File latestStatsFile = null;
         File postRunResourceMapFile = null;
-        String dateStr = FORMATER.format(new Date());
+        String dateStr = getDateStr();
         String exitStatus = getError() == null ? "-success" : "-fail";
-        latestStatsFilename = getName() + exitStatus + "-stats-" + dateStr
-                + ".csv";
-        String postRunResourceMapFilename = getName() + "-post-resource-map-"
-                + dateStr + ".csv";
+        latestStatsFilename = getName() + exitStatus + "-stats-" + dateStr+ ".csv";
+        String postRunResourceMapFilename = getName() + "-post-resource-map-" + dateStr + ".csv";
         if (statsFileDirectory != null) {
             File directory = new File(statsFileDirectory);
             if (directory.isDirectory() && directory.canWrite()) {
                 latestStatsFile = new File(directory, latestStatsFilename);
                 if (latestStatsFile.exists() && !latestStatsFile.canWrite()) {
-                    warning("can't write dumpfile "
-                            + latestStatsFile.getAbsolutePath());
+                    warning("can't write dumpfile " + latestStatsFile.getAbsolutePath());
                     latestStatsFile = null;
                 } else {
                     latestStatsFilename = latestStatsFile.getAbsolutePath();
                 }
 
-                postRunResourceMapFile = new File(directory,
-                        postRunResourceMapFilename);
-                if (postRunResourceMapFile.exists()
-                        && !postRunResourceMapFile.canWrite()) {
-                    warning("can't write dumpfile "
-                            + postRunResourceMapFile.getAbsolutePath());
+                postRunResourceMapFile = new File(directory, postRunResourceMapFilename);
+                if (postRunResourceMapFile.exists() && !postRunResourceMapFile.canWrite()) {
+                    warning("can't write dumpfile " + postRunResourceMapFile.getAbsolutePath());
                     postRunResourceMapFile = null;
                 } else {
-                    postRunResourceMapFilename =
-                        postRunResourceMapFile.getAbsolutePath();
+                    postRunResourceMapFilename = postRunResourceMapFile.getAbsolutePath();
                 }
             }
         }
@@ -585,24 +567,26 @@ public class TaskGroup<T> implements NotificationObject {
         dumpStats(latestStatsFilename);
     }
 
+    /**
+     * @return
+     */
+    private String getDateStr() {
+        return new SimpleDateFormat( DATE_IN_FILENAME).format(new Date());
+    }
+
     public void dumpLockList() {
         File postRunResourceMapFile = null;
-        String dateStr = FORMATER.format(new Date());
-        String postRunResourceMapFilename = getName() + "-resource-map-"
-                + dateStr + ".csv";
+        String dateStr = getDateStr();
+        String postRunResourceMapFilename = getName() + "-resource-map-" + dateStr + ".csv";
         if (statsFileDirectory != null) {
             File directory = new File(statsFileDirectory);
             if (directory.isDirectory() && directory.canWrite()) {
-                postRunResourceMapFile = new File(directory,
-                        postRunResourceMapFilename);
-                if (postRunResourceMapFile.exists()
-                        && !postRunResourceMapFile.canWrite()) {
-                    warning("can't write dumpfile "
-                            + postRunResourceMapFile.getAbsolutePath());
+                postRunResourceMapFile = new File(directory, postRunResourceMapFilename);
+                if (postRunResourceMapFile.exists() && !postRunResourceMapFile.canWrite()) {
+                    warning("can't write dumpfile " + postRunResourceMapFile.getAbsolutePath());
                     postRunResourceMapFile = null;
                 } else {
-                    postRunResourceMapFilename = postRunResourceMapFile
-                            .getAbsolutePath();
+                    postRunResourceMapFilename = postRunResourceMapFile .getAbsolutePath();
                 }
             }
         }
