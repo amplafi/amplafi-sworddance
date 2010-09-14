@@ -44,7 +44,7 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
 
     private int sequenceId;
 
-    private final Callable<R> wrappedCallable;
+    private final Callable<? extends R> wrappedCallable;
 
     private final Integer priority;
 
@@ -83,10 +83,10 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
         initResourceLocker(wrapped);
     }
 
-    public DefaultPrioritizedTask(Callable<R> callable) {
+    public DefaultPrioritizedTask(Callable<? extends R> callable) {
         this(callable.getClass().getName(), callable);
     }
-    public DefaultPrioritizedTask(String name, Callable<R> callable) {
+    public DefaultPrioritizedTask(String name, Callable<? extends R> callable) {
         super();
         wrappedCallable = callable;
         wrappedRunnable = null;
