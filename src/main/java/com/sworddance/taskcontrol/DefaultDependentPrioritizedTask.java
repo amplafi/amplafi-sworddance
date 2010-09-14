@@ -19,8 +19,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Object>
-        implements DependentPrioritizedTask {
+public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Object> implements DependentPrioritizedTask {
     protected final Set<PrioritizedTask> dependencyTasks = new CopyOnWriteArraySet<PrioritizedTask>();
 
     protected final Set<PrioritizedTask> cleanUpAfterTasks = new CopyOnWriteArraySet<PrioritizedTask>();
@@ -40,7 +39,7 @@ public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Obje
         this.initTaskAware(wrapped);
     }
 
-    public DefaultDependentPrioritizedTask(Callable<Object> callable) {
+    public DefaultDependentPrioritizedTask(Callable<? extends Object> callable) {
         this(callable.getClass().getName(), callable);
     }
 
@@ -51,7 +50,7 @@ public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Obje
         super(null, priority);
     }
 
-    public DefaultDependentPrioritizedTask(String name, Callable<Object> callable) {
+    public DefaultDependentPrioritizedTask(String name, Callable<? extends Object> callable) {
         super(name, callable);
         this.initTaskAware(callable);
     }
