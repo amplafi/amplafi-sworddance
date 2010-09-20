@@ -52,16 +52,12 @@ public class PossibleWorkItemComparator implements Comparator<PrioritizedTask>, 
             return 1;
         } else if (isCompleteSort()) {
             // neither is ready to run
-            if (left instanceof DefaultDependentPrioritizedTask
-                    && ((DefaultDependentPrioritizedTask) left)
-                            .isDependentOn(right)) {
+            if (left instanceof DefaultDependentPrioritizedTask && ((DefaultDependentPrioritizedTask) left).isDependentOn(right)) {
                 // right should go first
                 // TODO check for circular dependency.
                 return 1;
             }
-            if (right instanceof DefaultDependentPrioritizedTask
-                    && ((DefaultDependentPrioritizedTask) right)
-                            .isDependentOn(left)) {
+            if (right instanceof DefaultDependentPrioritizedTask && ((DefaultDependentPrioritizedTask) right).isDependentOn(left)) {
                 // left should go first
                 return -1;
             }
