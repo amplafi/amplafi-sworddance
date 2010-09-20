@@ -36,6 +36,10 @@ import java.util.regex.Pattern;
  */
 public class UriFactoryImpl {
 
+    public static final String HTTPS_SCHEME = "https";
+    public static final String HTTP_SCHEME = "http";
+    public static final int DEFAULT_HTTP_PORT = 80;
+    public static final int DEFAULT_HTTPS_PORT = 443;
     /**
      *
      */
@@ -595,4 +599,24 @@ public class UriFactoryImpl {
             return "";
         }
     }
+
+    /**
+     * Utility method to calculate port based on defaults for different schemas.
+     *
+     * @param uri uri to calculate port for
+     * @return integer port presentation
+     */
+    public static int getPort(URI uri) {
+        int port = uri.getPort();
+        if (port == -1) {
+            String scheme = uri.getScheme();
+            if (HTTPS_SCHEME.equalsIgnoreCase(scheme)) {
+                port = DEFAULT_HTTPS_PORT;
+            } else {
+                port = DEFAULT_HTTP_PORT;
+            }
+        }
+        return port;
+    }
+
 }
