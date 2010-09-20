@@ -597,8 +597,7 @@ public class TaskGroup<T> implements NotificationObject {
         dumpLockList(postRunResourceMapFile);
     }
 
-    public boolean hasPreviousResourceLockOfType(PrioritizedTask task,
-            String resourceName, int lockTypeLookingFor) {
+    public boolean hasPreviousResourceLockOfType(PrioritizedTask task, String resourceName, int lockTypeLookingFor) {
         return this.resourceManager.hasPreviousResourceLockOfType(task,
                 resourceName, lockTypeLookingFor);
     }
@@ -651,8 +650,7 @@ public class TaskGroup<T> implements NotificationObject {
      * @param alwaysRunTask
      *            always run this task even if the dependent tasks
      */
-    public void addSerialTask(DependentPrioritizedTask cleanUpTask,
-            boolean alwaysRunTask) {
+    public void addSerialTask(DependentPrioritizedTask cleanUpTask, boolean alwaysRunTask) {
         addTaskDependencies(cleanUpTask, alwaysRunTask);
         cleanUpTask.addLock(ResourceLockManager
                 .createGlobalExclusiveResourceLock());
@@ -672,10 +670,9 @@ public class TaskGroup<T> implements NotificationObject {
         addTask(task);
     }
 
-    private void inheritDependentsOnParent(DependentPrioritizedTask parent,
-            DependentPrioritizedTask task) {
+    private void inheritDependentsOnParent(DependentPrioritizedTask parent, DependentPrioritizedTask task) {
         synchronized (tasksToBeRun) {
-            for (Object element : tasksToBeRun) {
+            for (PrioritizedTask element : tasksToBeRun) {
                 DependentPrioritizedTask depTask =
                     (DependentPrioritizedTask) element;
                 if (depTask.isSuccessDependentOn(parent)) {
@@ -694,8 +691,7 @@ public class TaskGroup<T> implements NotificationObject {
      * @param task
      * @param alwaysDependency
      */
-    protected void addTaskDependencies(DependentPrioritizedTask task,
-            boolean alwaysDependency) {
+    protected void addTaskDependencies(DependentPrioritizedTask task, boolean alwaysDependency) {
         synchronized (tasksToBeRun) {
             for (PrioritizedTask depTask : tasksToBeRun) {
                 if (alwaysDependency) {
