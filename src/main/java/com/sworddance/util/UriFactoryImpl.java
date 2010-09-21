@@ -158,7 +158,7 @@ public class UriFactoryImpl {
         }
 
         // if we're failed with ideal case - let's try other ways
-        notNull(hostRedirectedFrom, "Host we came from shouldn't be null");
+        notNull(hostRedirectedFrom, "Host we came from shouldn't be null because redirectTo doesn't have host information. redirectTo=", redirectTo);
         if(!redirectTo.startsWith(PATH_SEPARATOR)){
             redirectTo = PATH_SEPARATOR + redirectTo;
         }
