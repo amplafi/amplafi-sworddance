@@ -13,6 +13,8 @@
  */
 package com.sworddance.taskcontrol;
 
+import java.util.concurrent.Callable;
+
 /**
  * Expected behavior is that a task can only run once. So once 'hasResult()' is
  * true it can never be false Also once a task is ready to run then then it may
@@ -70,4 +72,5 @@ public interface PrioritizedTask extends Runnable, TaskGroupAware,
     public Throwable getError();
 
     public Object getResult();
+    <R> Callable<? extends R> getWrappedCallable();
 }

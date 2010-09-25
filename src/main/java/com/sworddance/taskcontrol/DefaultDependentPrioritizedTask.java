@@ -19,7 +19,9 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Object> implements DependentPrioritizedTask {
+import static com.sworddance.util.CUtilities.*;
+
+public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R> implements DependentPrioritizedTask {
     protected final Set<PrioritizedTask> dependencyTasks = new CopyOnWriteArraySet<PrioritizedTask>();
 
     protected final Set<PrioritizedTask> cleanUpAfterTasks = new CopyOnWriteArraySet<PrioritizedTask>();
@@ -39,7 +41,7 @@ public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Obje
         this.initTaskAware(wrapped);
     }
 
-    public DefaultDependentPrioritizedTask(Callable<? extends Object> callable) {
+    public DefaultDependentPrioritizedTask(Callable<? extends R> callable) {
         this(callable.getClass().getName(), callable);
     }
 
@@ -50,7 +52,7 @@ public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Obje
         super(null, priority);
     }
 
-    public DefaultDependentPrioritizedTask(String name, Callable<? extends Object> callable) {
+    public DefaultDependentPrioritizedTask(String name, Callable<? extends R> callable) {
         super(name, callable);
         this.initTaskAware(callable);
     }
@@ -66,9 +68,7 @@ public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Obje
         for (PrioritizedTask element : this.dependencyTasks) {
             // this avoids circular dependencies
             if (element.getTaskGroup() == null) {
-                throw new IllegalStateException(
-                        this.getName()
-                                + ": has dependent task ("+element.getName()+") that has not been assigned to a task group");
+                throw new IllegalStateException( this.getName() + ": has dependent task ("+element.getName()+") that has not been assigned to a task group");
             }
         }
         super.setTaskGroup(taskGroup);
@@ -90,13 +90,9 @@ public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Obje
     }
 
     private boolean doDependencyCheck() {
-        if (!this.ignoreTaskGroupFailure && this.getTaskGroup() != null
-                && this.getTaskGroup().getError() != null) {
-            this.setError(new RuntimeException("TaskGroup in error", this
-                    .getTaskGroup().getError()));
-            this.getTaskGroup().debug(
-                    this.getName() + ": TaskGroup in error "
-                            + this.getTaskGroup().getError().getClass());
+        if (!this.ignoreTaskGroupFailure && this.getTaskGroup() != null && this.getTaskGroup().getError() != null) {
+            this.setError(new RuntimeException("TaskGroup in error", this.getTaskGroup().getError()));
+            this.getTaskGroup().debug(this.getName() + ": TaskGroup in error " + this.getTaskGroup().getError().getClass());
             return false;
         }
         for (PrioritizedTask dependency : this.dependencyTasks) {
@@ -104,13 +100,8 @@ public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Obje
                 if (dependency.isDone()) {
                     // dependency failed ... this task will never be run
                     Throwable error = dependency.getError();
-                    this.setError(new RuntimeException("Dependency "
-                            + dependency.getName() + " failed.",
-                            error));
-                    this.getTaskGroup().warning(
-                            this.getName() + "Dependency " + dependency.getName()
-                                    + " failed. "
-                                    + error);
+                    this.setError(new RuntimeException("Dependency "+ dependency.getName() + " failed.", error));
+                    this.getTaskGroup().warning( this.getName() + "Dependency " + dependency.getName() + " failed. "+ error);
                 }
                 return false;
             }
@@ -183,7 +174,7 @@ public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Obje
      */
     public void addDependency(PrioritizedTask dependency) {
         this.checkCanAddDependency(dependency);
-        this.dependencyTasks.add(dependency);
+        add(this.dependencyTasks, dependency);
     }
 
     /**
@@ -202,24 +193,17 @@ public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Obje
     }
 
     private void checkCanAddDependency(PrioritizedTask dependency) {
+        if ( dependency == null) {
+            return;
+        }
         if (dependency == this) {
-            throw new IllegalStateException(this.getName()
-                    + ": Cannot depend on itself.");
+            throw new IllegalStateException(this.getName() + ": Cannot depend on itself.");
         }
         if (!this.isDependencyAddable()) {
-            throw new IllegalStateException(this.getName()
-                    + ":Already released to run. Dependency to "
-                    + dependency.getName() + " cannot be added.");
+            throw new IllegalStateException(this.getName() + ":Already released to run. Dependency to " + dependency.getName() + " cannot be added.");
         }
-        if (dependency instanceof DefaultDependentPrioritizedTask
-                && ((DefaultDependentPrioritizedTask) dependency)
-                        .isDependentOn(this)) {
-            throw new IllegalStateException(this.getName()
-                    + ":Circular Dependency. " + dependency.getName()
-                    + " depends on " + this.getName());
-        }
-        if (dependency == null) {
-            throw new IllegalArgumentException(this.getName() + ":null dependency");
+        if (dependency instanceof DefaultDependentPrioritizedTask<?> && ((DefaultDependentPrioritizedTask<?>) dependency).isDependentOn(this)) {
+            throw new IllegalStateException(this.getName() + ":Circular Dependency. " + dependency.getName() + " depends on " + this.getName());
         }
     }
 
@@ -239,12 +223,12 @@ public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Obje
      */
     public void addAlwaysDependency(PrioritizedTask dependency) {
         this.checkCanAddDependency(dependency);
-        this.cleanUpAfterTasks.add(dependency);
+        add(this.cleanUpAfterTasks, dependency);
     }
 
     public void addAlwaysDependencies(Collection<? extends PrioritizedTask> dependencies) {
         if (dependencies != null) {
-            for (Object element : dependencies) {
+            for (PrioritizedTask element : dependencies) {
                 DependentPrioritizedTask task = (DependentPrioritizedTask) element;
                 this.addAlwaysDependency(task);
             }
@@ -259,14 +243,12 @@ public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Obje
      * @param sb
      */
     public void showUnsatisfiedDependencies(StringBuilder sb) {
-        for (Object element : this.dependencyTasks) {
-            PrioritizedTask dependency = (PrioritizedTask) element;
+        for (PrioritizedTask dependency : this.dependencyTasks) {
             if (!dependency.isSuccessful()) {
                 sb.append('"').append(dependency.getName()).append('"').append(' ');
             }
         }
-        for (Object element : this.cleanUpAfterTasks) {
-            PrioritizedTask dependency = (PrioritizedTask) element;
+        for (PrioritizedTask dependency : this.cleanUpAfterTasks) {
             if (!dependency.isDone()) {
                 sb.append('"').append(dependency.getName()).append('"').append(' ');
             }
@@ -275,27 +257,24 @@ public class DefaultDependentPrioritizedTask extends DefaultPrioritizedTask<Obje
 
     @Override
     public void setSuccessStatus() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(this.completionMsg).append(" ").append(super.getTimingString()).append(" ");
         sb.append(this.getDependenciesStr());
         this.setStatus(sb.toString());
     }
 
     public String getDependenciesStr() {
-        StringBuffer sb = new StringBuffer();
-        if (this.dependencyTasks.size() > 0) {
+        StringBuilder sb = new StringBuilder();
+        if (!this.dependencyTasks.isEmpty()) {
             sb.append("Dependent Tasks: ");
-            for (Object element : this.dependencyTasks) {
-                PrioritizedTask dependency = (PrioritizedTask) element;
+            for (PrioritizedTask dependency : this.dependencyTasks) {
                 sb.append('"').append(dependency.getName()).append('"').append(' ');
             }
         }
-        if (this.cleanUpAfterTasks.size() > 0) {
+        if (!this.cleanUpAfterTasks.isEmpty()) {
             sb.append(" CleanUp after Tasks: ");
-            for (Object element : this.cleanUpAfterTasks) {
-                PrioritizedTask dependency = (PrioritizedTask) element;
-                sb.append('"').append(dependency.getName()).append('"').append(
-                        ' ');
+            for (PrioritizedTask dependency : this.cleanUpAfterTasks) {
+                sb.append('"').append(dependency.getName()).append('"').append(' ');
             }
         }
         return sb.toString();
