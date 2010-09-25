@@ -15,6 +15,7 @@
 package com.sworddance.taskcontrol;
 
 import java.util.Collection;
+import java.util.concurrent.Callable;
 
 /**
  * used by TaskControl and TaskGroup tasks to provide initialization and clean
@@ -38,6 +39,24 @@ public abstract class TaskWrapper implements PrioritizedTask {
      */
     public boolean isReadyToRun() {
         return this.getWrappedTask().isReadyToRun();
+    }
+
+
+    /**
+     * @see com.sworddance.taskcontrol.PrioritizedTask#getWrappedCallable()
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <R> Callable<? extends R> getWrappedCallable() {
+        return (Callable<? extends R>) wrappedTask.getWrappedCallable();
+    }
+
+    /**
+     * @see java.lang.Runnable#run()
+     */
+    @Override
+    public void run() {
+        throw new UnsupportedOperationException();
     }
 
     /**

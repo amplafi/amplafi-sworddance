@@ -38,7 +38,7 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
 
     private final CountDownLatch shouldRun = new CountDownLatch(1);
 
-    protected final Runnable wrappedRunnable;
+    private final Runnable wrappedRunnable;
 
     protected NotificationObject notification;
 
@@ -237,8 +237,8 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
      */
     protected R callBody() throws Exception {
         R returnResult;
-        if (wrappedCallable != null) {
-            returnResult = wrappedCallable.call();
+        if (getWrappedCallable() != null) {
+            returnResult = getWrappedCallable().call();
         } else if (wrappedRunnable != null) {
             wrappedRunnable.run();
             returnResult = null;
@@ -328,8 +328,8 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
      * @return either the wrapped Runnable or wrapped Callable
      */
     protected Object getWrapped() {
-        if (wrappedCallable != null) {
-            return wrappedCallable;
+        if (getWrappedCallable() != null) {
+            return getWrappedCallable();
         } else if (wrappedRunnable != null) {
             return wrappedRunnable;
         } else {
@@ -432,5 +432,12 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
      */
     public LapTimer getLapTimer() {
         return lapTimer;
+    }
+
+    /**
+     * @return the wrappedCallable
+     */
+    public Callable<? extends R> getWrappedCallable() {
+        return wrappedCallable;
     }
 }
