@@ -43,18 +43,13 @@
 
             <scope>compile</scope>
             <exclusions>
-                <exclusion>
+	    	<!-- exclude again when surefire 2.7 -->
+                <!--exclusion>
                     <groupId>junit</groupId>
                     <artifactId>junit</artifactId>
-                </exclusion>
+                </exclusion-->
             </exclusions>
         </dependency>
-        <!-- 25 sept 2010 needed for the surefire testng plugin -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>     
         <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
