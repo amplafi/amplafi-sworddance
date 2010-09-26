@@ -49,6 +49,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- 25 sept 2010 needed for the surefire testng plugin -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>     
         <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
@@ -58,6 +64,6 @@
             <groupId>org.easymock</groupId>
             <artifactId>easymockclassextension</artifactId>
             <scope>test</scope>
-        </dependency>        
+        </dependency>   
     </dependencies>
 </project>
