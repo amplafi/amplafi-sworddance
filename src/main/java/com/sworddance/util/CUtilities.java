@@ -414,6 +414,33 @@ public class CUtilities {
         return set;
     }
 
+    /**
+     * Converts object to a list.
+     *
+     * @param <T>
+     * @param object
+     * @return null if object is null, object if object is list, new list if object is another collection, list of Map.Entry if object is a map.
+     * other wise result of Arrays.asList
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> convertToList(Object object) {
+        List<T> result;
+        if (object == null) {
+            result = null;
+        } else if (object instanceof List) {
+            result = (List) object;
+        } else if (object.getClass().isArray()) {
+            result = Arrays.asList((T[]) object);
+        } else if ( object instanceof Collection) {
+            return new ArrayList<T>((Collection)object);
+        } else if ( object instanceof Map) {
+            return new ArrayList<T>(((Map)object).entrySet());
+        } else {
+            result = Arrays.asList((T) object);
+        }
+        return result;
+    }
+
     @SuppressWarnings("unchecked")
     public static <T extends Collection<?>> T cloneCollection(T cloned) {
         Collection result = null;
