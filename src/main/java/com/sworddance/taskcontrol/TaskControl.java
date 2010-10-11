@@ -13,10 +13,6 @@
  */
 package com.sworddance.taskcontrol;
 
-import static java.util.concurrent.TimeUnit.MICROSECONDS;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -30,6 +26,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static java.util.concurrent.TimeUnit.*;
+
 import org.apache.commons.logging.Log;
 
 /**
@@ -82,28 +81,29 @@ public class TaskControl implements Runnable {
     }
     @SuppressWarnings("unchecked")
     public TaskControl(Comparator<PrioritizedTask> activeComparator, int maxThreads, ThreadFactory threadFactory) {
-        eligibleTasks = new PriorityBlockingQueue<PrioritizedTask>(20,
-                activeComparator);
-        stateChangeNotificator = new ReentrantLock();
-        newTasks = stateChangeNotificator.newCondition();
-        runningTasks = new AtomicInteger(0);
+        this.eligibleTasks = new PriorityBlockingQueue<PrioritizedTask>(20, activeComparator);
+        this.stateChangeNotificator = new ReentrantLock();
+        this.newTasks = this.stateChangeNotificator.newCondition();
+        this.runningTasks = new AtomicInteger(0);
         this.threadFactory = threadFactory;
-        // stupid java rules
-        executor = new ThreadPoolExecutor(1, maxThreads, 10,
-                MICROSECONDS, (BlockingQueue) eligibleTasks, threadFactory);
+        int keepAliveTime = 10;
+
+        int corePoolSize = 1;
+        this.executor = new ThreadPoolExecutor(corePoolSize, Math.max(corePoolSize, maxThreads), keepAliveTime,
+            MICROSECONDS, (BlockingQueue) this.eligibleTasks, threadFactory);
         this.stayActive = true;
     }
 
     public TaskControl(Log log) {
         this(new PriorityEligibleWorkItemComparator(), 5);
-        setLog(log);
+        this.setLog(log);
     }
 
 
     @SuppressWarnings("unchecked")
     public TaskGroup<?> newTaskGroup(String name) {
         TaskGroup<?> taskGroup = new TaskGroup(name);
-        taskGroup.setLog(getLog());
+        taskGroup.setLog(this.getLog());
         taskGroup.setTaskControl(this);
         return taskGroup;
     }
@@ -118,8 +118,8 @@ public class TaskControl implements Runnable {
             return;
         }
         taskGroup.setTaskControl(this);
-        taskGroups.add(taskGroup);
-        stateChanged();
+        this.taskGroups.add(taskGroup);
+        this.stateChanged();
     }
 
     /**
@@ -128,11 +128,11 @@ public class TaskControl implements Runnable {
      *
      */
     private void taskComplete(PrioritizedTask task) {
-        if (!runningTaskList.remove(task)) {
-            getLog().debug("removing task that was not on running list");
+        if (!this.runningTaskList.remove(task)) {
+            this.getLog().debug("removing task that was not on running list");
         }
-        runningTasks.decrementAndGet();
-        stateChanged();
+        this.runningTasks.decrementAndGet();
+        this.stateChanged();
     }
 
     /**
@@ -142,32 +142,32 @@ public class TaskControl implements Runnable {
      *
      */
     public void stateChanged() {
-        stateChangeNotificator.lock();
+        this.stateChangeNotificator.lock();
         try {
-            newTasks.signal();
+            this.newTasks.signal();
         } finally {
-            stateChangeNotificator.unlock();
+            this.stateChangeNotificator.unlock();
         }
     }
 
     public void run() {
         try {
-            prepareToRun();
-            while (stillRunning()) {
-                stateChangeNotificator.lock();
+            this.prepareToRun();
+            while (this.stillRunning()) {
+                this.stateChangeNotificator.lock();
                 try {
-                    if ( !isTaskReady() ) {
-                        newTasks.await(60, SECONDS);
+                    if ( !this.isTaskReady() ) {
+                        this.newTasks.await(60, SECONDS);
                     }
                 } finally {
-                    stateChangeNotificator.unlock();
+                    this.stateChangeNotificator.unlock();
                 }
-                processQueue.run();
+                this.processQueue.run();
             }
         } catch (Exception e) {
-            getLog().warn("TaskControl ending with exception", e);
+            this.getLog().warn("TaskControl ending with exception", e);
         } finally {
-            shutdownNow();
+            this.shutdownNow();
         }
     }
 
@@ -176,29 +176,29 @@ public class TaskControl implements Runnable {
      * should be killed.
      */
     public void shutdownNow() {
-        shutDown.countDown();
+        this.shutDown.countDown();
         // do graceful shutdown... otherwise there is a slight race condition
         // with the Worker threads as they wrap up processing the last of the
         // jobs. (case: jobs has decremented runningTasks, but worker thread not
         // yet complete.) Don't want to use shutdownNow because that does
         // interrupt
 
-        executor.shutdown();
+        this.executor.shutdown();
         try {
             // executor.awaitTerminationAfterShutdown() - don't use race
             // condition where
             // poolsize ended up == 0 but still in wait
-            executor.awaitTermination(1000L, MILLISECONDS);
+            this.executor.awaitTermination(1000L, MILLISECONDS);
         } catch (InterruptedException e) {
         }
         if ( this.privateThreadFactory ) {
-            ((ThreadFactoryImpl) threadFactory).shutDownNow();
+            ((ThreadFactoryImpl) this.threadFactory).shutDownNow();
         }
-        for (TaskGroup<?> taskGroup: taskGroups) {
-            taskGroup.shutdownNow(dumpTaskGroupStats);
+        for (TaskGroup<?> taskGroup: this.taskGroups) {
+            taskGroup.shutdownNow(this.dumpTaskGroupStats);
         }
         // if calling from outside - wake up main thread.
-        stateChanged();
+        this.stateChanged();
     }
 
     protected void prepareToRun() {
@@ -215,24 +215,24 @@ public class TaskControl implements Runnable {
      * @return true if any possible task can be run.
      */
     private boolean isTaskReady() {
-        TaskGroup<?> group = getCurrentTaskGroup();
+        TaskGroup<?> group = this.getCurrentTaskGroup();
         if ( group != null && group.isTaskReady() ) {
             return true;
         }
-        int originalIndex = currentTaskGroup.get();
-        ArrayList<TaskGroup<?>> copy = new ArrayList<TaskGroup<?>>(taskGroups);
+        int originalIndex = this.currentTaskGroup.get();
+        ArrayList<TaskGroup<?>> copy = new ArrayList<TaskGroup<?>>(this.taskGroups);
 
         for(int index = originalIndex+1; index < copy.size(); index++) {
             group = copy.get(index);
             if ( group != null && group.isTaskReady() ) {
-                currentTaskGroup.compareAndSet(originalIndex, index);
+                this.currentTaskGroup.compareAndSet(originalIndex, index);
                 return true;
             }
         }
         for (int index = 0; index < originalIndex; index++) {
             group = copy.get(index);
             if (group != null && group.isTaskReady()) {
-                currentTaskGroup.compareAndSet(originalIndex, index);
+                this.currentTaskGroup.compareAndSet(originalIndex, index);
                 return true;
             }
         }
@@ -242,16 +242,16 @@ public class TaskControl implements Runnable {
     private TaskGroup<?> getCurrentTaskGroup() {
         TaskGroup<?> taskGroup;
         do {
-            int index = currentTaskGroup.get();
+            int index = this.currentTaskGroup.get();
             try {
-                taskGroup = taskGroups.get(index);
+                taskGroup = this.taskGroups.get(index);
                 return taskGroup;
             } catch (IndexOutOfBoundsException e) {
                 if (index == 0) {
                     // no taskGroups left
                     return null;
                 } else {
-                    currentTaskGroup.set(0);
+                    this.currentTaskGroup.set(0);
                     continue;
                 }
             }
@@ -260,11 +260,11 @@ public class TaskControl implements Runnable {
 
     public void setStayActive(boolean stayActive) {
         this.stayActive = stayActive;
-        stateChanged();
+        this.stateChanged();
     }
 
     public boolean isStayActive() {
-        return stayActive;
+        return this.stayActive;
     }
 
     // variables for debugging hung TaskControl
@@ -290,23 +290,23 @@ public class TaskControl implements Runnable {
     private boolean stillRunning() {
         try {
             if (Thread.currentThread().isInterrupted()
-                    || shutDown.await(0, MILLISECONDS)) {
-                getLog().debug("TaskControl interrupted");
+                    || this.shutDown.await(0, MILLISECONDS)) {
+                this.getLog().debug("TaskControl interrupted");
                 return false;
             }
         } catch (InterruptedException e) {
             return false;
         }
-        if ( !stayActive ) {
+        if ( !this.stayActive ) {
             // make sure that the only eligible task isn't being passed to a worker
             // thread when there are no other running tasks
-            lastRunningTaskSize = runningTasks.get();
-            lastEligibleTasksSize = eligibleTasks.size();
-            lastIsTaskNOTReady = !isTaskReady();
-            if (lastRunningTaskSize == 0
-                    && lastEligibleTasksSize == 0
-                    && lastIsTaskNOTReady) {
-                getLog().debug("TaskControl ending -- nothing left to run");
+            this.lastRunningTaskSize = this.runningTasks.get();
+            this.lastEligibleTasksSize = this.eligibleTasks.size();
+            this.lastIsTaskNOTReady = !this.isTaskReady();
+            if (this.lastRunningTaskSize == 0
+                    && this.lastEligibleTasksSize == 0
+                    && this.lastIsTaskNOTReady) {
+                this.getLog().debug("TaskControl ending -- nothing left to run");
                 return false;
             }
         }
@@ -318,7 +318,7 @@ public class TaskControl implements Runnable {
     }
 
     public Log getLog() {
-        return log;
+        return this.log;
     }
 
     /**
@@ -332,7 +332,7 @@ public class TaskControl implements Runnable {
      * @return the dumpTaskGroupStats
      */
     public boolean isDumpTaskGroupStats() {
-        return dumpTaskGroupStats;
+        return this.dumpTaskGroupStats;
     }
 
     /**
@@ -349,25 +349,26 @@ public class TaskControl implements Runnable {
          * is used by the PooledExecutor to chose the next task.
          */
         public void run() {
-            while (isTaskReady()) {
+            while (TaskControl.this.isTaskReady()) {
                 // note that there is no guarentee that the task is the same as
                 // this one
-                final PrioritizedTask nextTask = nextTaskFromCurrentGroup();
+                final PrioritizedTask nextTask = this.nextTaskFromCurrentGroup();
 
                 // verify that we have retrieved a valid object.
                 if (!nextTask.isReadyToRun()) {
                     throw new RuntimeException(
-                            "PrioritizedTask contract violation, "
-                                    + "or Comparator violation - why is this object not ready to run");
+                        "PrioritizedTask contract violation, "
+                        + "or Comparator violation - why is this object not ready to run");
                 }
                 // wrap so that there is no reliance on the task doing the
                 // correct notification.
-                executor.execute(new TaskWrapper(nextTask) {
+                TaskControl.this.executor.execute(new TaskWrapper(nextTask) {
+                    @Override
                     public void run() {
                         try {
-                            getWrappedTask().run();
+                            this.getWrappedTask().run();
                         } finally {
-                            taskComplete(getWrappedTask());
+                            TaskControl.this.taskComplete(this.getWrappedTask());
                         }
                     }
                 });
@@ -378,7 +379,7 @@ public class TaskControl implements Runnable {
                 // not be created even if that means that there are waiting
                 // tasks to be
                 // run (12/07/2005).
-                executor.prestartCoreThread();
+                TaskControl.this.executor.prestartCoreThread();
                 /*
                  * Incrementing runningTasks must occur here, not by a call from
                  * nextTask.run(). The reason is that otherwise there is a race
@@ -390,18 +391,18 @@ public class TaskControl implements Runnable {
                  * are no more tasks that can run. 5. worker thread tries to run
                  * nextTask.
                  */
-                runningTasks.incrementAndGet();
-                runningTaskList.add(nextTask);
+                TaskControl.this.runningTasks.incrementAndGet();
+                TaskControl.this.runningTaskList.add(nextTask);
             }
         }
 
         private PrioritizedTask nextTaskFromCurrentGroup() {
             PrioritizedTask nextTask = null;
             do {
-                TaskGroup<?> taskGroup = getCurrentTaskGroup();
+                TaskGroup<?> taskGroup = TaskControl.this.getCurrentTaskGroup();
                 nextTask = taskGroup.nextTask();
             } while (nextTask == null);
-            currentTaskGroup.incrementAndGet();
+            TaskControl.this.currentTaskGroup.incrementAndGet();
             return nextTask;
         }
     }
