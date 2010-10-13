@@ -32,16 +32,16 @@ public class BaseProxyLoaderImpl implements ProxyLoader {
     public static final BaseProxyLoaderImpl INSTANCE = new BaseProxyLoaderImpl();
     @SuppressWarnings("unchecked")
     protected BaseProxyLoaderImpl() {
-        try {
-            // avoids explicit Hibernate dependency
-            this.hibernateProxyAnnotationClazz = (Class<? extends Annotation>) Class.forName("org.hibernate.annotations.Proxy");
-            this.hibernateProxyAnnotationMethod = this.hibernateProxyAnnotationClazz.getMethod("proxyClass");
-        } catch (ClassNotFoundException e) {
-            // oh well no hibernate class proxy.
-        } catch (SecurityException e) {
-            // oh well no hibernate class proxy.
-        } catch (NoSuchMethodException e) {
-            // oh well no hibernate class proxy.
+        // avoids explicit Hibernate dependency
+        this.hibernateProxyAnnotationClazz = (Class<? extends Annotation>) getClassIfPossible("org.hibernate.annotations.Proxy");
+        if ( this.hibernateProxyAnnotationClazz != null) {
+            try {
+                this.hibernateProxyAnnotationMethod = this.hibernateProxyAnnotationClazz.getMethod("proxyClass");
+            } catch (SecurityException e) {
+                // oh well no hibernate class proxy.
+            } catch (NoSuchMethodException e) {
+                // oh well no hibernate class proxy.
+            }
         }
     }
     /**
