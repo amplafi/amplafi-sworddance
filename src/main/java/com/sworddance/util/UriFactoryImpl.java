@@ -19,7 +19,6 @@ import static com.sworddance.util.CUtilities.*;
 import static org.apache.commons.lang.StringUtils.*;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -459,11 +458,11 @@ public class UriFactoryImpl {
             } else if (c <= 0x07FF) {      // non-ASCII <= 0x7FF (UTF 2 byte)
                 sb.append("%").append(Integer.toHexString(0xc0 | (c >> 6)));
                 sb.append("%").append(Integer.toHexString(0x80 | (c & 0x3F)));
-           } else {                  // 0x7FF < ch <= 0xFFFF (UTF 3 bytes)
-               sb.append("%").append(Integer.toHexString(0xe0 | (c >> 12)));
-               sb.append("%").append(Integer.toHexString(0x80 | ((c >> 6) & 0x3F)));
-               sb.append("%").append(Integer.toHexString(0x80 | (c & 0x3F)));
-           }
+            } else {                  // 0x7FF < ch <= 0xFFFF (UTF 3 bytes)
+                sb.append("%").append(Integer.toHexString(0xe0 | (c >> 12)));
+                sb.append("%").append(Integer.toHexString(0x80 | ((c >> 6) & 0x3F)));
+                sb.append("%").append(Integer.toHexString(0x80 | (c & 0x3F)));
+            }
         }
         return sb.toString();
     }
@@ -619,4 +618,12 @@ public class UriFactoryImpl {
         return port;
     }
 
+    public static boolean isHttpProtocol(URI uri) {
+        if ( uri != null) {
+            String scheme = uri.getScheme();
+            return HTTP_SCHEME.equalsIgnoreCase(scheme) || HTTPS_SCHEME.equalsIgnoreCase(scheme);
+        } else {
+            return false;
+        }
+    }
 }
