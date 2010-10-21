@@ -15,8 +15,7 @@
 package com.sworddance.util;
 
 import static com.sworddance.util.ApplicationNullPointerException.notNull;
-import static com.sworddance.util.CUtilities.*;
-import static org.apache.commons.lang.StringUtils.*;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -26,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.apache.commons.lang.StringUtils.*;
 
 /**
  * @author patmoore
@@ -555,7 +556,7 @@ public class UriFactoryImpl {
         } else {
             uri = rootUri;
         }
-        if ( uri.toString().endsWith(PATH_SEPARATOR)) {
+        if ( uri.toString().endsWith(PATH_SEPARATOR) && isNotBlank(defaultFileName)) {
             uri = uri.resolve("."+PATH_SEPARATOR+percentEncoding(defaultFileName));
         }
         return uri;
