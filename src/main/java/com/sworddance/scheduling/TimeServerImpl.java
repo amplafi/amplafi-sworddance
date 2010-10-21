@@ -14,14 +14,14 @@
 
 package com.sworddance.scheduling;
 
+import com.sworddance.core.Expireable;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
-
-import com.sworddance.core.Expireable;
 
 /**
  * The normal production instance of the time server. This service is to be used
@@ -35,7 +35,7 @@ public class TimeServerImpl implements TimeServer {
     public TimeServerImpl() {
         gmtTimeZone = TimeZone.getTimeZone("GMT");
         TimeZone.setDefault(gmtTimeZone);
-        
+
         timeZones = new ArrayList<TimeZone>();
         for(String id: TimeZone.getAvailableIDs()) {
             timeZones.add(TimeZone.getTimeZone(id));
@@ -132,7 +132,13 @@ public class TimeServerImpl implements TimeServer {
 
     @Override
     public String formatCurrentTime(String formatString) {
-        return new SimpleDateFormat(formatString).format(getCurrentDate());
+        SimpleDateFormat simpleDateFormat;
+        try {
+            simpleDateFormat = new SimpleDateFormat(formatString);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Dateformat string had a problem :"+formatString+" "+e.getMessage(), e);
+        }
+        return simpleDateFormat.format(getCurrentDate());
     }
 
 
