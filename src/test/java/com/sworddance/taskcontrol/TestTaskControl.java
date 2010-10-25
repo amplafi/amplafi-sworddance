@@ -46,14 +46,13 @@ public class TestTaskControl {
      * make sure that default in/out is FIFO.
      * @param taskGroup
      * @param orderOut
-     * @param logger
+     * @param log
      * @throws Exception
      *
      */
     @Test(dataProvider="testObjects")
-    public void testTestOrdering(TaskGroup<?> taskGroup, OrderedOut orderOut, Log logger) throws Exception {
-        TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1);
-        taskControl.setLog(logger);
+    public void testTestOrdering(TaskGroup<?> taskGroup, OrderedOut orderOut, Log log) throws Exception {
+        TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1, log);
         for (int i = 0; i < 200; i++) {
             TestTask task = new TestTask(i, orderOut);
             taskGroup.addTask(task);
@@ -75,8 +74,8 @@ public class TestTaskControl {
     }
 
     @Test(dataProvider="testObjects")
-    public void testBadDependencies(TaskGroup<?> taskGroup, OrderedOut orderOut, Log logger) {
-        taskGroup.setLog(logger);
+    public void testBadDependencies(TaskGroup<?> taskGroup, OrderedOut orderOut, Log log) {
+        taskGroup.setLog(log);
         DefaultDependentPrioritizedTask blocking = new DefaultDependentPrioritizedTask();
         blocking.setName("blocking");
         // add some dead tasks.
@@ -104,9 +103,8 @@ public class TestTaskControl {
     }
 
     @Test(dataProvider="testObjects")
-    public void testBadJobs(TaskGroup<?> taskGroup, OrderedOut orderOut, Log logger) throws Exception {
-        TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1);
-        taskControl.setLog(logger);
+    public void testBadJobs(TaskGroup<?> taskGroup, OrderedOut orderOut, Log log) throws Exception {
+        TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1, log);
         List<TestTask> list = new ArrayList<TestTask>();
         DefaultPrioritizedTask<Object> blocking = new DefaultPrioritizedTask<Object>();
         blocking.setName("blocking");
@@ -177,16 +175,15 @@ public class TestTaskControl {
     /**
      * test that if the first task at the head of a chain fails the other
      * dependent tasks fail out so that AlwaysDependencies behave as expected.
-     * @param logger
+     * @param log
      * @param taskGroup
      * @param orderOut
      * @throws Exception
      */
     @Test(dataProvider="testObjects")
-    public void testChainFailure1(TaskGroup<?> taskGroup, OrderedOut orderOut, Log logger) throws Exception {
+    public void testChainFailure1(TaskGroup<?> taskGroup, OrderedOut orderOut, Log log) throws Exception {
         int i = 0;
-        TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1);
-        taskControl.setLog(logger);
+        TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1, log);
         TestTask task1 = new FailTestTask(i++, orderOut);
         taskGroup.addTask(task1);
         TestTask task2 = new TestTask(i++, orderOut);
@@ -203,16 +200,15 @@ public class TestTaskControl {
     /**
      * test that if the first task at the head of a chain fails the other
      * dependent tasks fail out so that AlwaysDependencies behave as expected.
-     * @param logger
+     * @param log
      * @param taskGroup
      * @param orderOut
      * @throws Exception
      */
     @Test(dataProvider="testObjects")
-    public void testChainFailure2(TaskGroup<?> taskGroup, OrderedOut orderOut, Log logger) throws Exception {
+    public void testChainFailure2(TaskGroup<?> taskGroup, OrderedOut orderOut, Log log) throws Exception {
         int i = 0;
-        TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1);
-        taskControl.setLog(logger);
+        TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1, log);
 
         TestTask task1 = new FailTestTask(i++, orderOut);
         taskGroup.addTask(task1);
@@ -238,16 +234,15 @@ public class TestTaskControl {
     /**
      * test that if the first task at the head of a chain fails the other
      * dependent tasks fail out so that AlwaysDependencies behave as expected.
-     * @param logger
+     * @param log
      * @param taskGroup
      * @param orderOut
      * @throws Exception
      */
     @Test(dataProvider="testObjects")
-    public void testChainFailure3(TaskGroup<?> taskGroup, OrderedOut orderOut, Log logger) throws Exception {
+    public void testChainFailure3(TaskGroup<?> taskGroup, OrderedOut orderOut, Log log) throws Exception {
         int i = 0;
-        TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1);
-        taskControl.setLog(logger);
+        TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1, log);
 
         TestTask task1 = new FailTestTask(i++, orderOut);
         taskGroup.addTask(task1);
@@ -262,9 +257,8 @@ public class TestTaskControl {
     }
 
     @Test(dataProvider="testObjects")
-    public void testSimpleDependency(TaskGroup<?> taskGroup, OrderedOut orderOut, Log logger) throws Exception {
-        TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1);
-        taskControl.setLog(logger);
+    public void testSimpleDependency(TaskGroup<?> taskGroup, OrderedOut orderOut, Log log) throws Exception {
+        TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1, log);
         orderOut.down = true;
         List<TestTask> list = new ArrayList<TestTask>();
         // add dependencies
@@ -294,9 +288,8 @@ public class TestTaskControl {
     }
 
     @Test(dataProvider="testObjects")
-    public void testComplexDependency(TaskGroup<?> taskGroup, OrderedOut orderOut, Log logger) throws Exception {
-        TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 5);
-        taskControl.setLog(logger);
+    public void testComplexDependency(TaskGroup<?> taskGroup, OrderedOut orderOut, Log log) throws Exception {
+        TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 5, log);
         orderOut.down = true;
         List<TestTask> list = new ArrayList<TestTask>();
         // add dependencies
@@ -335,8 +328,7 @@ public class TestTaskControl {
      */
     @SuppressWarnings("unchecked")
     public void testEmptyTaskGroup() throws Exception {
-        TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1);
-        taskControl.setLog(LogFactory.getLog(this.getClass()));
+        TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1, LogFactory.getLog(this.getClass()));
         TaskGroup taskGroup = taskControl.newTaskGroup("empty");
         startTaskControl(taskControl, taskGroup);
         FutureResult result = taskGroup.getResult();
