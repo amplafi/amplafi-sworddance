@@ -75,12 +75,9 @@ public class TaskControl implements Runnable {
 
     private boolean privateThreadFactory;
 
-    public TaskControl(Comparator<PrioritizedTask> activeComparator, int maxThreads) {
-        this(activeComparator, maxThreads, new ThreadFactoryImpl());
-        this.privateThreadFactory = true;
-    }
     @SuppressWarnings("unchecked")
-    public TaskControl(Comparator<PrioritizedTask> activeComparator, int maxThreads, ThreadFactory threadFactory) {
+    public TaskControl(Comparator<PrioritizedTask> activeComparator, int maxThreads, ThreadFactory threadFactory, Log log) {
+        this.log = log;
         this.eligibleTasks = new PriorityBlockingQueue<PrioritizedTask>(20, activeComparator);
         this.stateChangeNotificator = new ReentrantLock();
         this.newTasks = this.stateChangeNotificator.newCondition();
@@ -94,9 +91,13 @@ public class TaskControl implements Runnable {
         this.stayActive = true;
     }
 
+    public TaskControl(Comparator<PrioritizedTask> activeComparator, int maxThreads, Log log) {
+        this(activeComparator, maxThreads, new ThreadFactoryImpl(), log);
+        this.privateThreadFactory = true;
+    }
+
     public TaskControl(Log log) {
-        this(new PriorityEligibleWorkItemComparator(), 5);
-        this.setLog(log);
+        this(new PriorityEligibleWorkItemComparator(), 5, log);
     }
 
 
