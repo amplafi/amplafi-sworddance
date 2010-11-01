@@ -25,12 +25,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.commons.lang.StringUtils.*;
-
 import com.sworddance.beans.ProxyLoader.ChildObjectNotLoadableException;
+import com.sworddance.util.ApplicationIllegalStateException;
 import com.sworddance.util.ApplicationNullPointerException;
 import com.sworddance.util.CurrentIterator;
 import com.sworddance.util.WeakProxy;
+
+import static org.apache.commons.lang.StringUtils.*;
 
 /**
  * enables a controlled access to an object tree that also supports caching.
@@ -86,7 +87,9 @@ public abstract class ProxyMapperImpl<I,O extends I> extends BeanWorker implemen
      * {@link ConcurrentHashMap} does not allow null keys or values.
      */
     protected static final Serializable NullObject = new Serializable() {
-        @Override
+		private static final long serialVersionUID = 1L;
+
+		@Override
         public String toString() {
             return "(nullobject)";
         }
@@ -286,7 +289,7 @@ java.lang.AssertionError: isSubtype 15
                         return initValue(propertyName);
                     }
                 case strict:
-                    throw new IllegalStateException("no cached value with strict proxy behavior");
+                    throw new ApplicationIllegalStateException("no cached value with strict proxy behavior. proxy=", this, " method=", method, "(", join(args), ")");
                 }
             }
             return null;
@@ -297,7 +300,7 @@ java.lang.AssertionError: isSubtype 15
             // HACK: how to handle sideeffects? (can't )
             switch(this.getProxyBehavior()) {
             case strict:
-                throw new IllegalStateException("");
+                throw new ApplicationIllegalStateException(this, " method=", method, "(", join(args), ")");
             default:
                 return doInvoke(method, args);
             }
@@ -317,7 +320,7 @@ java.lang.AssertionError: isSubtype 15
         if ( (method.getModifiers() & Modifier.STATIC) != Modifier.STATIC) {
             // not a static method
             actualObject = getRealObject();
-            ApplicationNullPointerException.notNull(actualObject, "need object to call a non-static method ", method);
+            ApplicationNullPointerException.notNull(actualObject, "need object to call a non-static method ",this, " method=", method, "(", join(args), ")");
         } else {
             actualObject = null;
         }
@@ -325,8 +328,8 @@ java.lang.AssertionError: isSubtype 15
             return method.invoke(actualObject, args);
         } catch(RuntimeException e) {
             // would like to log or annotate somehow ..
-            // changing type of exception is bad so don't want to wrap and rethrow.
-            throw e;
+            // changing type of exception is bad so we will throw as an exception that will normally be unwrapped.
+            throw new InvocationTargetException(e, this+ " method="+ method + "(" +join(args)+ ")");
         }
     }
     public String getKeyProperty() {
