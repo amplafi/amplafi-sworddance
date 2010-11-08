@@ -15,11 +15,14 @@
 package com.sworddance.util;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 
+import static com.sworddance.util.UriFactoryImpl.*;
+
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import static com.sworddance.util.UriFactoryImpl.*;
 import static org.testng.Assert.*;
 
 /**
@@ -112,7 +115,20 @@ public class TestUriFactoryImpl {
         assertEquals(qmap.get("s"), "s_value");
         assertEquals(qmap.get("t"), "t_value");
     }
+    @Test(dataProvider="queryMapUris")
+    public void testQueryMap(URI uri) {
+        Map<String, String> queryMapUri = getQueryMap(uri);
 
+    }
+    @DataProvider(name="queryMapUris")
+    protected Object[][] getQueryMapUris() throws URISyntaxException {
+        return new Object[][] {
+            new Object[] { new URI("/foo?_jquery") },
+            new Object[] { new URI("/?&") },
+            new Object[] { new URI("http://example.com?_") },
+            new Object[] { new URI("?_=1&__=")}
+        };
+    }
     @Test
     public void testUriResolutionWithBase() throws Exception {
         URI uri = new URI("http://amplafi.net/us/msg");
