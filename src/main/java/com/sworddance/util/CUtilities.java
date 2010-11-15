@@ -395,7 +395,6 @@ public class CUtilities {
      */
     public static <K, V> V get(Map<K,V> map, K key, final V defaultValue) {
         return get(map, key, new Callable<V>() {
-            @Override
             public V call() {
                 return defaultValue;
             }

@@ -67,7 +67,6 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
             }
         }
     }
-    @Override
     public boolean containsKey(Object propertyName) {
         return this.getNewValues().containsKey(propertyName) || this.getOriginalValues().containsKey(propertyName) || this.childProxies.containsKey(propertyName);
     }
@@ -75,21 +74,18 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
      * @param propertyName
      * @param result
      */
-    @Override
     protected void putOriginalValues(String propertyName, Object result) {
         if (propertyName == null) {
             throw new ApplicationIllegalArgumentException( "propertyName cannot be null");
         }
         this.getOriginalValuesMap().put(propertyName, result==null?NullObject:result);
     }
-    @Override
     protected void putNewValues(String propertyName, Object result) {
         if (propertyName == null) {
             throw new ApplicationIllegalArgumentException( "propertyName cannot be null");
         }
         this.getNewValues().put(propertyName, result==null?NullObject:result);
     }
-    @Override
     public Object getCachedValue(String propertyName) {
         Object o;
         ProxyMapper<?,?> childProxy;
@@ -107,8 +103,6 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
         }
         return o;
     }
-
-    @Override
     public void clear() {
         super.clear();
         for(ProxyMapper<?, ?>proxyMapper: this.childProxies.values()) {
@@ -147,8 +141,6 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
     private void setChildProxy(String propertyName, ProxyMapperImplementor<?,?> proxy) {
         this.childProxies.putIfAbsent(propertyName, proxy);
     }
-
-    @Override
     @SuppressWarnings("unchecked")
     protected <CI, CO extends CI> ProxyMapperImplementor<CI, CO> getChildProxyMapper(String propertyName, PropertyAdaptor propertyAdaptor, Object base, ProxyMapperImplementor<?, ?> baseProxyMapper) {
         ProxyMapperImplementor<CI,CO> childProxy = getExistingChildProxy(propertyName);
@@ -173,8 +165,6 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
         }
         return childProxy;
     }
-
-    @Override
     public RootProxyMapper<I, O> getRootProxyMapper() {
         return this;
     }
@@ -188,7 +178,6 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
     /**
      * @return the proxyBehavior
      */
-    @Override
     public ProxyBehavior getProxyBehavior() {
         return proxyBehavior;
     }
@@ -196,11 +185,9 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
     /**
      * @see com.sworddance.beans.ProxyMapper#getNewValues()
      */
-    @Override
     public Map<String, Object> getNewValues() {
         return this.newValues;
     }
-    @Override
     public Map<String, Object> getOriginalValues() {
         return Collections.unmodifiableMap(this.getOriginalValuesMap());
     }
@@ -237,7 +224,6 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
      *
      * @see com.sworddance.beans.ProxyMapperImplementor#getBaseProxyMapper()
      */
-    @Override
     public ProxyMapper<?, ?> getBaseProxyMapper() {
         return null;
     }

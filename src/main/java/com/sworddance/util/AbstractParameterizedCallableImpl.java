@@ -24,7 +24,6 @@ public abstract class AbstractParameterizedCallableImpl<V> implements Parameteri
     /**
      * @see java.util.concurrent.Callable#call()
      */
-    @Override
     public V call() throws Exception {
         return this.executeCall();
     }

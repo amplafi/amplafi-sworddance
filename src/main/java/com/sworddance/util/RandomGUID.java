@@ -105,9 +105,7 @@ public class RandomGUID {
 
         valueAfterHash = sb.toString();
 
-    }
-
-    @Override
+    }
     public String toString() {
         String raw = valueAfterHash.toUpperCase();
         StringBuffer sb = new StringBuffer();

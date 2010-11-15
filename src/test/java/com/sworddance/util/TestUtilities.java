@@ -73,8 +73,6 @@ public class TestUtilities {
         assertFalse(map.containsKey("foo"));
 
         assertNull(get(map, "foo", new Callable<String>() {
-
-            @Override
             public String call() {
                 return null;
             }
@@ -82,8 +80,6 @@ public class TestUtilities {
         }));
         assertFalse(map.containsKey("foo"));
         assertEquals(get(map, "foo", new Callable<String>() {
-
-            @Override
             public String call() {
                 return "bar";
             }
@@ -91,8 +87,6 @@ public class TestUtilities {
         }), "bar");
         assertTrue(map.containsKey("foo"));
         assertEquals(get(map, "foo", new Callable<String>() {
-
-            @Override
             public String call() throws Exception {
                 throw new IllegalStateException("Should not have called this!");
             }

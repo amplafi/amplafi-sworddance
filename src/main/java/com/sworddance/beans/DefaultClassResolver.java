@@ -16,7 +16,6 @@ public class DefaultClassResolver implements ClassResolver {
     /**
      * @see com.sworddance.beans.ClassResolver#getRealClass(java.lang.Object)
      */
-    @Override
     public Class<?> getRealClass(Object possibleProxy) {
         return possibleProxy != null? possibleProxy.getClass(): null;
     }

@@ -27,8 +27,7 @@ public class AveLapTimer extends LapTimer {
     private long maximumTime=Long.MIN_VALUE;
     /**
      * How long since lap was last called. 0 if a pause is in effect.
-     */
-    @Override
+     */
     public long lap()
     {
         long lapTime = super.lap();
@@ -41,9 +40,7 @@ public class AveLapTimer extends LapTimer {
         this.totalLapTime += lapTime;
         this.totalLaps++;
         return lapTime;
-    }
-
-    @Override
+    }
     public LapTimer reset() {
         super.reset();
         this.totalLaps = this.totalLapTime= this.minimumTime = this.maximumTime =0;

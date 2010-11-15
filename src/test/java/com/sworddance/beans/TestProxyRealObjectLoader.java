@@ -285,7 +285,6 @@ public class TestProxyRealObjectLoader {
          * @see com.sworddance.beans.ProxyLoader#getRealObject(com.sworddance.beans.ProxyMapper)
          */
         @SuppressWarnings("unchecked")
-        @Override
         public <I, O extends I> O getRealObject(ProxyMapper<I, O> proxyMapper) throws ChildObjectNotLoadableException {
             Class<? extends Object> realClass = proxyMapper.getRealClass();
             loadCalled++;
@@ -310,7 +309,6 @@ public class TestProxyRealObjectLoader {
         /**
          * @see com.sworddance.beans.ProxyLoader#getProxyClassFromClass(java.lang.Class)
          */
-        @Override
         public <I> Class<? extends I> getProxyClassFromClass(Class<? extends I> clazz) {
             assertTrue(GreatGrandparent.class.isAssignableFrom(clazz), "should only be called for the RootProxyMapper objects");
             Class<? extends I> returnClass = super.getProxyClassFromClass(clazz);

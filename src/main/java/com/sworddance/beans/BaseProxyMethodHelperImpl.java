@@ -31,7 +31,6 @@ public class BaseProxyMethodHelperImpl implements ProxyMethodHelper {
     /**
      * @see com.sworddance.beans.ProxyMethodHelper#invoke(com.sworddance.beans.ProxyMapper, java.lang.Object, java.lang.reflect.Method, java.lang.Object...)
      */
-    @Override
     @SuppressWarnings("unused")
     public <I, O extends I> Object invoke(ProxyMapper<I, O> proxyMapper, Object proxy, Method method, Object... args) throws Throwable {
         String methodName = method.getName();
@@ -54,7 +53,6 @@ public class BaseProxyMethodHelperImpl implements ProxyMethodHelper {
     /**
      * @see com.sworddance.beans.ProxyMethodHelper#isHandling(com.sworddance.beans.ProxyMapper, java.lang.Object, java.lang.reflect.Method, java.lang.Object...)
      */
-    @Override
     @SuppressWarnings("unused")
     public <I, O extends I> boolean isHandling(ProxyMapper<I, O> proxyMapper, Object proxy, Method method, Object... args) {
         String methodName = method.getName();

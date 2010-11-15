@@ -31,23 +31,15 @@ import static com.sworddance.util.CUtilities.*;
         private List<ManagerState> allowedTransitions;
 
         public static final FiniteStateChecker<ManagerState> STATE_CHECKER = new FiniteStateChecker<ManagerState>();
-
-        @Override
         public ManagerState checkToChange(ManagerState newFiniteState) {
             return STATE_CHECKER.checkToChange(this, newFiniteState);
         }
-
-        @Override
         public Collection<ManagerState> getAllowedTransitions() {
             return this.allowedTransitions;
         }
-
-        @Override
         public boolean isAllowedTransition(ManagerState newFiniteState) {
             return STATE_CHECKER.isAllowedTransition(this, newFiniteState);
         }
-
-        @Override
         public boolean isTerminalState() {
             return STATE_CHECKER.isTerminalState(this);
         }

@@ -14,8 +14,6 @@
 
 package com.sworddance.util;
 
-import static com.sworddance.util.ApplicationNullPointerException.notNull;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -27,6 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.apache.commons.lang.StringUtils.*;
+import static com.sworddance.util.ApplicationNullPointerException.*;
 
 /**
  * @author patmoore
@@ -407,7 +406,7 @@ public class UriFactoryImpl {
      * This method is implemented as per specifications in RFC 1738 (section 2).
      *
      * I also had a look at <br/>
-     * {@link URLEncoder} does not meet out requirements <br/>
+     * {@link java.net.URLEncoder} does not meet out requirements <br/>
      * {@link URI} also does not meet our requirements <br/>
      *
      *
@@ -432,7 +431,6 @@ public class UriFactoryImpl {
      * to use URIBuilder
      * {@linkplain "http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars"}
      * {@linkplain "http://www.ietf.org/rfc/rfc1738.txt"} (section 2.2)
-
      */
     public static String percentEncoding(String input){
         StringBuilder sb = new StringBuilder();

@@ -30,7 +30,6 @@ public class NotNullKeyValuePredicate implements Predicate {
     /**
      * @see org.apache.commons.collections.Predicate#evaluate(java.lang.Object)
      */
-    @Override
     public boolean evaluate(Object object) {
         Object v = object;
         while ( v instanceof Reference<?>) {

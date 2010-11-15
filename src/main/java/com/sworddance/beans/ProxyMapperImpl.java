@@ -265,7 +265,6 @@ java.lang.AssertionError: isSubtype 15
     /**
      * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
      */
-    @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
         String propertyName;
@@ -487,7 +486,6 @@ java.lang.AssertionError: isSubtype 15
      * @see com.sworddance.beans.ProxyMapper#getValue(java.lang.Object, java.lang.String)
      */
     @SuppressWarnings("unchecked")
-    @Override
     public <T> T getValue(Object base, String property) {
         return (T) super.getValue(base, property);
     }

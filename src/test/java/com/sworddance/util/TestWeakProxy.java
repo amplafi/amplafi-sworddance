@@ -63,8 +63,6 @@ public class TestWeakProxy {
     public void testRestore() {
         final Foo expected = new Foo() {};
         Foo foo = WeakProxy.newProxyInstance(null, new Callable<Foo>(){
-
-            @Override
             public Foo call() throws Exception {
                 return expected;
             }

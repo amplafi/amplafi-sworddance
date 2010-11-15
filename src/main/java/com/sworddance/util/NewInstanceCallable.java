@@ -30,7 +30,6 @@ public class NewInstanceCallable<V> implements Callable<V> {
     /**
      * @see java.util.concurrent.Callable#call()
      */
-    @Override
     public V call() throws Exception {
         return this.clazz.newInstance();
     }

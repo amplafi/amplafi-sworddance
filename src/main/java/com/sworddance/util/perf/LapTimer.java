@@ -964,8 +964,7 @@ public class LapTimer implements Runnable, Serializable {
      * Create a nice string that shows all the information about this LapTimer
      *
      * @see java.lang.Object#toString()
-     */
-    @Override
+     */
     public String toString() {
         StringBuilder sb = new StringBuilder(100);
         if (this.timerName != null) {
@@ -1222,16 +1221,14 @@ public class LapTimer implements Runnable, Serializable {
 
         /**
          * @see java.util.Iterator#hasNext()
-         */
-        @Override
+         */
         public boolean hasNext() {
             return nextTimer != null && nextTimer.prevStackMember != null;
         }
 
         /**
          * @see java.util.Iterator#next()
-         */
-        @Override
+         */
         public LapTimer next() {
             if ( !hasNext()) {
                 throw new NoSuchElementException();
@@ -1243,8 +1240,7 @@ public class LapTimer implements Runnable, Serializable {
 
         /**
          * @see java.util.Iterator#remove()
-         */
-        @Override
+         */
         public void remove() {
             throw new UnsupportedOperationException();
         }
@@ -1266,18 +1262,14 @@ public class LapTimer implements Runnable, Serializable {
         Id(VMID vmidentity, int counter) {
             this.vmidentity = vmidentity;
             this.counter = counter;
-        }
-
-        @Override
+        }
         public boolean equals(Object o) {
             if (o instanceof Id) {
                 return this.counter == ((Id) o).counter && vmidentity.equals(((Id) o).vmidentity);
             } else {
                 return false;
             }
-        }
-
-        @Override
+        }
         public int hashCode() {
             return this.vmidentity.hashCode() + this.counter;
         }

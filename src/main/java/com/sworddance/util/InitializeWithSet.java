@@ -45,7 +45,6 @@ public class InitializeWithSet<V> implements Callable<Set<V>> {
     /**
      * @see java.util.concurrent.Callable#call()
      */
-    @Override
     public Set<V> call() throws Exception {
         return this.threadsafe?Collections.newSetFromMap(new ConcurrentHashMap<V, Boolean>()): new HashSet<V>();
     }

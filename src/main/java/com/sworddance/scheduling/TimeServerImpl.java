@@ -44,9 +44,7 @@ public class TimeServerImpl implements TimeServer {
 
     public TimeZone getGmtTimeZone() {
         return this.gmtTimeZone;
-    }
-
-    @Override
+    }
     public Calendar getCurrentStandardCalendar() {
         return Calendar.getInstance(gmtTimeZone);
     }
@@ -65,9 +63,7 @@ public class TimeServerImpl implements TimeServer {
         Calendar cal = getCurrentCalendar();
         approximate(cal);
         return cal;
-    }
-
-    @Override
+    }
     public Calendar getApproximateCalendar(int daysOffset) {
         Calendar cal = getApproximateCalendar();
         cal.add(Calendar.DAY_OF_YEAR, daysOffset);
@@ -128,9 +124,7 @@ public class TimeServerImpl implements TimeServer {
      */
     protected void approximate(Calendar original) {
         original.set(Calendar.MILLISECOND, 0);
-    }
-
-    @Override
+    }
     public String formatCurrentTime(String formatString) {
         SimpleDateFormat simpleDateFormat;
         try {
@@ -145,8 +139,7 @@ public class TimeServerImpl implements TimeServer {
 
     /**
      * @see com.sworddance.core.ExpirationChecker#isExpired(com.sworddance.core.Expireable)
-     */
-    @Override
+     */
     public boolean isExpired(Expireable expireable) {
         Calendar expiration;
         if ( !expireable.isExpired() && (expiration=expireable.getExpiration()) != null) {
@@ -158,8 +151,7 @@ public class TimeServerImpl implements TimeServer {
     /**
      * Returns a copy of the TimeZones.
      * @see com.sworddance.scheduling.TimeServer#getTimeZones()
-     */
-    @Override
+     */
     public List<TimeZone> getTimeZones() {
         return new ArrayList<TimeZone>(this.timeZones);
     }
@@ -169,8 +161,7 @@ public class TimeServerImpl implements TimeServer {
      * @param currentDate
      * @param tz
      * @return converted date
-     */
-    @Override
+     */
     public Date convertToStandardCalendar(Date currentDate, TimeZone tz) {
         if ( currentDate == null || tz ==null) {
             return currentDate;

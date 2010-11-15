@@ -55,8 +55,7 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
     }
     public <K> BaseIterableIterator(Reference<K> ref) {
         setIterator(ref);
-    }
-    @Override
+    }
     public boolean hasNext() {
         return iter.hasNext();
     }
@@ -84,8 +83,7 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
             return Arrays.asList((T)k).iterator();
         }
 
-    }
-    @Override
+    }
     public T next() {
         current = iter.next();
         index++;
@@ -94,15 +92,12 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
 
     public T current() {
         return current;
-    }
-    @Override
+    }
     public void remove() {
         iter.remove();
         // don't null current that way old value can be retrieved.
         index--;
-    }
-
-    @Override
+    }
     public Iterator<T> iterator() {
         return this;
     }

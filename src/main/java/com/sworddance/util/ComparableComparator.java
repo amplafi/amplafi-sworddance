@@ -27,7 +27,6 @@ public class ComparableComparator extends AbstractComparator<Comparable<?>> {
      * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
      * @return if comparison cannot be done then 0 for equals is returned.
      */
-    @Override
     public int compare(Comparable<?> o1, Comparable<?> o2) {
         Integer result = doCompare(o1, o2);
         return result == null?0:result;

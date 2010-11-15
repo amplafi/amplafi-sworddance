@@ -48,9 +48,7 @@ public class CSVThreadHistoryTrackerFormatter implements Iterator<String> {
      */
     public CSVThreadHistoryTrackerFormatter(ThreadHistoryTracker tracker) {
         this.threadHistoryTrackerFormatter = new ThreadHistoryTrackerFormatter(tracker);
-    }
-
-    @Override
+    }
     public String next() {
         StringBuilder sb = new StringBuilder(100);
         if (doneWithData) {
@@ -155,9 +153,7 @@ public class CSVThreadHistoryTrackerFormatter implements Iterator<String> {
                 sb.append(",").append(times[1]);
             }
         }
-    }
-
-    @Override
+    }
     public boolean hasNext() {
         doneWithData = !this.threadHistoryTrackerFormatter.hasNext();
         if (doneWithData && taskSummary != null) {

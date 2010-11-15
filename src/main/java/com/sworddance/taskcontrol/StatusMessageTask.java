@@ -31,9 +31,7 @@ public class StatusMessageTask extends DefaultDependentPrioritizedTask {
     public StatusMessageTask(final String taskName, final String completionMsg) {
         setName(taskName);
         this.completionMsg = completionMsg;
-    }
-
-    @Override
+    }
     protected Object callBody() {
         try {
             getTaskGroup().getLog().info(completionMsg);

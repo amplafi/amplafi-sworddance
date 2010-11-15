@@ -115,7 +115,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#clear()
      */
-    @Override
     public void clear() {
         this.byClassMap.clear();
     }
@@ -123,7 +122,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#containsKey(java.lang.Object)
      */
-    @Override
     public boolean containsKey(Object key) {
         return this.byClassMap.containsKey(key);
     }
@@ -131,7 +129,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#containsValue(java.lang.Object)
      */
-    @Override
     public boolean containsValue(Object value) {
         return this.byClassMap.containsValue(value);
     }
@@ -140,7 +137,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
      *
      * @see java.util.Map#entrySet()
      */
-    @Override
     public Set<Entry<Class<?>, V>> entrySet() {
         return this.byClassMap.entrySet();
     }
@@ -148,7 +144,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#isEmpty()
      */
-    @Override
     public boolean isEmpty() {
         return this.byClassMap.isEmpty();
     }
@@ -156,7 +151,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#keySet()
      */
-    @Override
     public Set<Class<?>> keySet() {
         return this.byClassMap.keySet();
     }
@@ -164,7 +158,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#size()
      */
-    @Override
     public int size() {
         return this.byClassMap.size();
     }
@@ -172,7 +165,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#put(java.lang.Object, java.lang.Object)
      */
-    @Override
     public V put(Class<?> key, V value) {
         return this.byClassMap.put(key, value);
     }
@@ -180,7 +172,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#putAll(java.util.Map)
      */
-    @Override
     public void putAll(Map<? extends Class<?>, ? extends V> m) {
         this.byClassMap.putAll(m);
     }
@@ -188,35 +179,30 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.concurrent.ConcurrentMap#putIfAbsent(java.lang.Object, java.lang.Object)
      */
-    @Override
     public V putIfAbsent(Class<?> key, V value) {
         return this.byClassMap.putIfAbsent(key, value);
     }
     /**
      * @see java.util.concurrent.ConcurrentMap#remove(java.lang.Object, java.lang.Object)
      */
-    @Override
     public boolean remove(Object key, Object value) {
         return remove(key, value);
     }
     /**
      * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object, java.lang.Object)
      */
-    @Override
     public boolean replace(Class<?> key, V oldValue, V newValue) {
         return replace(key, oldValue, newValue);
     }
     /**
      * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object)
      */
-    @Override
     public V replace(Class<?> key, V value) {
         return replace(key, value);
     }
     /**
      * @see java.util.Map#remove(java.lang.Object)
      */
-    @Override
     public V remove(Object key) {
         return this.byClassMap.remove(key);
     }
@@ -224,12 +210,9 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#values()
      */
-    @Override
     public Collection<V> values() {
         return this.byClassMap.values();
     }
-
-    @Override
     public String toString() {
         return this.byClassMap.toString();
     }
@@ -240,7 +223,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
         /**
          * @see com.sworddance.util.ParameterizedCallable#executeCall(java.lang.Object[])
          */
-        @Override
         public V executeCall(Object... parameters) {
             MapByClass<V> mapByClass = CUtilities.get(parameters, 0);
             // first parameter is the map, second is the key.

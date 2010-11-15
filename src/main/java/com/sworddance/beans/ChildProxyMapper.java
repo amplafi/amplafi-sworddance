@@ -50,11 +50,9 @@ public class ChildProxyMapper<I,O extends I> extends ProxyMapperImpl<I,O> {
     /**
      * @return the rootProxyMapper
      */
-    @Override
     public RootProxyMapper<?,?> getRootProxyMapper() {
         return rootProxyMapper;
     }
-    @Override
     public O applyToRealObject() {
         throw new UnsupportedOperationException("cannot applyToRealObject() from childProxyMapper (yet)");
     }
@@ -62,41 +60,30 @@ public class ChildProxyMapper<I,O extends I> extends ProxyMapperImpl<I,O> {
      * @param propertyName
      * @param result
      */
-    @Override
     protected void putOriginalValues(String propertyName, Object result) {
         this.getRootProxyMapper().putOriginalValues(getTruePropertyName(propertyName), result);
     }
-    @Override
     protected void putNewValues(String propertyName, Object result) {
         this.getRootProxyMapper().putNewValues(getTruePropertyName(propertyName), result);
     }
-    @Override
     public Object getCachedValue(String propertyName) {
         return this.getRootProxyMapper().getCachedValue(getTruePropertyName(propertyName));
     }
-    @Override
     public boolean containsKey(Object propertyName) {
         return this.getRootProxyMapper().containsKey(getTruePropertyName(propertyName));
     }
-
-    @Override
     public Map<String, Object> getNewValues() {
         return this.getRootProxyMapper().getNewValues(getBasePropertyPath());
     }
-    @Override
     public Map<String, Object> getOriginalValues() {
         return this.getRootProxyMapper().getOriginalValues(getBasePropertyPath());
     }
-    @Override
     public ProxyBehavior getProxyBehavior() {
         return this.getRootProxyMapper().getProxyBehavior();
     }
-    @Override
     protected PropertyMethodChain getPropertyMethodChain(Class<?> clazz, String propertyName) {
         return this.getRootProxyMapper().getPropertyMethodChain(clazz, getTruePropertyName(propertyName));
     }
-
-    @Override
     @SuppressWarnings("hiding")
     protected <CI, CO extends CI> ProxyMapperImplementor<CI, CO> getChildProxyMapper(String propertyName, PropertyAdaptor propertyAdaptor, Object base, ProxyMapperImplementor<?, ?> baseProxyMapper) {
         return this.getRootProxyMapper().getChildProxyMapper(getTruePropertyName(propertyName), propertyAdaptor, base, baseProxyMapper);
@@ -104,7 +91,6 @@ public class ChildProxyMapper<I,O extends I> extends ProxyMapperImpl<I,O> {
     /**
      * @return the proxyLoader
      */
-    @Override
     public ProxyLoader getProxyLoader() {
         if ( super.getProxyLoader() == null && this.getRootProxyMapper() != null) {
             return this.getRootProxyMapper().getProxyLoader();
@@ -112,8 +98,6 @@ public class ChildProxyMapper<I,O extends I> extends ProxyMapperImpl<I,O> {
             return super.getProxyLoader();
         }
     }
-
-    @Override
     public ProxyMethodHelper getProxyMethodHelper() {
         if ( super.getProxyLoader() == null && this.getRootProxyMapper() != null) {
             return this.getRootProxyMapper().getProxyMethodHelper();
@@ -124,7 +108,6 @@ public class ChildProxyMapper<I,O extends I> extends ProxyMapperImpl<I,O> {
     }
 
     @SuppressWarnings("unchecked")
-    @Override
     public O getRealObject() throws ChildObjectNotLoadableException {
         O actualObject;
         try {
@@ -147,7 +130,6 @@ public class ChildProxyMapper<I,O extends I> extends ProxyMapperImpl<I,O> {
     /**
      * @return the baseProxyMapper
      */
-    @Override
     public ProxyMapper<?,?> getBaseProxyMapper() {
         return baseProxyMapper;
     }

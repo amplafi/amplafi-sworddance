@@ -107,7 +107,6 @@ public class BaseProxyLoaderImpl implements ProxyLoader {
     /**
      * @see com.sworddance.beans.ProxyLoader#getRealObject(com.sworddance.beans.ProxyMapper)
      */
-    @Override
     @SuppressWarnings("unused")
     public <I, O extends I> O getRealObject(ProxyMapper<I, O> proxyMapper) throws ChildObjectNotLoadableException {
         // does not know how to find the real object if the proxyMapper does not already have one.
@@ -117,7 +116,6 @@ public class BaseProxyLoaderImpl implements ProxyLoader {
      * @see com.sworddance.beans.ProxyLoader#getProxyClass(java.lang.Object)
      */
     @SuppressWarnings("unchecked")
-    @Override
     public <I> Class<? extends I> getProxyClass(I object) {
         return (Class<? extends I>) this.getProxyClassFromClass(object.getClass());
     }

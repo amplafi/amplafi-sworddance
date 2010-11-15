@@ -39,7 +39,6 @@ public class SingletonTaskControlFactory implements TaskControlFactory {
     /**
      * @see com.sworddance.taskcontrol.TaskControlFactory#newTaskControl()
      */
-    @Override
     public TaskControl newTaskControl() {
         TaskControl taskControl = getTaskControl();
         if ( taskControl == null ) {

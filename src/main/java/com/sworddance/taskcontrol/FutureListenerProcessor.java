@@ -71,7 +71,6 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
     /**
      * @see com.sworddance.taskcontrol.FutureListener#futureSet(java.util.concurrent.Future, Object)
      */
-    @Override
     @SuppressWarnings({ "hiding", "unchecked" })
     public <P extends Future<L>> void futureSet(P future, L returnedValue) {
         if ( this.done.getCount() == 0 ) {
@@ -109,7 +108,6 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
      *
      * @see com.sworddance.taskcontrol.FutureListener#futureSetException(java.util.concurrent.Future, Throwable)
      */
-    @Override
     @SuppressWarnings("hiding")
     public <P extends Future<L>> void futureSetException(P future, Throwable throwable) {
         if ( this.done.getCount() == 0 ) {

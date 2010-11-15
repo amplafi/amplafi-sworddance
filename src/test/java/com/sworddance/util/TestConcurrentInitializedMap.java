@@ -39,7 +39,6 @@ public class TestConcurrentInitializedMap {
     public void testCallableInitialization() {
         ConcurrentInitializedMap<String, String> concurrentInitializedMap = new ConcurrentInitializedMap<String, String>(new Callable<String>() {
             AtomicInteger atomicInteger = new AtomicInteger(0);
-            @Override
             public String call() throws Exception {
                 if ( !atomicInteger.compareAndSet(0, 1)) {
                     throw new IllegalStateException("initializer called more than once!");
@@ -58,7 +57,6 @@ public class TestConcurrentInitializedMap {
     public void testParameterizedCallableInitialization() {
         final ConcurrentInitializedMap<String, Object> concurrentInitializedMap = new ConcurrentInitializedMap<String, Object>(new AbstractParameterizedCallableImpl<Object>() {
             ConcurrentMap<String, AtomicInteger> atomicIntegers =  new ConcurrentInitializedMap<String, AtomicInteger>(AtomicInteger.class);
-            @Override
             public Object executeCall(Object...parameters) throws Exception {
 
                 if ( !atomicIntegers.get(parameters[1]).compareAndSet(0, 1)) {

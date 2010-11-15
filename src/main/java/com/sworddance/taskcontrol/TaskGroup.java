@@ -701,9 +701,7 @@ public class TaskGroup<T> implements NotificationObject {
                 }
             }
         }
-    }
-
-    @Override
+    }
     public String toString() {
         return getName();
     }

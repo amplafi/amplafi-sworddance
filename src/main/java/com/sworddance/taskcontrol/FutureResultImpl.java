@@ -55,9 +55,9 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
     }
     public void addFutureListener(FutureListener futureListener) {
         processor.addFutureListener(futureListener);
-    }
+    }
     @Override
-    public void set(T value) {
+	public void set(T value) {
         super.set(value);
         processor.futureSet(this, value);
     }
@@ -78,14 +78,14 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
     /**
      * make the super class method visible.
      * @see java.util.concurrent.FutureTask#setException(java.lang.Throwable)
-     */
+     */
     @Override
-    public void setException(Throwable e) {
+	public void setException(Throwable e) {
         super.setException(e);
         processor.futureSetException(this, e);
-    }
+    }
     @Override
-    public T get(long timeout, TimeUnit unit) throws TimeoutException, InterruptedException, ExecutionException {
+	public T get(long timeout, TimeUnit unit) throws TimeoutException, InterruptedException, ExecutionException {
         try {
             return super.get(timeout, unit);
         } catch (TimeoutException exception) {
@@ -109,9 +109,9 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
     /**
      * @param returnNullIfTimeout
      * @param e
-     * @return
+     * @return null if returnNullIfTimeout == true and e is {@link TimeoutException} or {@link ApplicationTimeoutException}, otherwise no timeout as exception is thrown.
      */
-    protected Object doTimeoutBehavior(boolean returnNullIfTimeout, Throwable e) {
+    protected Object doTimeoutBehavior(boolean returnNullIfTimeout, Throwable e) throws ApplicationTimeoutException, ApplicationGeneralException {
         Throwable t = e; // TODO: move Defense to sworddance
         if (t instanceof TimeoutException || t instanceof ApplicationTimeoutException) {
             if (returnNullIfTimeout) {

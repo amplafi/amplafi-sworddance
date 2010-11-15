@@ -36,12 +36,10 @@ public class ProxyFactoryImpl implements ProxyFactory {
         this.defaultProxyMethodHelper = defaultProxyMethodHelper;
     }
 
-    @Override
     public <I,O extends I> I getProxy(O realObject, String...propertyChains) {
         return getProxy(realObject, ProxyBehavior.leafStrict, Arrays.asList(propertyChains));
     }
 
-    @Override
     public <I,O extends I> I getProxy(O realObject, Class<O>realClass,  String...propertyChains) {
         return getProxy(realObject, realClass, ProxyBehavior.leafStrict, Arrays.asList(propertyChains));
     }
@@ -85,7 +83,6 @@ public class ProxyFactoryImpl implements ProxyFactory {
      * @see com.sworddance.beans.ProxyFactory#initProxyMapper(java.lang.Object)
      */
     @SuppressWarnings("unchecked")
-    @Override
     public <I, R extends ProxyMapper<I, ? extends I>> R initProxyMapper(I proxy) {
         R proxyMapper = (R) getProxyMapper(proxy);
         if ( proxyMapper instanceof ProxyMapperImplementor<?, ?>) {
