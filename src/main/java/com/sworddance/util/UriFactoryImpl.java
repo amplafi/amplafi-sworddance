@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.apache.commons.lang.StringUtils.*;
 import static com.sworddance.util.ApplicationNullPointerException.*;
+import static org.apache.commons.lang.StringUtils.*;
 
 /**
  * @author patmoore
@@ -407,7 +407,7 @@ public class UriFactoryImpl {
      *
      * I also had a look at <br/>
      * {@link java.net.URLEncoder} does not meet out requirements <br/>
-     * {@link URI} also does not meet our requirements <br/>
+     * {@link java.net.URI} also does not meet our requirements <br/>
      *
      *
      *  TODO There is one issue in this implementation, RFC 1738 section 2.2,
