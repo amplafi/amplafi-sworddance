@@ -185,4 +185,17 @@ public class TestUriFactoryImpl {
         uri = createUriWithSchema("/path/index.html");
         assertEquals(uri.toString(), "/path/index.html");
     }
+
+    @Test
+    public void testCreateUriParsing() {
+        String[] result = UriParser.regexUrlParts("http://example.com/?test");
+
+    }
+    @Test
+    public void testCustomUriParsing() {
+        UriParser uriParser = new UriParser(UriParser.HTTP_S_SCHEME_PATTERN_STR, "(?:.(?:jpe?g)|(?:gif))", "good");
+        CharSequence inputString = "here is a http://example.com/image.jpg";
+        CharSequence result = uriParser.replace(inputString);
+        assertTrue(result.toString().indexOf("good")>=0, result.toString());
+    }
 }
