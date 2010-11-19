@@ -1,12 +1,23 @@
 package com.sworddance.util;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import static com.sworddance.util.CUtilities.*;
-import static org.testng.Assert.*;
+
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+
+import static org.testng.Assert.*;
 /**
  * Tests for {@link CUtilities}.
  */
@@ -129,5 +140,52 @@ public class TestUtilities {
         assertEquals(clazz, null);
         clazz = getClassSafely(null);
         assertEquals(clazz, null);
+    }
+    @Test(dataProvider="jsQuoteTesting")
+    public void testJsQuoting(String inputBasePattern, List<String> expectedMatches, List<String> expectedNotMatches) {
+        String s = jsQuoteForPattern(inputBasePattern);
+        Pattern pattern = Pattern.compile(s);
+        boolean result = pattern.matcher(inputBasePattern).find();
+
+        assertTrue(result);
+        if ( expectedMatches != null) {
+            for(String input: expectedMatches) {
+                result = pattern.matcher(input).find();
+                assertTrue(result, inputBasePattern+" checking "+input);
+            }
+        }
+        if ( expectedNotMatches != null ) {
+            for(String input: expectedNotMatches) {
+                result = pattern.matcher(input).find();
+                assertFalse(result, inputBasePattern+" checking "+input);
+            }
+        }
+    }
+    @DataProvider(name="jsQuoteTesting")
+    protected Object[][] getJsQuoteTesting() {
+        return new Object[][] {
+            new Object[] { "[]", Arrays.asList(" [ ] \n"), Arrays.asList("[foo]") },
+            new Object[] { " (function() { " +
+                "var ga = document.createElement ( 'script' ) ; " +
+                "ga.type = 'text/javascript'; " +
+                "ga.async = true; " +
+                "ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js'; " +
+                "var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s); " +
+                "})(); ",
+                Arrays.asList("  (function() {\n" +
+                "    var ga = document.createElement('script');\n" +
+                "    ga.type = 'text/javascript'; \n" +
+                "    ga.async = true;\n" +
+                "    ga.src = ('https:'   == document.location.protocol ? 'https://ssl'   : 'http://www') + '.google-analytics.com/ga.js';\n" +
+                "    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);\n" +
+                "    })();\n"),
+                Arrays.asList("  (function(var g) {\n" +
+                    "    var ga = document.createElement('script');\n" +
+                    "    ga.type = 'text/javascript'; \n" +
+                    "    ga.async = true;\n" +
+                    "    ga.src = ('https:'   == document.location.protocol ? 'https://ssl'   : 'http://www') + '.google-analytics.com/ga.js';\n" +
+                    "    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);\n" +
+                    "    })();\n")}
+        };
     }
 }

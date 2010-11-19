@@ -30,8 +30,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
 
-import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.commons.lang.StringUtils.*;
 
 /**
  * @author patmoore
@@ -63,7 +64,7 @@ public class CUtilities {
                     it.next();
                 }
             } else {
-                throw new IllegalArgumentException("Unsupported object type: " + object.getClass().getName());
+                throw new ApplicationIllegalArgumentException("Unsupported object type: " + object.getClass().getName());
             }
         }
         return total;
@@ -585,5 +586,26 @@ public class CUtilities {
             }
         }
         return null;
+    }
+    public static Pattern onlyPattern(String regex) {
+        return Pattern.compile("^"+regex+"$", Pattern.CASE_INSENSITIVE);
+    }
+    public static Pattern withinPattern(String regex) {
+        return Pattern.compile("\\b"+regex+"\\b", Pattern.CASE_INSENSITIVE);
+    }
+    /**
+     * create pattern to search for equivalent javascript. Specifically,
+     * <ul><li>All punctuation characters are escaped and leading/trailing spaces are allowed
+     * <li>Alnum whitespace Alnum is change to require only a single whitespace ( handles cases like the space between var and ga in : "var ga = []; ")
+     * </ul>
+     * @param jsScriptStr
+     * @return string to supply to {@link Pattern#compile(String)}
+     */
+    public static String jsQuoteForPattern(String jsScriptStr) {
+        String escapeAllPunctuationChars = jsScriptStr.replaceAll("(?:\\s*([\\p{Punct}])\\s*)", "\\\\s*\\\\$1\\\\s*");
+
+        String requireAtLeast1WsBetweenWords = escapeAllPunctuationChars.replaceAll("(\\p{Alnum})\\s+(\\p{Alnum})", "$1\\\\s+$2");
+        String simplifyWsMatching = requireAtLeast1WsBetweenWords.replaceAll("(?:\\Q\\s*\\E)+", "\\\\s*");
+        return simplifyWsMatching;
     }
 }
