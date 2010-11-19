@@ -1,8 +1,11 @@
 package com.sworddance.util;
 
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.sworddance.util.CUtilities.*;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -80,13 +83,6 @@ public class UriParser {
      */
     private static final String SCHEME_PATTERN_STR = "[a-z0-9+.-]+";
 
-
-    private static Pattern only(String regex) {
-        return Pattern.compile("^"+regex+"$", Pattern.CASE_INSENSITIVE);
-    }
-    private static Pattern within(String regex) {
-        return Pattern.compile("\\b"+regex+"\\b", Pattern.CASE_INSENSITIVE);
-    }
     //replace() can be used to parse the URI. For example, to get the path:
     //  path = uri.replace(regexUri, "$5$6");
 
@@ -139,14 +135,7 @@ public class UriParser {
     		PATH_WHEN_NO_USERINFO + ")" +
     		QUERY_WITHOUT_DELIM +
     		FRAGMENT_WITHOUT_DELIM;
-    /**
-     * {@link #REGEX_URI} only in the string
-     */
-    public static final Pattern regexUriOnly = only(REGEX_URI);
-    /**
-     * {@link #REGEX_URI} with word boundary separating from the rest of the string.
-     */
-    public static final Pattern regexUri = within(REGEX_URI);
+    public static UriParser URI = new UriParser(REGEX_URI, null);
 
     //****************************************************//
     //** Validate a URI (includes delimiters in groups) **//
@@ -174,9 +163,10 @@ public class UriParser {
     		PATH_WHEN_NO_USERINFO + ")" +
     		QUERY_WITH_DELIMETER +
     		FRAGMENT_WITH_DELIMETER;
-    public static final Pattern regexUriDelimOnly = only(REGEX_URI_DELIM);
-    public static final Pattern regexUriDelim= within(REGEX_URI_DELIM);
     public static final String REGEX_URI_DELIM_FORMAT_STR = "{1}{6}{2}{3}{4}{5}{7}{8}{9}";
+    private static final Pattern regexUriDelimOnly = onlyPattern(REGEX_URI_DELIM);
+    private static final Pattern regexUriDelim= withinPattern(REGEX_URI_DELIM);
+    public static UriParser URI_DELIM = new UriParser(REGEX_URI_DELIM, REGEX_URI_DELIM_FORMAT_STR);
 
     //****************************************************//
     //***************** Validate a URL *******************//
@@ -197,9 +187,8 @@ public class UriParser {
     		QUERY_WITHOUT_DELIM +
     		FRAGMENT_WITHOUT_DELIM;
 
-    public static final Pattern regexUrlOnly = only(REGEX_URL);
-    public static final Pattern regexUrl = within(REGEX_URL);
     public static final String REGEX_URL_FORMAT_STR = "{1}://{2}:{3}{4}?{5}#{6}";
+    public static UriParser URL = new UriParser(REGEX_URL, REGEX_URL_FORMAT_STR);
 
     //****************************************************//
     //**************** Validate a Mailto *****************//
@@ -212,17 +201,16 @@ public class UriParser {
     		PATH_CHAR_EXCLUDE_SLASH +
     		"+)?" +
     		QUERY_WITHOUT_DELIM;
-
-    public static final Pattern regexMailtoOnly = only(REGEX_MAILTO);
-    public static final Pattern regexMailto = within(REGEX_MAILTO);
     public static final String REGEX_MAILTO_FORMAT_STR = "{1}:{2}?{3}";
+    public static UriParser MAIL_TO = new UriParser(REGEX_MAILTO, REGEX_MAILTO_FORMAT_STR);
 
-    private Pattern uriOnly;
-    private Pattern uriWithin;
-    private String replaceFormatStr;
+    private final Pattern uriOnly;
+    private final Pattern uriWithin;
+    private final String replaceFormatStr;
+
 
     public UriParser(String replaceFormat) {
-        this(null, null, replaceFormat);
+        this(regexUriDelim, regexUriDelimOnly, replaceFormat == null?REGEX_URI_DELIM_FORMAT_STR:new MessageFormat(replaceFormat).format(new String[] {REGEX_URI_DELIM_FORMAT_STR}));
     }
     public UriParser(String schemePattern, String fileExtensionPattern, String replaceFormat) {
         this.replaceFormatStr = replaceFormat == null?REGEX_URI_DELIM_FORMAT_STR:new MessageFormat(replaceFormat).format(new String[] {REGEX_URI_DELIM_FORMAT_STR});
@@ -248,29 +236,41 @@ public class UriParser {
             BASE_PATH_WHEN_NO_USERINFO + pathEnd + ")" +
             QUERY_WITH_DELIMETER +
             FRAGMENT_WITH_DELIMETER;
-        this.uriOnly = only(fullPatternString);
-        this.uriWithin = within(fullPatternString);
+        this.uriOnly = onlyPattern(fullPatternString);
+        this.uriWithin = withinPattern(fullPatternString);
+    }
+    public UriParser(String regex, String replaceFormat) {
+        this(onlyPattern(regex), withinPattern(regex), replaceFormat);
     }
 
-    public static final String[] parts(String uriStr, Pattern pattern) {
+    public UriParser(Pattern uriOnly, Pattern uriWithin, String replaceFormatStr) {
+        this.uriOnly = uriOnly;
+        this.uriWithin = uriWithin;
+        this.replaceFormatStr = replaceFormatStr;
+    }
+    public ExtendedMatchResult partsOnly(String uriStr) {
+        Pattern pattern = this.uriOnly;
         Matcher matcher = pattern.matcher(uriStr);
 
-        int groupCount = matcher.groupCount();
-        String[] result = null;
-
         if ( matcher.find()) {
-            result = new String[groupCount];
-            for(int i = 0; i < result.length; i++ ) {
-                result[i] = matcher.group(i);
-            }
+            return new ExtendedMatchResultImpl(matcher.toMatchResult());
+        } else {
+            return null;
         }
-        return result;
+    }
+    public List<ExtendedMatchResult> partsWithin(String input) {
+        Pattern pattern = this.uriWithin;
+        Matcher matcher = pattern.matcher(input);
+        return ExtendedMatchResultImpl.toExtendedMatchResult(matcher);
     }
 
     public CharSequence replace(CharSequence inputString) {
-        return replace(inputString, this.uriWithin, new MessageFormat(this.replaceFormatStr));
+        return replace(inputString, this.replaceFormatStr);
     }
-    public static final CharSequence replace(CharSequence inputString, Pattern pattern, MessageFormat messageFormat) {
+    public CharSequence replace(CharSequence inputString, String replaceFormat) {
+        Pattern pattern = this.uriWithin;
+        ApplicationNullPointerException.notNull(replaceFormat, "cannot do a replace because there is no format");
+        MessageFormat messageFormat = new MessageFormat(replaceFormat);
         Matcher matcher = pattern.matcher(inputString);
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -295,16 +295,7 @@ public class UriParser {
             return inputString;
         }
     }
-    public static final String[] regexUriParts(String uriStr) {
-        return parts(uriStr, regexUri);
-    }
-    public static final String[] regexUriDelimParts(String uriStr) {
-        return parts(uriStr, regexUriDelim);
-    }
-    public static final String[] regexUrlParts(String uriStr) {
-        return parts(uriStr, regexUrl);
-    }
-    public static final String[] regexMailtoParts(String uriStr) {
-        return parts(uriStr, regexMailto);
+    public boolean isOnly(CharSequence input) {
+        return this.uriOnly.matcher(input).find();
     }
 }

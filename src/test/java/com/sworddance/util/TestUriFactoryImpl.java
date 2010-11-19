@@ -188,8 +188,8 @@ public class TestUriFactoryImpl {
 
     @Test
     public void testCreateUriParsing() {
-        String[] result = UriParser.regexUrlParts("http://example.com/?test");
-
+        ExtendedMatchResult result = UriParser.URL.partsOnly("http://example.com/?test");
+        assertNotNull(result);
     }
     @Test
     public void testCustomUriParsing() {
