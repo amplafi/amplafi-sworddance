@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -104,7 +103,7 @@ public class CUtilities {
      * @return collection
      */
     public static <T> boolean addAllNotNull(Collection<T> collection, T... newValues) {
-        if ( collection != null ) {
+        if ( collection != null && newValues != null) {
             return addAllNotNull(collection, Arrays.asList(newValues));
         } else {
             return false;
@@ -112,7 +111,7 @@ public class CUtilities {
     }
     public static <T> boolean addAllNotNull(Collection<T> collection, Collection<T> newValues) {
         boolean result = false;
-        if ( collection != null ) {
+        if ( collection != null && newValues != null) {
             for(T newValue: new NotNullIterator<T>(newValues)) {
                 result |= collection.add(newValue);
             }
@@ -404,13 +403,7 @@ public class CUtilities {
 
     public static <T> Set<T> asSet(T... values) {
         LinkedHashSet<T> set = new LinkedHashSet<T>();
-        if (values != null) {
-            for(T element : values) {
-                if ( element != null) {
-                    set.add(element);
-                }
-            }
-        }
+        addAllNotNull(set, values);
         return set;
     }
 
@@ -466,17 +459,6 @@ public class CUtilities {
         List<T> l = new ArrayList<T>();
         addAllNotNull(l, newValues);
         return l;
-    }
-
-    /**
-     * @param newValues
-     * @param <T>
-     * @return an new {@link Set}  populated with the non-null values in newValues.
-     */
-    public static <T> Set<T> newSet(T...newValues) {
-        Set<T> s = new HashSet<T>();
-        addAllNotNull(s, newValues);
-        return s;
     }
 
     /**
