@@ -46,7 +46,7 @@ public class TestProxyRealObjectLoader {
         assertNotNull(proxiedGreatGrandparentProxyMapper.getProxyLoader());
         assertNotNull(proxiedGreatGrandparentProxyMapper.getProxyMethodHelper());
         assertTrue(proxiedGreatGrandparentProxyMapper.isRealObjectSet());
-        proxiedGreatGrandparentProxyMapper.clear();
+        proxiedGreatGrandparentProxyMapper.clearCached();
 
         Grandparent proxiedGrandparent = proxiedGreatGrandparent.getGrandparent();
         assertNotSame(grandparent, proxiedGrandparent);
@@ -75,11 +75,11 @@ public class TestProxyRealObjectLoader {
         assertTrue(proxiedParentProxyMapper.isRealObjectSet());
         assertTrue(proxiedChildProxyMapper.isRealObjectSet());
         if ( greatGrandparent.getClass() == loadedGreatGrandparent.getClass()) {
-            assertSame(child, proxiedChildProxyMapper.getRealObject());
+            assertSame(child, proxiedChildProxyMapper.getRealObject(true));
             assertEquals(proxiedGreatGrandparentProxyMapper.getRealClass(), loadedGreatGrandparent.getClass());
         } else {
             // expecting different classes across transaction boundaries.
-            assertNotSame(child, proxiedChildProxyMapper.getRealObject());
+            assertNotSame(child, proxiedChildProxyMapper.getRealObject(true));
             assertFalse(proxiedGreatGrandparentProxyMapper.getRealClass().equals(loadedGreatGrandparent.getClass()));
         }
 

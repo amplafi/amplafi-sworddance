@@ -58,7 +58,7 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
         initValuesMap(propertyChains);
     }
 
-    public void initValuesMap(List<String> propertyChains) {
+    protected void initValuesMap(List<String> propertyChains) {
         originalValues = new ConcurrentHashMap<String, Object>();
         newValues = new ConcurrentHashMap<String, Object>();
         if (this.getRealClass() != null) {
@@ -74,13 +74,15 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
      * @param propertyName
      * @param result
      */
-    protected void putOriginalValues(String propertyName, Object result) {
+    @Override
+	protected void putOriginalValues(String propertyName, Object result) {
         if (propertyName == null) {
             throw new ApplicationIllegalArgumentException( "propertyName cannot be null");
         }
         this.getOriginalValuesMap().put(propertyName, result==null?NullObject:result);
     }
-    protected void putNewValues(String propertyName, Object result) {
+    @Override
+	protected void putNewValues(String propertyName, Object result) {
         if (propertyName == null) {
             throw new ApplicationIllegalArgumentException( "propertyName cannot be null");
         }
@@ -103,10 +105,11 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
         }
         return o;
     }
-    public void clear() {
-        super.clear();
+    @Override
+	public void clearCached() {
+        super.clearCached();
         for(ProxyMapper<?, ?>proxyMapper: this.childProxies.values()) {
-            proxyMapper.clear();
+            proxyMapper.clearCached();
         }
     }
     /**
@@ -141,7 +144,8 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
     private void setChildProxy(String propertyName, ProxyMapperImplementor<?,?> proxy) {
         this.childProxies.putIfAbsent(propertyName, proxy);
     }
-    @SuppressWarnings("unchecked")
+    @Override
+	@SuppressWarnings("unchecked")
     protected <CI, CO extends CI> ProxyMapperImplementor<CI, CO> getChildProxyMapper(String propertyName, PropertyAdaptor propertyAdaptor, Object base, ProxyMapperImplementor<?, ?> baseProxyMapper) {
         ProxyMapperImplementor<CI,CO> childProxy = getExistingChildProxy(propertyName);
         // do not want to eagerly get the propValue unnecessarily because this may trigger expensive operations (for example hibernate db operation )

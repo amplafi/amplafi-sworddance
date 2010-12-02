@@ -74,10 +74,17 @@ public class ProxyFactoryImpl implements ProxyFactory {
         Class<? extends I> proxyClass = this.getDefaultProxyLoader().getProxyClassFromClass(realClass);
         Map<String, Object> newValues = null;
         Map<String, Object> originalValues = null;
-        RootProxyMapper<I, O> proxyMapper = new RootProxyMapper<I, O>(realObject, realClass, proxyClass, proxyBehavior, defaultProxyLoader, propertyChains, originalValues, newValues );
+        RootProxyMapper<I, O> proxyMapper = newProxyMapper(realObject, realClass, proxyBehavior, propertyChains, proxyClass, newValues, originalValues);
         initProxyMapper(proxyMapper);
         return proxyMapper.getExternalFacingProxy();
     }
+
+	protected <I,O extends I> RootProxyMapper<I, O> newProxyMapper(O realObject,
+			Class<O> realClass, ProxyBehavior proxyBehavior,
+			List<String> propertyChains, Class<? extends I> proxyClass,
+			Map<String, Object> newValues, Map<String, Object> originalValues) {
+		return new RootProxyMapper<I, O>(realObject, realClass, proxyClass, proxyBehavior, defaultProxyLoader, propertyChains, originalValues, newValues );
+	}
 
     /**
      * @see com.sworddance.beans.ProxyFactory#initProxyMapper(java.lang.Object)
@@ -85,7 +92,9 @@ public class ProxyFactoryImpl implements ProxyFactory {
     @SuppressWarnings("unchecked")
     public <I, R extends ProxyMapper<I, ? extends I>> R initProxyMapper(I proxy) {
         R proxyMapper = (R) getProxyMapper(proxy);
-        if ( proxyMapper instanceof ProxyMapperImplementor<?, ?>) {
+        if ( proxyMapper instanceof RootProxyMapper) {
+            initProxyMapper((RootProxyMapper)proxyMapper);
+        } else if ( proxyMapper instanceof ProxyMapperImplementor<?, ?>) {
             initProxyMapper(proxyMapper);
         }
         return proxyMapper;
@@ -100,7 +109,7 @@ public class ProxyFactoryImpl implements ProxyFactory {
     public <I> I getRealObject(I proxy) {
         ProxyMapper<I, ? extends I> proxyMapper = getProxyMapper(proxy);
         if ( proxyMapper != null) {
-            return proxyMapper.getRealObject();
+            return proxyMapper.getRealObject(true);
         }
         return proxy;
     }

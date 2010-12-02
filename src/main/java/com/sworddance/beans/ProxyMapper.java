@@ -42,7 +42,7 @@ public interface ProxyMapper<I, O extends I> {
     /**
      * discard the realObject (which is transient in any event)
      */
-    void clear();
+    void clearCached();
 
     /**
      * @return key Value used to determine equality and hashCode
@@ -56,10 +56,11 @@ public interface ProxyMapper<I, O extends I> {
 
     /**
      * the real object may no longer be available. This method reloads the realObject if necessary.
+     * @param mustBeNotNull TODO
      * @return the realObject
      * @throws ChildObjectNotLoadableException
      */
-    O getRealObject() throws ChildObjectNotLoadableException;
+    O getRealObject(boolean mustBeNotNull, Object...messages) throws ChildObjectNotLoadableException;
 
     void setRealObject(O realObject);
 
@@ -69,7 +70,7 @@ public interface ProxyMapper<I, O extends I> {
 
     /**
      * Use the property mappings copy the values stored in {@link #getNewValues()} back to the
-     * {@link #getRealObject()} object.
+     * {@link #getRealObject(boolean, Object...)} object.
      * @return the real object.
      */
     O applyToRealObject();

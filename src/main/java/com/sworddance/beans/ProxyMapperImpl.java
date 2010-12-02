@@ -200,7 +200,7 @@ java.lang.AssertionError: isSubtype 15
      * @param property a dot-separated chain of properties ( for example, "grandparent.parent.child" )
      */
     protected Object initValue(String property) {
-        Object result = getRealObject();
+        Object result = getRealObject(true);
 
         if ( result != null && property != null ) {
             StringBuilder builder = new StringBuilder();
@@ -229,7 +229,7 @@ java.lang.AssertionError: isSubtype 15
                         } else if ( iterator.hasNext()) {
                             // we are still walking the property chain.
                             // result will be the real object for the next iteration through the loop.
-                            result = childProxy.getRealObject();
+                            result = childProxy.getRealObject(true);
                         } else {
                             // we are going to be done. return the child proxy.
                             result = childProxy.getExternalFacingProxy();
@@ -256,9 +256,9 @@ java.lang.AssertionError: isSubtype 15
     protected abstract void putNewValues(String propertyName, Object result);
 
     /**
-     * @see com.sworddance.beans.ProxyMapper#clear()
+     * @see com.sworddance.beans.ProxyMapper#clearCached()
      */
-    public void clear() {
+    public void clearCached() {
         this.realObject = null;
         this.realObjectSet = false;
     }
@@ -281,7 +281,6 @@ java.lang.AssertionError: isSubtype 15
                 case readThrough:
                 case leafStrict:
                     if ( method.getReturnType() == Void.class || args != null && args.length > 1) {
-                        O actualObject = getRealObject();
                         // or more than 1 argument (therefore not java bean property )
                         return doInvoke(method, args);
                     } else {
@@ -318,8 +317,7 @@ java.lang.AssertionError: isSubtype 15
         O actualObject;
         if ( (method.getModifiers() & Modifier.STATIC) != Modifier.STATIC) {
             // not a static method
-            actualObject = getRealObject();
-            ApplicationNullPointerException.notNull(actualObject, "need object to call a non-static method ",this, " method=", method, "(", join(args), ")");
+            actualObject = getRealObject(true, "need object to call a non-static method ",this, " method=", method, "(", join(args), ")");
         } else {
             actualObject = null;
         }
@@ -359,17 +357,21 @@ java.lang.AssertionError: isSubtype 15
     }
 
     /**
-     * @see com.sworddance.beans.ProxyMapper#getRealObject()
+     * @see com.sworddance.beans.ProxyMapper#getRealObject(boolean, Object...)
      */
     @SuppressWarnings("unchecked")
-    public O getRealObject() throws ChildObjectNotLoadableException {
+    public O getRealObject(boolean mustBeNotNull, Object...messages) throws ChildObjectNotLoadableException {
 
         if ( !this.isRealObjectSet()) {
             ProxyLoader loader = getProxyLoader();
             if ( loader != null ) {
                 O actualObject = loader.getRealObject(this);
-
+                if ( mustBeNotNull) {
+                	ApplicationNullPointerException.notNull(actualObject, messages);
+                }
                 this.setRealObject(actualObject);
+            } else {
+            	throw new ChildObjectNotLoadableException("No loader for "+this);
             }
         }
         return (O) WeakProxy.getActual(this.realObject);
@@ -398,7 +400,7 @@ java.lang.AssertionError: isSubtype 15
      * @see com.sworddance.beans.ProxyMapper#applyToRealObject()
      */
     public O applyToRealObject() {
-        O base = getRealObject();
+        O base = getRealObject(true, "in order to do applyToRealObject ", this);
         for(Map.Entry<String, Object> entry : this.getNewValues().entrySet()) {
             this.setValue(base, entry.getKey(), entry.getValue());
         }
@@ -485,7 +487,8 @@ java.lang.AssertionError: isSubtype 15
     /**
      * @see com.sworddance.beans.ProxyMapper#getValue(java.lang.Object, java.lang.String)
      */
-    @SuppressWarnings("unchecked")
+    @Override
+	@SuppressWarnings("unchecked")
     public <T> T getValue(Object base, String property) {
         return (T) super.getValue(base, property);
     }
