@@ -14,15 +14,16 @@
 
 package com.sworddance.beans;
 
-import static org.testng.Assert.*;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 
 import org.testng.annotations.Test;
+
+import static org.testng.Assert.*;
 /**
  * @author patmoore
  *
@@ -69,7 +70,7 @@ public class TestProxyMapper {
         Interface1Impl child1 = new Interface1Impl(2, true, null);
         Interface1Impl child = new Interface1Impl(1, false, child1);
         Interface1Impl impl = new Interface1Impl(0, true, child);
-        Interface1 interface1 = ProxyFactoryImpl.INSTANCE.getProxy(impl, "goo", "child.goo");
+        Interface1 interface1 = ProxyFactoryImpl.INSTANCE.getProxy(impl, ProxyBehavior.nullValue, Arrays.asList("goo", "child.goo"));
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(byteArrayOutputStream);
@@ -77,6 +78,7 @@ public class TestProxyMapper {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
         Interface1 restoredObject = (Interface1) objectInputStream.readObject();
+        ProxyFactoryImpl.INSTANCE.initProxyMapper(restoredObject);
         testProxyUnique(restoredObject, interface1, child1, child, impl);
         assertTrue(restoredObject.isGoo());
 
