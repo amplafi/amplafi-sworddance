@@ -37,6 +37,11 @@ public class UriFactoryImpl {
 
     public static final String HTTPS_SCHEME = "https";
     public static final String HTTP_SCHEME = "http";
+    public static final String FTP_SCHEME = "ftp";
+    public static final String MAILTO_SCHEME = "mailto";
+
+
+    public static final String MAILTO = "mailto:";
     public static final int DEFAULT_HTTP_PORT = 80;
     public static final int DEFAULT_HTTPS_PORT = 443;
     /**
@@ -98,7 +103,7 @@ public class UriFactoryImpl {
             }
             if (schemaRequired && !uri.isAbsolute() && !newUriStr.startsWith(PATH_SEPARATOR)) {
                 // TODO: check for a relative uri! will produce something like http:/httpdocs/demo if newUriStr does not have host information.
-                newUriStr = "http://" + newUriStr;
+                newUriStr = HTTP_SCHEME+"://" + newUriStr;
             }
             //noinspection StringEquality
             if (uriStr != newUriStr) {
@@ -305,7 +310,15 @@ public class UriFactoryImpl {
             return false;
         } else {
             String scheme = uri.getScheme();
-            return !uri.isAbsolute() || "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme);
+            return !uri.isAbsolute() || HTTPS_SCHEME.equalsIgnoreCase(scheme) || HTTP_SCHEME.equalsIgnoreCase(scheme);
+        }
+    }
+    public static boolean hasQuestionableScheme(URI uri) {
+        if ( uri.isAbsolute()) {
+            String scheme = uri.getScheme();
+            return !HTTPS_SCHEME.equalsIgnoreCase(scheme) && !HTTP_SCHEME.equalsIgnoreCase(scheme)&& !FTP_SCHEME.equalsIgnoreCase(scheme);
+        } else {
+            return false;
         }
     }
     public static boolean isNonLocalUri(URI uri) {
