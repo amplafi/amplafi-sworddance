@@ -17,6 +17,8 @@ package com.sworddance.util;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.sworddance.util.UriFactoryImpl.*;
 
@@ -193,9 +195,67 @@ public class TestUriFactoryImpl {
     }
     @Test
     public void testCustomUriParsing() {
-        UriParser uriParser = new UriParser(UriParser.HTTP_S_SCHEME_PATTERN_STR, "(?:.(?:jpe?g)|(?:gif))", "good");
-        CharSequence inputString = "here is a http://example.com/image.jpg";
+        UriParser uriParser = new UriParser(UriParser.HTTP_S_SCHEME_PATTERN_STR, "(?:.(?:jpe?g)|(?:gif))", "good $3");
+        CharSequence inputString = "here is a http://example.com/image.jpg answer";
+        CharSequence expected = "here is a good example.com answer";
         CharSequence result = uriParser.replace(inputString);
-        assertTrue(result.toString().indexOf("good")>=0, result.toString());
+        String resultStr = result.toString();
+        assertEquals(resultStr,expected);
+    }
+    @Test
+    public void testCustomUriParsingWithEndingSlash() {
+        UriParser uriParser = new UriParser(/*UriParser.HTTP_S_SCHEME_PATTERN_STR, null,*/ "<a href=\"$0\">$0</a>");
+        CharSequence inputString = "here is a " +
+        		"http://example.com/" +
+        		" or maybe over here " +
+        		"http://here.com" +
+        		" as well.";
+        CharSequence expected = "here is a " +
+        "<a href=\""+
+        "http://example.com/" +
+        "\">" +
+        "http://example.com/" +
+        "</a>"+
+        " or maybe over here " +
+        "<a href=\""+
+        "http://here.com" +
+        "\">" +
+        "http://here.com" +
+        "</a>"+
+        " as well.";
+        CharSequence result = uriParser.replace(inputString);
+        String resultStr = result.toString();
+        assertEquals(resultStr,expected);
+    }
+    @Test
+    public void testPattern() {
+        String regexWithout ="([a-z0-9+.-]+):" +
+        		"(?:" +
+        		"//" +
+        		"(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?" +
+        		"((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)" +
+        		"(?::(\\d+))?" +
+        		"(/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?" +
+        		"|" +
+        		"(/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?" +
+        		")"+
+        		"(?:" +
+        		"\\?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*)" +
+        		")?" +
+        		"(?:" +
+        		"#((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*)" +
+        		")?";
+        assertEquals(UriParser.REGEX_URI, regexWithout);
+        String regexWithDelim ="(?:([a-z0-9+.-]+://)((?:(?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(:(?:\\d+))?(/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?|([a-z0-9+.-]+:)(/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?)(\\?(?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*)?(#(?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*)?";
+        assertEquals(UriParser.REGEX_URI_DELIM, regexWithDelim);
+        for(String regex: new String[] {regexWithout, regexWithDelim}) {
+            Pattern pattern = Pattern.compile(regex);
+            for(String input: new String[] { "http://example.com/", "http://example.com"}) {
+                Matcher matcher = pattern.matcher(" "+input+" ");
+                assertTrue(matcher.find());
+                String group = matcher.group();
+                assertEquals(group, input);
+            }
+        }
     }
 }

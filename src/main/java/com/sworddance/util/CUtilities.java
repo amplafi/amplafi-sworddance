@@ -573,7 +573,8 @@ public class CUtilities {
         return Pattern.compile("^"+regex+"$", Pattern.CASE_INSENSITIVE);
     }
     public static Pattern withinPattern(String regex) {
-        return Pattern.compile("\\b"+regex+"\\b", Pattern.CASE_INSENSITIVE);
+        // terminator is reluctant so that non-alphanumerics that end regex will still get matched.
+        return Pattern.compile("\\b"+regex+"\\b??", Pattern.CASE_INSENSITIVE);
     }
     /**
      * create pattern to search for equivalent javascript. Specifically,

@@ -123,7 +123,7 @@ public class UriParser {
         )?
         $
     */
-    private static final String REGEX_URI = "(" +
+    public static final String REGEX_URI = "(" +
     		SCHEME_PATTERN_STR +
     		"):(?://" +
     		"(?:(" +
@@ -150,7 +150,7 @@ public class UriParser {
     //  5,7 == path (5 if it has an authority, 7 if it doesn't)
     //  8   == ?query
     //  9   == #fragment
-    private static final String REGEX_URI_DELIM = "(?:(" +
+    public static final String REGEX_URI_DELIM = "(?:(" +
     		SCHEME_PATTERN_STR +
     		"://)((?:" +
     		USERINFO + "*)@)?" +
@@ -164,6 +164,7 @@ public class UriParser {
     		QUERY_WITH_DELIMETER +
     		FRAGMENT_WITH_DELIMETER;
     public static final String REGEX_URI_DELIM_FORMAT_STR = "{1}{6}{2}{3}{4}{5}{7}{8}{9}";
+    public static final String REGEX_URI_DELIM_REPLACE_STR = "$1$6$2$3$4$5$7$8$9";
     private static final Pattern regexUriDelimOnly = onlyPattern(REGEX_URI_DELIM);
     private static final Pattern regexUriDelim= withinPattern(REGEX_URI_DELIM);
     public static UriParser URI_DELIM = new UriParser(REGEX_URI_DELIM, REGEX_URI_DELIM_FORMAT_STR);
@@ -188,6 +189,7 @@ public class UriParser {
     		FRAGMENT_WITHOUT_DELIM;
 
     public static final String REGEX_URL_FORMAT_STR = "{1}://{2}:{3}{4}?{5}#{6}";
+    public static final String REGEX_URL_REPLACE_STR = "$1://$2:$3$4?$5#$6";
     public static UriParser URL = new UriParser(REGEX_URL, REGEX_URL_FORMAT_STR);
 
     //****************************************************//
@@ -202,7 +204,8 @@ public class UriParser {
     		"+)?" +
     		QUERY_WITHOUT_DELIM;
     public static final String REGEX_MAILTO_FORMAT_STR = "{1}:{2}?{3}";
-    public static UriParser MAIL_TO = new UriParser(REGEX_MAILTO, REGEX_MAILTO_FORMAT_STR);
+    public static final String REGEX_MAILTO_REPLACE_STR = "$1:$2?$3";
+    public static UriParser MAIL_TO = new UriParser(REGEX_MAILTO, REGEX_MAILTO_REPLACE_STR);
 
     private final Pattern uriOnly;
     private final Pattern uriWithin;
@@ -210,10 +213,10 @@ public class UriParser {
 
 
     public UriParser(String replaceFormat) {
-        this(regexUriDelim, regexUriDelimOnly, replaceFormat == null?REGEX_URI_DELIM_FORMAT_STR:new MessageFormat(replaceFormat).format(new String[] {REGEX_URI_DELIM_FORMAT_STR}));
+        this(regexUriDelimOnly, regexUriDelim, replaceFormat);
     }
     public UriParser(String schemePattern, String fileExtensionPattern, String replaceFormat) {
-        this.replaceFormatStr = replaceFormat == null?REGEX_URI_DELIM_FORMAT_STR:new MessageFormat(replaceFormat).format(new String[] {REGEX_URI_DELIM_FORMAT_STR});
+        this.replaceFormatStr = replaceFormat == null?REGEX_URI_DELIM_REPLACE_STR:replaceFormat;
         if ( StringUtils.isBlank(schemePattern )) {
             schemePattern = SCHEME_PATTERN_STR;
         }
@@ -267,17 +270,43 @@ public class UriParser {
     public CharSequence replace(CharSequence inputString) {
         return replace(inputString, this.replaceFormatStr);
     }
-    public CharSequence replace(CharSequence inputString, String replaceFormat) {
+    /**
+     * TODO: use {@link Matcher#replaceAll(String)}
+     * @param inputString
+     * @param replacement
+     * @return
+     */
+    public CharSequence replace(CharSequence inputString, String replacement) {
         Pattern pattern = this.uriWithin;
-        ApplicationNullPointerException.notNull(replaceFormat, "cannot do a replace because there is no format");
-        MessageFormat messageFormat = new MessageFormat(replaceFormat);
         Matcher matcher = pattern.matcher(inputString);
-        StringBuilder stringBuilder = new StringBuilder();
 
-        int groupCount = matcher.groupCount();
-
-        int start = 0;
         if ( matcher.find()) {
+            ApplicationNullPointerException.notNull(replacement, "cannot do a replace because there is no format");
+            String output = matcher.replaceAll(replacement);
+
+            return output;
+        } else {
+            return inputString;
+        }
+    }
+
+    /**
+     * TODO: use {@link Matcher#replaceAll(String)}
+     * @param inputString
+     * @param replaceFormat
+     * @return
+     */
+    public CharSequence replaceMessageFormatString(CharSequence inputString, String replaceFormat) {
+        Pattern pattern = this.uriWithin;
+        Matcher matcher = pattern.matcher(inputString);
+
+        if ( matcher.find()) {
+            int start = 0;
+            ApplicationNullPointerException.notNull(replaceFormat, "cannot do a replace because there is no format");
+            MessageFormat messageFormat = new MessageFormat(replaceFormat);
+            StringBuilder stringBuilder = new StringBuilder();
+
+            int groupCount = matcher.groupCount();
             do {
                 int end = matcher.start();
                 stringBuilder.append(inputString.subSequence(start, end));
