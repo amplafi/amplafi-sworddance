@@ -111,8 +111,8 @@ public class CUtilities {
     }
     public static <T> boolean addAllNotNull(Collection<T> collection, Collection<T> newValues) {
         boolean result = false;
-        if ( collection != null && newValues != null) {
-            for(T newValue: new NotNullIterator<T>(newValues)) {
+        if ( collection != null ) {
+            for(T newValue: NotNullIterator.<T>newNotNullIterator(newValues)) {
                 result |= collection.add(newValue);
             }
         }

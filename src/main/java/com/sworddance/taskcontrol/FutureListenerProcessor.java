@@ -21,6 +21,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import com.sworddance.util.ApplicationIllegalStateException;
 import com.sworddance.util.NotNullIterator;
 
 /**
@@ -40,7 +41,7 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
     private WeakReference<? extends Future<L>> monitoredFuture;
     private N returnedValue;
     private Throwable throwable;
-    private Exception e;
+    private Exception doneStack;
     // Seems like there might be and advantage to processing in order. But maybe used LinkedHashSet? and do concurrency some other way?
     private List<WeakReference<FutureListener<N>>> listeners = new CopyOnWriteArrayList<WeakReference<FutureListener<N>>>();
 
@@ -73,11 +74,7 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
      */
     @SuppressWarnings({ "hiding", "unchecked" })
     public <P extends Future<L>> void futureSet(P future, L returnedValue) {
-        if ( this.done.getCount() == 0 ) {
-            throw new IllegalStateException(e);
-        } else {
-            e = new Exception();
-        }
+        checkDoneStateAndSaveStack();
         this.setMonitoredFuture(future);
         if ( this.returnedFuture == null ) {
             this.setReturnedFuture( (Future<N>)this.monitoredFuture.get());
@@ -88,20 +85,10 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
         }
         // all following threads should have the notify happen immediately
         this.done.countDown();
-        for(FutureListener<N> futureListener: new NotNullIterator<FutureListener<N>>(listeners)) {
+        for(FutureListener<N> futureListener: NotNullIterator.<FutureListener<N>>newNotNullIterator(listeners)) {
             notifyListener(futureListener);
         }
-        clear();
-    }
-
-    /**
-     * once the call to {@link #futureSet(Future, Object)} or {@link #futureSetException(Future, Throwable)} has occurred,
-     * there is no need to hang on to the listeners nor the monitoredFuture. They are released so they can be  gc'ed.
-     */
-    private void clear() {
-        this.listeners.clear();
-        this.listeners = null;
-        this.monitoredFuture = null;
+        clearReferences();
     }
 
     /**
@@ -110,24 +97,38 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
      */
     @SuppressWarnings("hiding")
     public <P extends Future<L>> void futureSetException(P future, Throwable throwable) {
-        if ( this.done.getCount() == 0 ) {
-            throw new IllegalStateException(e);
-        } else {
-            e = new Exception();
-        }
+        checkDoneStateAndSaveStack();
         this.setMonitoredFuture(future);
         this.throwable = throwable;
         // all following threads should have the notify happen immediately
         this.done.countDown();
-        for(FutureListener<N> futureListener: new NotNullIterator<FutureListener<N>>( listeners)) {
+        for(FutureListener<N> futureListener: NotNullIterator.<FutureListener<N>>newNotNullIterator( listeners)) {
             notifyListenerException(futureListener);
         }
-        clear();
+        clearReferences();
     }
 
 
+    /**
+     *
+     */
+    private void checkDoneStateAndSaveStack() {
+        ApplicationIllegalStateException.checkState(!this.isDone(), doneStack);
+        doneStack = new Exception("Previously set future value from this location:");
+    }
+
+    /**
+     * once the call to {@link #futureSet(Future, Object)} or {@link #futureSetException(Future, Throwable)} has occurred,
+     * there is no need to hang on to the listeners nor the monitoredFuture. They are released so they can be  gc'ed.
+     */
+    private void clearReferences() {
+        this.listeners.clear();
+        this.listeners = null;
+        this.monitoredFuture = null;
+    }
+
     public void addFutureListener(FutureListener<N> futureListener) {
-        if ( this.done.getCount() == 0) {
+        if ( isDone()) {
             if ( this.throwable == null) {
                 notifyListener(futureListener);
             } else {
@@ -136,6 +137,13 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
         } else {
             this.listeners.add(new WeakReference<FutureListener<N>>(futureListener));
         }
+    }
+
+    /**
+     * @return
+     */
+    public boolean isDone() {
+        return this.done.getCount() == 0;
     }
 
     /**

@@ -34,6 +34,7 @@ import org.apache.commons.collections.iterators.TransformIterator;
  */
 public class NotNullIterator<T> extends BaseIterableIterator<T> {
 
+    public static NotNullIterator<?>EMPTY = new NotNullIterator<Object>();
     /**
      *
      */
@@ -42,22 +43,15 @@ public class NotNullIterator<T> extends BaseIterableIterator<T> {
     }
 
     /**
-     * Handles {@link java.lang.Iterable}<{@link java.lang.ref.Reference}<T>> case
-     * @param object
-     */
-    public NotNullIterator(Object object) {
-        setIterator(object);
-    }
-    /**
      * @param iter
      */
-    public NotNullIterator(Iterable<T> iter) {
+    public NotNullIterator(Iterable<?> iter) {
         super(iter);
     }
     /**
      * @param iter
      */
-    public NotNullIterator(Iterator<T> iter) {
+    public NotNullIterator(Iterator<?> iter) {
         super(iter);
     }
     /**
@@ -85,5 +79,24 @@ public class NotNullIterator<T> extends BaseIterableIterator<T> {
         Iterator<?> iter = extractIterator(iterator);
         TransformIterator transformIterator = new TransformIterator(iter, ReferenceTransformer.INSTANCE);
         super.setIterator(new FilterIterator(transformIterator, NotNullKeyValuePredicate.INSTANCE));
+    }
+
+    /**
+     * Generic factory constructor returns constant if nothing to iterate over.
+     * @param <T>
+     * @param iterable
+     * @return
+     */
+    public static <T> NotNullIterator<T> newNotNullIterator(Object iterable) {
+        return newNotNullIterator(extractIterator(iterable));
+    }
+    @SuppressWarnings("unchecked")
+    public static <T> NotNullIterator<T> newNotNullIterator(Iterator<?> iterator) {
+        if ( iterator == null || !iterator.hasNext()) {
+            return (NotNullIterator<T>) EMPTY;
+        } else {
+            return new NotNullIterator<T>(iterator);
+        }
+
     }
 }

@@ -14,8 +14,6 @@
 
 package com.sworddance.util;
 
-import static org.testng.Assert.*;
-
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -25,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.testng.annotations.Test;
+
+import static org.testng.Assert.*;
 
 /**
  * @author patmoore
@@ -36,7 +36,7 @@ public class TestNotNullIterator {
     public void test() {
         int i = 0;
         List<String> l = Arrays.asList(null, "foo", null, "fee");
-        for (String s: new NotNullIterator<String>(l)) {
+        for (String s: NotNullIterator.<String>newNotNullIterator(l)) {
             assertNotNull(s);
             i++;
         }
@@ -49,7 +49,7 @@ public class TestNotNullIterator {
         m.put("nv2", null);
         m.put("nnv2", "v");
         i = 0;
-        for(Map.Entry<String, Object>entry: new NotNullIterator<Map.Entry<String, Object>>(m)) {
+        for(Map.Entry<String, Object>entry: NotNullIterator.<Map.Entry<String, Object>>newNotNullIterator(m)) {
             assertNotNull(entry);
             assertNotNull(entry.getKey());
             assertNotNull(entry.getValue());
@@ -83,9 +83,20 @@ public class TestNotNullIterator {
         // to compel all the weak ref objects to be gc'ed
         System.gc();
         int j = 0;
-        for(String str: new NotNullIterator<String>(referList)) {
+        for(String str: NotNullIterator.<String>newNotNullIterator(referList)) {
             j++;
         }
         assertEquals(j, 2);
+    }
+    /**
+     * Test to see that factory methods reduce NotNullIterator creation
+     */
+    @Test
+    public void testEmpty() {
+        assertSame(NotNullIterator.<String>newNotNullIterator(null), NotNullIterator.EMPTY);
+        assertSame(NotNullIterator.<String>newNotNullIterator( new WeakReference<List<Reference<String>>>(null)), NotNullIterator.EMPTY);
+        assertSame(NotNullIterator.<String>newNotNullIterator( new ArrayList<Reference<String>>()), NotNullIterator.EMPTY);
+        assertSame(NotNullIterator.<String>newNotNullIterator( new HashMap<String, String>()), NotNullIterator.EMPTY);
+        assertNotSame(NotNullIterator.<String>newNotNullIterator(Arrays.asList(null, null)), NotNullIterator.EMPTY);
     }
 }

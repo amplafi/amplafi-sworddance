@@ -34,16 +34,22 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
     // TODO: should this have a weak reference?
     private T current;
     public BaseIterableIterator() {
+        this.setIterator(null);
     }
-    public BaseIterableIterator(Iterator<T> iter) {
+    public BaseIterableIterator(Iterator<?> iter) {
         this.setIterator(iter);
     }
-    public BaseIterableIterator(Iterable<T> iter) {
+    public BaseIterableIterator(Iterable<?> iter) {
         setIterator(iter!=null?iter.iterator():null);
     }
     public BaseIterableIterator(T... objects) {
         setIterator(Arrays.asList(objects).iterator());
     }
+    /**
+     * There is a compile reason to have 2 separate constructors .. but forgot exact reason.
+     * @param first
+     * @param objects
+     */
     public BaseIterableIterator(T first, T... objects) {
         List<T> list = new ArrayList<T>();
         list.add(first);
@@ -65,7 +71,7 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
     }
 
     @SuppressWarnings("unchecked")
-    protected Iterator<T> extractIterator(Object k) {
+    protected static <T> Iterator<T> extractIterator(Object k) {
         while ( k instanceof Reference) {
             k = ((Reference)k).get();
         }

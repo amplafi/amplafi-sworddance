@@ -60,11 +60,11 @@ public class RandomGUID {
     }
 
     private void getRandomGUID(boolean secure) {
-        MessageDigest md5;
+        MessageDigest messageHash;
         StringBuilder sbValueBeforeHash = new StringBuilder();
 
         try {
-            md5 = MessageDigest.getInstance("SHA-1");
+            messageHash = MessageDigest.getInstance("SHA-1");
         } catch (NoSuchAlgorithmException e) {
             throw new ApplicationIllegalArgumentException(e);
         }
@@ -78,6 +78,7 @@ public class RandomGUID {
             rand = MyRand.nextLong();
         }
 
+        // TODO: note using sha-1
         // This StringBuffer can be a long as you need; the MD5
         // hash will always return 128 bits. You can change
         // the seed to include anything you want here.
@@ -91,9 +92,9 @@ public class RandomGUID {
         sbValueBeforeHash.append(Long.toString(rand));
 
         valueBeforeHash = sbValueBeforeHash.toString();
-        md5.update(valueBeforeHash.getBytes());
+        messageHash.update(valueBeforeHash.getBytes());
 
-        byte[] array = md5.digest();
+        byte[] array = messageHash.digest();
         StringBuffer sb = new StringBuffer();
         for (int j = 0; j < array.length; ++j) {
             int b = array[j] & 0xFF;
@@ -106,9 +107,10 @@ public class RandomGUID {
         valueAfterHash = sb.toString();
 
     }
+    @Override
     public String toString() {
         String raw = valueAfterHash.toUpperCase();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(raw.substring(0, 8));
         sb.append(raw.substring(8, 12));
         sb.append(raw.substring(12, 16));
@@ -122,15 +124,15 @@ public class RandomGUID {
         return valueBeforeHash;
     }
 
-    public void setValueBeforeHash(String valueBeforeMD5) {
-        this.valueBeforeHash = valueBeforeMD5;
+    public void setValueBeforeHash(String valueBeforeHash) {
+        this.valueBeforeHash = valueBeforeHash;
     }
 
     public String getValueAfterHash() {
         return valueAfterHash;
     }
 
-    public void setValueAfterHash(String valueAfterMD5) {
-        this.valueAfterHash = valueAfterMD5;
+    public void setValueAfterHash(String valueBeforeHash) {
+        this.valueAfterHash = valueBeforeHash;
     }
 }
