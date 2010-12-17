@@ -16,6 +16,7 @@ package com.sworddance.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ import static org.apache.commons.lang.StringUtils.*;
  * @author patmoore
  *
  * TODO: Most of these methods should be rolled into a UriSourceImplementor.
+ *
  *
  */
 public class UriFactoryImpl {
@@ -193,8 +195,10 @@ public class UriFactoryImpl {
      *  of this method and you want to disable encoding,
      *  please call {@link UriFactoryImpl#createUri(Object, boolean)}
      *
+     * TODO: need a createUri that checks result has {@link #isNonLocalUri(URI)} is true
      * @param uriStr {@link Object} from which {@link URI} has to be created
      * @return uri, percent encoded {@link URI}
+     *
      */
     public static URI createUri(Object uriStr) {
         return createUri(uriStr, true);
@@ -208,11 +212,17 @@ public class UriFactoryImpl {
      * @return {@link URI}
      */
     public static URI createUri(Object uriStr, boolean forceEncoding) {
+        URI uri = null;
         if (uriStr == null || uriStr instanceof URI) {
             // TODO handle UriSource
-            return (URI) uriStr;
+            uri = (URI) uriStr;
+        } else if ( uriStr instanceof URL ) {
+            try {
+                uri = ((URL)uriStr).toURI();
+            } catch (URISyntaxException e) {
+                // just ignore, uri may be coming from user input.
+            }
         } else {
-            URI uri = null;
             String uriString = uriStr.toString().trim();
             if (forceEncoding) {
                 uriString = percentEncoding(uriString);
@@ -224,8 +234,8 @@ public class UriFactoryImpl {
                     // just ignore, uri may be coming from user input.
                 }
             }
-            return uri;
         }
+        return uri;
     }
 
     /**
