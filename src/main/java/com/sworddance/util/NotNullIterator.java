@@ -85,7 +85,7 @@ public class NotNullIterator<T> extends BaseIterableIterator<T> {
      * Generic factory constructor returns constant if nothing to iterate over.
      * @param <T>
      * @param iterable
-     * @return
+     * @return a {@link NotNullIterator}
      */
     public static <T> NotNullIterator<T> newNotNullIterator(Object iterable) {
         return newNotNullIterator(extractIterator(iterable));

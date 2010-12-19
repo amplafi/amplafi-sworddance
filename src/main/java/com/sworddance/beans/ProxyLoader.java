@@ -39,7 +39,7 @@ public interface ProxyLoader {
     public <I> Class<? extends I> getProxyClassFromClass(Class<? extends I> clazz);
     /**
      * Using the information that is available in the proxyMapper, the ProxyLoader will retrieve and return the real object.
-     * This is called by {@link ProxyMapper#getRealObject(boolean, Object...)} when the ProxyMapper does NOT have a value ( so ProxyLoaders cannot call {@link ProxyMapper#getRealObject(boolean)} )
+     * This is called by {@link ProxyMapper#getRealObject(boolean, Object...)} when the ProxyMapper does NOT have a value ( so ProxyLoaders cannot call {@link ProxyMapper#getRealObject(boolean, Object...)} )
      *
      * @param <I>
      * @param <O>

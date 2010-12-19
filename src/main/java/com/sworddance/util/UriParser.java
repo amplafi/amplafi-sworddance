@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.sworddance.util.CUtilities.*;
-
 import org.apache.commons.lang.StringUtils;
+
+import static com.sworddance.util.CUtilities.*;
 
 /**
  * borrowed from http://snipplr.com/view.php?codeview&id=6889
@@ -274,7 +274,7 @@ public class UriParser {
      * TODO: use {@link Matcher#replaceAll(String)}
      * @param inputString
      * @param replacement
-     * @return
+     * @return the replaced string
      */
     public CharSequence replace(CharSequence inputString, String replacement) {
         Pattern pattern = this.uriWithin;
@@ -294,7 +294,7 @@ public class UriParser {
      * TODO: use {@link Matcher#replaceAll(String)}
      * @param inputString
      * @param replaceFormat
-     * @return
+     * @return the replaced string
      */
     public CharSequence replaceMessageFormatString(CharSequence inputString, String replaceFormat) {
         Pattern pattern = this.uriWithin;

@@ -140,7 +140,7 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
     }
 
     /**
-     * @return
+     * @return this listener has completed.
      */
     public boolean isDone() {
         return this.done.getCount() == 0;
