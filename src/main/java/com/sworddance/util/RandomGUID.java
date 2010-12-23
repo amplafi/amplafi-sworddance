@@ -60,11 +60,19 @@ public class RandomGUID {
     }
 
     private void getRandomGUID(boolean secure) {
+<<<<<<< HEAD
         MessageDigest messageHash;
         StringBuilder sbValueBeforeHash = new StringBuilder();
 
         try {
             messageHash = MessageDigest.getInstance("SHA-1");
+=======
+        MessageDigest md5;
+        StringBuilder sbValueBeforeHash = new StringBuilder();
+
+        try {
+            md5 = MessageDigest.getInstance("SHA-1");
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         } catch (NoSuchAlgorithmException e) {
             throw new ApplicationIllegalArgumentException(e);
         }
@@ -78,7 +86,10 @@ public class RandomGUID {
             rand = MyRand.nextLong();
         }
 
+<<<<<<< HEAD
         // TODO: note using sha-1
+=======
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         // This StringBuffer can be a long as you need; the MD5
         // hash will always return 128 bits. You can change
         // the seed to include anything you want here.
@@ -92,9 +103,15 @@ public class RandomGUID {
         sbValueBeforeHash.append(Long.toString(rand));
 
         valueBeforeHash = sbValueBeforeHash.toString();
+<<<<<<< HEAD
         messageHash.update(valueBeforeHash.getBytes());
 
         byte[] array = messageHash.digest();
+=======
+        md5.update(valueBeforeHash.getBytes());
+
+        byte[] array = md5.digest();
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         StringBuffer sb = new StringBuffer();
         for (int j = 0; j < array.length; ++j) {
             int b = array[j] & 0xFF;
@@ -106,11 +123,20 @@ public class RandomGUID {
 
         valueAfterHash = sb.toString();
 
+<<<<<<< HEAD
     }
     @Override
     public String toString() {
         String raw = valueAfterHash.toUpperCase();
         StringBuilder sb = new StringBuilder();
+=======
+    }
+
+    @Override
+    public String toString() {
+        String raw = valueAfterHash.toUpperCase();
+        StringBuffer sb = new StringBuffer();
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         sb.append(raw.substring(0, 8));
         sb.append(raw.substring(8, 12));
         sb.append(raw.substring(12, 16));
@@ -124,15 +150,25 @@ public class RandomGUID {
         return valueBeforeHash;
     }
 
+<<<<<<< HEAD
     public void setValueBeforeHash(String valueBeforeHash) {
         this.valueBeforeHash = valueBeforeHash;
+=======
+    public void setValueBeforeHash(String valueBeforeMD5) {
+        this.valueBeforeHash = valueBeforeMD5;
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     }
 
     public String getValueAfterHash() {
         return valueAfterHash;
     }
 
+<<<<<<< HEAD
     public void setValueAfterHash(String valueBeforeHash) {
         this.valueAfterHash = valueBeforeHash;
+=======
+    public void setValueAfterHash(String valueAfterMD5) {
+        this.valueAfterHash = valueAfterMD5;
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     }
 }

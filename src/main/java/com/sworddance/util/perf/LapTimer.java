@@ -964,7 +964,12 @@ public class LapTimer implements Runnable, Serializable {
      * Create a nice string that shows all the information about this LapTimer
      *
      * @see java.lang.Object#toString()
+<<<<<<< HEAD
      */
+=======
+     */
+    @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public String toString() {
         StringBuilder sb = new StringBuilder(100);
         if (this.timerName != null) {
@@ -1221,14 +1226,24 @@ public class LapTimer implements Runnable, Serializable {
 
         /**
          * @see java.util.Iterator#hasNext()
+<<<<<<< HEAD
          */
+=======
+         */
+        @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         public boolean hasNext() {
             return nextTimer != null && nextTimer.prevStackMember != null;
         }
 
         /**
          * @see java.util.Iterator#next()
+<<<<<<< HEAD
          */
+=======
+         */
+        @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         public LapTimer next() {
             if ( !hasNext()) {
                 throw new NoSuchElementException();
@@ -1240,7 +1255,12 @@ public class LapTimer implements Runnable, Serializable {
 
         /**
          * @see java.util.Iterator#remove()
+<<<<<<< HEAD
          */
+=======
+         */
+        @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         public void remove() {
             throw new UnsupportedOperationException();
         }
@@ -1262,14 +1282,26 @@ public class LapTimer implements Runnable, Serializable {
         Id(VMID vmidentity, int counter) {
             this.vmidentity = vmidentity;
             this.counter = counter;
+<<<<<<< HEAD
         }
+=======
+        }
+
+        @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         public boolean equals(Object o) {
             if (o instanceof Id) {
                 return this.counter == ((Id) o).counter && vmidentity.equals(((Id) o).vmidentity);
             } else {
                 return false;
             }
+<<<<<<< HEAD
         }
+=======
+        }
+
+        @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         public int hashCode() {
             return this.vmidentity.hashCode() + this.counter;
         }

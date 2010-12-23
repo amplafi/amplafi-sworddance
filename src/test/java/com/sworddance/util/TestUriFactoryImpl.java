@@ -15,6 +15,7 @@
 package com.sworddance.util;
 
 import java.net.URI;
+<<<<<<< HEAD
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -25,6 +26,13 @@ import static com.sworddance.util.UriFactoryImpl.*;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+=======
+import java.util.Map;
+
+import org.testng.annotations.Test;
+
+import static com.sworddance.util.UriFactoryImpl.*;
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 import static org.testng.Assert.*;
 
 /**
@@ -117,6 +125,7 @@ public class TestUriFactoryImpl {
         assertEquals(qmap.get("s"), "s_value");
         assertEquals(qmap.get("t"), "t_value");
     }
+<<<<<<< HEAD
     @Test(dataProvider="queryMapUris")
     public void testQueryMap(URI uri) {
         Map<String, String> queryMapUri = getQueryMap(uri);
@@ -131,6 +140,9 @@ public class TestUriFactoryImpl {
             new Object[] { new URI("?_=1&__=")}
         };
     }
+=======
+
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     @Test
     public void testUriResolutionWithBase() throws Exception {
         URI uri = new URI("http://amplafi.net/us/msg");
@@ -187,6 +199,7 @@ public class TestUriFactoryImpl {
         uri = createUriWithSchema("/path/index.html");
         assertEquals(uri.toString(), "/path/index.html");
     }
+<<<<<<< HEAD
 
     @Test
     public void testCreateUriParsing() {
@@ -259,3 +272,6 @@ public class TestUriFactoryImpl {
         }
     }
 }
+=======
+}
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970

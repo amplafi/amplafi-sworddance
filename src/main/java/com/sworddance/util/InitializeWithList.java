@@ -44,6 +44,10 @@ public class InitializeWithList<V> implements Callable<List<V>> {
     /**
      * @see java.util.concurrent.Callable#call()
      */
+<<<<<<< HEAD
+=======
+    @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public List<V> call() throws Exception {
         return this.threadsafe?new CopyOnWriteArrayList<V>(): new ArrayList<V>();
     }

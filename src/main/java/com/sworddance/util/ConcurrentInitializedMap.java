@@ -80,6 +80,10 @@ public class ConcurrentInitializedMap<K, V> implements ConcurrentMap<K, V>, Seri
     /**
      * @see java.util.Map#equals(java.lang.Object)
      */
+<<<<<<< HEAD
+=======
+    @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public boolean equals(Object o) {
         return map.equals(o);
     }
@@ -104,6 +108,10 @@ public class ConcurrentInitializedMap<K, V> implements ConcurrentMap<K, V>, Seri
     /**
      * @see java.util.Map#hashCode()
      */
+<<<<<<< HEAD
+=======
+    @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public int hashCode() {
         return map.hashCode();
     }
@@ -184,6 +192,11 @@ public class ConcurrentInitializedMap<K, V> implements ConcurrentMap<K, V>, Seri
     public Collection<V> values() {
         return map.values();
     }
+<<<<<<< HEAD
+=======
+
+    @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public String toString() {
         return this.map.toString();
     }

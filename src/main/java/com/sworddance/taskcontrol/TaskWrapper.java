@@ -45,14 +45,24 @@ public abstract class TaskWrapper implements PrioritizedTask {
     /**
      * @see com.sworddance.taskcontrol.PrioritizedTask#getWrappedCallable()
      */
+<<<<<<< HEAD
     @SuppressWarnings("unchecked")
+=======
+    @SuppressWarnings("unchecked")
+    @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public <R> Callable<? extends R> getWrappedCallable() {
         return (Callable<? extends R>) wrappedTask.getWrappedCallable();
     }
 
     /**
      * @see java.lang.Runnable#run()
+<<<<<<< HEAD
      */
+=======
+     */
+    @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public void run() {
         throw new UnsupportedOperationException();
     }

@@ -14,16 +14,26 @@
 
 package com.sworddance.beans;
 
+<<<<<<< HEAD
+=======
+import static org.testng.Assert.*;
+
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Proxy;
+<<<<<<< HEAD
 import java.util.Arrays;
 
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
+=======
+
+import org.testng.annotations.Test;
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 /**
  * @author patmoore
  *
@@ -70,7 +80,11 @@ public class TestProxyMapper {
         Interface1Impl child1 = new Interface1Impl(2, true, null);
         Interface1Impl child = new Interface1Impl(1, false, child1);
         Interface1Impl impl = new Interface1Impl(0, true, child);
+<<<<<<< HEAD
         Interface1 interface1 = ProxyFactoryImpl.INSTANCE.getProxy(impl, ProxyBehavior.nullValue, Arrays.asList("goo", "child.goo"));
+=======
+        Interface1 interface1 = ProxyFactoryImpl.INSTANCE.getProxy(impl, "goo", "child.goo");
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(byteArrayOutputStream);
@@ -78,7 +92,10 @@ public class TestProxyMapper {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
         Interface1 restoredObject = (Interface1) objectInputStream.readObject();
+<<<<<<< HEAD
         ProxyFactoryImpl.INSTANCE.initProxyMapper(restoredObject);
+=======
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         testProxyUnique(restoredObject, interface1, child1, child, impl);
         assertTrue(restoredObject.isGoo());
 

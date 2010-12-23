@@ -28,6 +28,10 @@ public class ReferenceTransformer implements Transformer {
     /**
      * @see org.apache.commons.collections.Transformer#transform(java.lang.Object)
      */
+<<<<<<< HEAD
+=======
+    @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public Object transform(Object input) {
         Object v = input;
         while(v instanceof Reference<?>) {

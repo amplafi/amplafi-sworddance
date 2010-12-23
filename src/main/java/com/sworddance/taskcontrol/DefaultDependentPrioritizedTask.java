@@ -61,7 +61,13 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
         if (wrapped instanceof TaskAware) {
             ((TaskAware) wrapped).setDependentPrioritizedTask(this);
         }
+<<<<<<< HEAD
     }
+=======
+    }
+
+    @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public void setTaskGroup(TaskGroup<?> taskGroup) {
         for (PrioritizedTask element : this.dependencyTasks) {
             // this avoids circular dependencies
@@ -116,7 +122,12 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
      * Once this method returns true, the method is not allowed to return false.
      * Because of this calling this method cause dependencies not to be able to
      * be added
+<<<<<<< HEAD
      */
+=======
+     */
+    @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public boolean isReadyToRun() {
         // this task already has some result.
         if (super.isDone()) {
@@ -133,7 +144,13 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
         // change.
         super.releaseToRun();
         return true;
+<<<<<<< HEAD
     }
+=======
+    }
+
+    @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public boolean isNeverEligibleToRun() {
         if (super.isDone()) {
             // it did run...
@@ -145,7 +162,13 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
             return false;
         }
         return this.isDone();
+<<<<<<< HEAD
     }
+=======
+    }
+
+    @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public void releaseToRun() {
         // do nothing
     }
@@ -246,7 +269,13 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
                 sb.append('"').append(dependency.getName()).append('"').append(' ');
             }
         }
+<<<<<<< HEAD
     }
+=======
+    }
+
+    @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public void setSuccessStatus() {
         StringBuilder sb = new StringBuilder();
         sb.append(this.completionMsg).append(" ").append(super.getTimingString()).append(" ");

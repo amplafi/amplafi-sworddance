@@ -21,6 +21,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+<<<<<<< HEAD
+=======
+import java.util.HashSet;
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -29,9 +33,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
+<<<<<<< HEAD
 import java.util.regex.Pattern;
 
 import static org.apache.commons.lang.StringUtils.*;
+=======
+
+import static org.apache.commons.lang.StringUtils.join;
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 
 /**
  * @author patmoore
@@ -63,7 +72,11 @@ public class CUtilities {
                     it.next();
                 }
             } else {
+<<<<<<< HEAD
                 throw new ApplicationIllegalArgumentException("Unsupported object type: " + object.getClass().getName());
+=======
+                throw new IllegalArgumentException("Unsupported object type: " + object.getClass().getName());
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
             }
         }
         return total;
@@ -103,7 +116,11 @@ public class CUtilities {
      * @return collection
      */
     public static <T> boolean addAllNotNull(Collection<T> collection, T... newValues) {
+<<<<<<< HEAD
         if ( collection != null && newValues != null) {
+=======
+        if ( collection != null ) {
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
             return addAllNotNull(collection, Arrays.asList(newValues));
         } else {
             return false;
@@ -112,7 +129,11 @@ public class CUtilities {
     public static <T> boolean addAllNotNull(Collection<T> collection, Collection<T> newValues) {
         boolean result = false;
         if ( collection != null ) {
+<<<<<<< HEAD
             for(T newValue: NotNullIterator.<T>newNotNullIterator(newValues)) {
+=======
+            for(T newValue: new NotNullIterator<T>(newValues)) {
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
                 result |= collection.add(newValue);
             }
         }
@@ -395,6 +416,10 @@ public class CUtilities {
      */
     public static <K, V> V get(Map<K,V> map, K key, final V defaultValue) {
         return get(map, key, new Callable<V>() {
+<<<<<<< HEAD
+=======
+            @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
             public V call() {
                 return defaultValue;
             }
@@ -403,7 +428,17 @@ public class CUtilities {
 
     public static <T> Set<T> asSet(T... values) {
         LinkedHashSet<T> set = new LinkedHashSet<T>();
+<<<<<<< HEAD
         addAllNotNull(set, values);
+=======
+        if (values != null) {
+            for(T element : values) {
+                if ( element != null) {
+                    set.add(element);
+                }
+            }
+        }
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         return set;
     }
 
@@ -462,6 +497,20 @@ public class CUtilities {
     }
 
     /**
+<<<<<<< HEAD
+=======
+     * @param newValues
+     * @param <T>
+     * @return an new {@link Set}  populated with the non-null values in newValues.
+     */
+    public static <T> Set<T> newSet(T...newValues) {
+        Set<T> s = new HashSet<T>();
+        addAllNotNull(s, newValues);
+        return s;
+    }
+
+    /**
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
      * Create a map from alternating keys and values. if a key is null then it (and its
      * corresponding value) are not placed in the map.
      *
@@ -569,6 +618,7 @@ public class CUtilities {
         }
         return null;
     }
+<<<<<<< HEAD
     public static Pattern onlyPattern(String regex) {
         return Pattern.compile("^"+regex+"$", Pattern.CASE_INSENSITIVE);
     }
@@ -591,4 +641,6 @@ public class CUtilities {
         String simplifyWsMatching = requireAtLeast1WsBetweenWords.replaceAll("(?:\\Q\\s*\\E)+", "\\\\s*");
         return simplifyWsMatching;
     }
+=======
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 }

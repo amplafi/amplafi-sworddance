@@ -14,6 +14,11 @@
 
 package com.sworddance.util;
 
+<<<<<<< HEAD
+=======
+import static org.testng.Assert.*;
+
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -24,8 +29,11 @@ import java.util.Map;
 
 import org.testng.annotations.Test;
 
+<<<<<<< HEAD
 import static org.testng.Assert.*;
 
+=======
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 /**
  * @author patmoore
  *
@@ -36,7 +44,11 @@ public class TestNotNullIterator {
     public void test() {
         int i = 0;
         List<String> l = Arrays.asList(null, "foo", null, "fee");
+<<<<<<< HEAD
         for (String s: NotNullIterator.<String>newNotNullIterator(l)) {
+=======
+        for (String s: new NotNullIterator<String>(l)) {
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
             assertNotNull(s);
             i++;
         }
@@ -49,7 +61,11 @@ public class TestNotNullIterator {
         m.put("nv2", null);
         m.put("nnv2", "v");
         i = 0;
+<<<<<<< HEAD
         for(Map.Entry<String, Object>entry: NotNullIterator.<Map.Entry<String, Object>>newNotNullIterator(m)) {
+=======
+        for(Map.Entry<String, Object>entry: new NotNullIterator<Map.Entry<String, Object>>(m)) {
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
             assertNotNull(entry);
             assertNotNull(entry.getKey());
             assertNotNull(entry.getValue());
@@ -83,11 +99,16 @@ public class TestNotNullIterator {
         // to compel all the weak ref objects to be gc'ed
         System.gc();
         int j = 0;
+<<<<<<< HEAD
         for(String str: NotNullIterator.<String>newNotNullIterator(referList)) {
+=======
+        for(String str: new NotNullIterator<String>(referList)) {
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
             j++;
         }
         assertEquals(j, 2);
     }
+<<<<<<< HEAD
     /**
      * Test to see that factory methods reduce NotNullIterator creation
      */
@@ -99,4 +120,6 @@ public class TestNotNullIterator {
         assertSame(NotNullIterator.<String>newNotNullIterator( new HashMap<String, String>()), NotNullIterator.EMPTY);
         assertNotSame(NotNullIterator.<String>newNotNullIterator(Arrays.asList(null, null)), NotNullIterator.EMPTY);
     }
+=======
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 }

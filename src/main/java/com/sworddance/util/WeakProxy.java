@@ -137,6 +137,10 @@ public class WeakProxy {
             this.stringDescription = "implements = {"+join(interfaces, ", ")+"}";
             this.interfaces = interfaces;
         }
+<<<<<<< HEAD
+=======
+        @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             if ( isWired() ) {
                 T actual = getActual();

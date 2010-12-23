@@ -55,9 +55,15 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
     }
     public void addFutureListener(FutureListener futureListener) {
         processor.addFutureListener(futureListener);
+<<<<<<< HEAD
     }
     @Override
 	public void set(T value) {
+=======
+    }
+    @Override
+    public void set(T value) {
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         super.set(value);
         processor.futureSet(this, value);
     }
@@ -78,6 +84,7 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
     /**
      * make the super class method visible.
      * @see java.util.concurrent.FutureTask#setException(java.lang.Throwable)
+<<<<<<< HEAD
      */
     @Override
 	public void setException(Throwable e) {
@@ -86,6 +93,16 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
     }
     @Override
 	public T get(long timeout, TimeUnit unit) throws TimeoutException, InterruptedException, ExecutionException {
+=======
+     */
+    @Override
+    public void setException(Throwable e) {
+        super.setException(e);
+        processor.futureSetException(this, e);
+    }
+    @Override
+    public T get(long timeout, TimeUnit unit) throws TimeoutException, InterruptedException, ExecutionException {
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         try {
             return super.get(timeout, unit);
         } catch (TimeoutException exception) {
@@ -109,9 +126,15 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
     /**
      * @param returnNullIfTimeout
      * @param e
+<<<<<<< HEAD
      * @return null if returnNullIfTimeout == true and e is {@link TimeoutException} or {@link ApplicationTimeoutException}, otherwise no timeout as exception is thrown.
      */
     protected Object doTimeoutBehavior(boolean returnNullIfTimeout, Throwable e) throws ApplicationTimeoutException, ApplicationGeneralException {
+=======
+     * @return
+     */
+    protected Object doTimeoutBehavior(boolean returnNullIfTimeout, Throwable e) {
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         Throwable t = e; // TODO: move Defense to sworddance
         if (t instanceof TimeoutException || t instanceof ApplicationTimeoutException) {
             if (returnNullIfTimeout) {

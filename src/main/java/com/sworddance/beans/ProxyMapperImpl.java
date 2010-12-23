@@ -25,14 +25,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+<<<<<<< HEAD
 import com.sworddance.beans.ProxyLoader.ChildObjectNotLoadableException;
 import com.sworddance.util.ApplicationIllegalStateException;
+=======
+import static org.apache.commons.lang.StringUtils.*;
+
+import com.sworddance.beans.ProxyLoader.ChildObjectNotLoadableException;
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 import com.sworddance.util.ApplicationNullPointerException;
 import com.sworddance.util.CurrentIterator;
 import com.sworddance.util.WeakProxy;
 
+<<<<<<< HEAD
 import static org.apache.commons.lang.StringUtils.*;
 
+=======
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 /**
  * enables a controlled access to an object tree that also supports caching.
  *
@@ -87,9 +96,13 @@ public abstract class ProxyMapperImpl<I,O extends I> extends BeanWorker implemen
      * {@link ConcurrentHashMap} does not allow null keys or values.
      */
     protected static final Serializable NullObject = new Serializable() {
+<<<<<<< HEAD
 		private static final long serialVersionUID = 1L;
 
 		@Override
+=======
+        @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         public String toString() {
             return "(nullobject)";
         }
@@ -200,7 +213,11 @@ java.lang.AssertionError: isSubtype 15
      * @param property a dot-separated chain of properties ( for example, "grandparent.parent.child" )
      */
     protected Object initValue(String property) {
+<<<<<<< HEAD
         Object result = getRealObject(true);
+=======
+        Object result = getRealObject();
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 
         if ( result != null && property != null ) {
             StringBuilder builder = new StringBuilder();
@@ -229,7 +246,11 @@ java.lang.AssertionError: isSubtype 15
                         } else if ( iterator.hasNext()) {
                             // we are still walking the property chain.
                             // result will be the real object for the next iteration through the loop.
+<<<<<<< HEAD
                             result = childProxy.getRealObject(true);
+=======
+                            result = childProxy.getRealObject();
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
                         } else {
                             // we are going to be done. return the child proxy.
                             result = childProxy.getExternalFacingProxy();
@@ -256,15 +277,25 @@ java.lang.AssertionError: isSubtype 15
     protected abstract void putNewValues(String propertyName, Object result);
 
     /**
+<<<<<<< HEAD
      * @see com.sworddance.beans.ProxyMapper#clearCached()
      */
     public void clearCached() {
+=======
+     * @see com.sworddance.beans.ProxyMapper#clear()
+     */
+    public void clear() {
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         this.realObject = null;
         this.realObjectSet = false;
     }
     /**
      * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
      */
+<<<<<<< HEAD
+=======
+    @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
         String propertyName;
@@ -281,13 +312,21 @@ java.lang.AssertionError: isSubtype 15
                 case readThrough:
                 case leafStrict:
                     if ( method.getReturnType() == Void.class || args != null && args.length > 1) {
+<<<<<<< HEAD
+=======
+                        O actualObject = getRealObject();
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
                         // or more than 1 argument (therefore not java bean property )
                         return doInvoke(method, args);
                     } else {
                         return initValue(propertyName);
                     }
                 case strict:
+<<<<<<< HEAD
                     throw new ApplicationIllegalStateException("no cached value with strict proxy behavior. proxy=", this, " method=", method, "(", join(args), ")");
+=======
+                    throw new IllegalStateException("no cached value with strict proxy behavior");
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
                 }
             }
             return null;
@@ -298,7 +337,11 @@ java.lang.AssertionError: isSubtype 15
             // HACK: how to handle sideeffects? (can't )
             switch(this.getProxyBehavior()) {
             case strict:
+<<<<<<< HEAD
                 throw new ApplicationIllegalStateException(this, " method=", method, "(", join(args), ")");
+=======
+                throw new IllegalStateException("");
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
             default:
                 return doInvoke(method, args);
             }
@@ -317,7 +360,12 @@ java.lang.AssertionError: isSubtype 15
         O actualObject;
         if ( (method.getModifiers() & Modifier.STATIC) != Modifier.STATIC) {
             // not a static method
+<<<<<<< HEAD
             actualObject = getRealObject(true, "need object to call a non-static method ",this, " method=", method, "(", join(args), ")");
+=======
+            actualObject = getRealObject();
+            ApplicationNullPointerException.notNull(actualObject, "need object to call a non-static method ", method);
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         } else {
             actualObject = null;
         }
@@ -325,8 +373,13 @@ java.lang.AssertionError: isSubtype 15
             return method.invoke(actualObject, args);
         } catch(RuntimeException e) {
             // would like to log or annotate somehow ..
+<<<<<<< HEAD
             // changing type of exception is bad so we will throw as an exception that will normally be unwrapped.
             throw new InvocationTargetException(e, this+ " method="+ method + "(" +join(args)+ ")");
+=======
+            // changing type of exception is bad so don't want to wrap and rethrow.
+            throw e;
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         }
     }
     public String getKeyProperty() {
@@ -357,21 +410,33 @@ java.lang.AssertionError: isSubtype 15
     }
 
     /**
+<<<<<<< HEAD
      * @see com.sworddance.beans.ProxyMapper#getRealObject(boolean, Object...)
      */
     @SuppressWarnings("unchecked")
     public O getRealObject(boolean mustBeNotNull, Object...messages) throws ChildObjectNotLoadableException {
+=======
+     * @see com.sworddance.beans.ProxyMapper#getRealObject()
+     */
+    @SuppressWarnings("unchecked")
+    public O getRealObject() throws ChildObjectNotLoadableException {
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 
         if ( !this.isRealObjectSet()) {
             ProxyLoader loader = getProxyLoader();
             if ( loader != null ) {
                 O actualObject = loader.getRealObject(this);
+<<<<<<< HEAD
                 if ( mustBeNotNull) {
                 	ApplicationNullPointerException.notNull(actualObject, messages);
                 }
                 this.setRealObject(actualObject);
             } else {
             	throw new ChildObjectNotLoadableException("No loader for "+this);
+=======
+
+                this.setRealObject(actualObject);
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
             }
         }
         return (O) WeakProxy.getActual(this.realObject);
@@ -400,7 +465,11 @@ java.lang.AssertionError: isSubtype 15
      * @see com.sworddance.beans.ProxyMapper#applyToRealObject()
      */
     public O applyToRealObject() {
+<<<<<<< HEAD
         O base = getRealObject(true, "in order to do applyToRealObject ", this);
+=======
+        O base = getRealObject();
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         for(Map.Entry<String, Object> entry : this.getNewValues().entrySet()) {
             this.setValue(base, entry.getKey(), entry.getValue());
         }
@@ -487,8 +556,13 @@ java.lang.AssertionError: isSubtype 15
     /**
      * @see com.sworddance.beans.ProxyMapper#getValue(java.lang.Object, java.lang.String)
      */
+<<<<<<< HEAD
     @Override
 	@SuppressWarnings("unchecked")
+=======
+    @SuppressWarnings("unchecked")
+    @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public <T> T getValue(Object base, String property) {
         return (T) super.getValue(base, property);
     }

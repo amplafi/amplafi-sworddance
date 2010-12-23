@@ -83,7 +83,12 @@ public class PossibleWorkItemComparator implements Comparator<PrioritizedTask>, 
      * this comparator.
      *
      * @see java.lang.Object#clone()
+<<<<<<< HEAD
      */
+=======
+     */
+    @Override
+>>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public PossibleWorkItemComparator clone() {
         return new PossibleWorkItemComparator(this.completeSort);
     }
