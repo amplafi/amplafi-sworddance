@@ -38,12 +38,7 @@ public interface Listable {
 
     public boolean hasKey(Object key);
 
-<<<<<<< HEAD
     public static class ListableComparator implements Comparator<Listable> {
-=======
-    public static class ListableComparator implements Comparator<Listable> {
-        @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         public int compare(Listable o1, Listable o2) {
             return o1.getListDisplayValue().compareTo(o2.getListDisplayValue());
         }

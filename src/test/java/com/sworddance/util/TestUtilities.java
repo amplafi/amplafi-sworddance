@@ -1,6 +1,5 @@
 package com.sworddance.util;
 
-<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,15 +18,6 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
-=======
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static com.sworddance.util.CUtilities.*;
-import static org.testng.Assert.*;
-import org.testng.annotations.Test;
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 /**
  * Tests for {@link CUtilities}.
  */
@@ -94,11 +84,6 @@ public class TestUtilities {
         assertFalse(map.containsKey("foo"));
 
         assertNull(get(map, "foo", new Callable<String>() {
-<<<<<<< HEAD
-=======
-
-            @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
             public String call() {
                 return null;
             }
@@ -106,11 +91,6 @@ public class TestUtilities {
         }));
         assertFalse(map.containsKey("foo"));
         assertEquals(get(map, "foo", new Callable<String>() {
-<<<<<<< HEAD
-=======
-
-            @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
             public String call() {
                 return "bar";
             }
@@ -118,11 +98,6 @@ public class TestUtilities {
         }), "bar");
         assertTrue(map.containsKey("foo"));
         assertEquals(get(map, "foo", new Callable<String>() {
-<<<<<<< HEAD
-=======
-
-            @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
             public String call() throws Exception {
                 throw new IllegalStateException("Should not have called this!");
             }
@@ -166,7 +141,6 @@ public class TestUtilities {
         clazz = getClassSafely(null);
         assertEquals(clazz, null);
     }
-<<<<<<< HEAD
     @Test(dataProvider="jsQuoteTesting")
     public void testJsQuoting(String inputBasePattern, List<String> expectedMatches, List<String> expectedNotMatches) {
         String s = jsQuoteForPattern(inputBasePattern);
@@ -214,6 +188,4 @@ public class TestUtilities {
                     "    })();\n")}
         };
     }
-=======
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 }

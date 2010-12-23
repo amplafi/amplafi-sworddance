@@ -39,11 +39,7 @@ public interface ProxyLoader {
     public <I> Class<? extends I> getProxyClassFromClass(Class<? extends I> clazz);
     /**
      * Using the information that is available in the proxyMapper, the ProxyLoader will retrieve and return the real object.
-<<<<<<< HEAD
      * This is called by {@link ProxyMapper#getRealObject(boolean, Object...)} when the ProxyMapper does NOT have a value ( so ProxyLoaders cannot call {@link ProxyMapper#getRealObject(boolean, Object...)} )
-=======
-     * This is called by {@link ProxyMapper#getRealObject()} when the ProxyMapper does NOT have a value ( so ProxyLoaders cannot call {@link ProxyMapper#getRealObject()} )
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
      *
      * @param <I>
      * @param <O>
@@ -59,15 +55,11 @@ public interface ProxyLoader {
      *
      */
     public static class ChildObjectNotLoadableException extends RuntimeException {
-<<<<<<< HEAD
     	public ChildObjectNotLoadableException() {
 
     	}
     	public ChildObjectNotLoadableException(String message) {
     		super(message);
     	}
-=======
-
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     }
 }

@@ -34,33 +34,22 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
     // TODO: should this have a weak reference?
     private T current;
     public BaseIterableIterator() {
-<<<<<<< HEAD
         this.setIterator(null);
     }
     public BaseIterableIterator(Iterator<?> iter) {
         this.setIterator(iter);
     }
     public BaseIterableIterator(Iterable<?> iter) {
-=======
-    }
-    public BaseIterableIterator(Iterator<T> iter) {
-        this.setIterator(iter);
-    }
-    public BaseIterableIterator(Iterable<T> iter) {
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         setIterator(iter!=null?iter.iterator():null);
     }
     public BaseIterableIterator(T... objects) {
         setIterator(Arrays.asList(objects).iterator());
     }
-<<<<<<< HEAD
     /**
      * There is a compile reason to have 2 separate constructors .. but forgot exact reason.
      * @param first
      * @param objects
      */
-=======
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public BaseIterableIterator(T first, T... objects) {
         List<T> list = new ArrayList<T>();
         list.add(first);
@@ -72,12 +61,7 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
     }
     public <K> BaseIterableIterator(Reference<K> ref) {
         setIterator(ref);
-<<<<<<< HEAD
     }
-=======
-    }
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public boolean hasNext() {
         return iter.hasNext();
     }
@@ -87,11 +71,7 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
     }
 
     @SuppressWarnings("unchecked")
-<<<<<<< HEAD
     protected static <T> Iterator<T> extractIterator(Object k) {
-=======
-    protected Iterator<T> extractIterator(Object k) {
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         while ( k instanceof Reference) {
             k = ((Reference)k).get();
         }
@@ -109,12 +89,7 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
             return Arrays.asList((T)k).iterator();
         }
 
-<<<<<<< HEAD
     }
-=======
-    }
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public T next() {
         current = iter.next();
         index++;
@@ -123,23 +98,12 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
 
     public T current() {
         return current;
-<<<<<<< HEAD
     }
-=======
-    }
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public void remove() {
         iter.remove();
         // don't null current that way old value can be retrieved.
         index--;
-<<<<<<< HEAD
     }
-=======
-    }
-
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public Iterator<T> iterator() {
         return this;
     }

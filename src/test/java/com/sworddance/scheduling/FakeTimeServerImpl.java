@@ -14,22 +14,13 @@
 
 package com.sworddance.scheduling;
 
-<<<<<<< HEAD
-=======
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
-
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-<<<<<<< HEAD
 import static java.util.concurrent.TimeUnit.*;
 
-=======
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 /**
  * Explanatory comments in {@link FakeTimeServer}.
  * @author Patrick Moore
@@ -97,10 +88,6 @@ public class FakeTimeServerImpl extends TimeServerImpl implements FakeTimeServer
         this.nanoOffset = 0;
     }
 
-<<<<<<< HEAD
-=======
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public void setBaseTime(int year, int month, int day, int hour, int minute, int second, String timezoneId) {
         Calendar date = Calendar.getInstance();
         date.clear();

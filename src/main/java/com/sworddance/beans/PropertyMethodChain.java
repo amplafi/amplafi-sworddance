@@ -153,11 +153,6 @@ public class PropertyMethodChain implements Iterable<PropertyAdaptor>{
     public Class<?> getReturnType() {
         return get(this.size()-1).getReturnType();
     }
-<<<<<<< HEAD
-=======
-
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public String toString() {
         return this.propertyMethodList.toString();
     }

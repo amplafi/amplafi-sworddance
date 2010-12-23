@@ -46,11 +46,7 @@ public class TestProxyRealObjectLoader {
         assertNotNull(proxiedGreatGrandparentProxyMapper.getProxyLoader());
         assertNotNull(proxiedGreatGrandparentProxyMapper.getProxyMethodHelper());
         assertTrue(proxiedGreatGrandparentProxyMapper.isRealObjectSet());
-<<<<<<< HEAD
         proxiedGreatGrandparentProxyMapper.clearCached();
-=======
-        proxiedGreatGrandparentProxyMapper.clear();
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 
         Grandparent proxiedGrandparent = proxiedGreatGrandparent.getGrandparent();
         assertNotSame(grandparent, proxiedGrandparent);
@@ -79,19 +75,11 @@ public class TestProxyRealObjectLoader {
         assertTrue(proxiedParentProxyMapper.isRealObjectSet());
         assertTrue(proxiedChildProxyMapper.isRealObjectSet());
         if ( greatGrandparent.getClass() == loadedGreatGrandparent.getClass()) {
-<<<<<<< HEAD
             assertSame(child, proxiedChildProxyMapper.getRealObject(true));
             assertEquals(proxiedGreatGrandparentProxyMapper.getRealClass(), loadedGreatGrandparent.getClass());
         } else {
             // expecting different classes across transaction boundaries.
             assertNotSame(child, proxiedChildProxyMapper.getRealObject(true));
-=======
-            assertSame(child, proxiedChildProxyMapper.getRealObject());
-            assertEquals(proxiedGreatGrandparentProxyMapper.getRealClass(), loadedGreatGrandparent.getClass());
-        } else {
-            // expecting different classes across transaction boundaries.
-            assertNotSame(child, proxiedChildProxyMapper.getRealObject());
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
             assertFalse(proxiedGreatGrandparentProxyMapper.getRealClass().equals(loadedGreatGrandparent.getClass()));
         }
 
@@ -297,10 +285,6 @@ public class TestProxyRealObjectLoader {
          * @see com.sworddance.beans.ProxyLoader#getRealObject(com.sworddance.beans.ProxyMapper)
          */
         @SuppressWarnings("unchecked")
-<<<<<<< HEAD
-=======
-        @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         public <I, O extends I> O getRealObject(ProxyMapper<I, O> proxyMapper) throws ChildObjectNotLoadableException {
             Class<? extends Object> realClass = proxyMapper.getRealClass();
             loadCalled++;
@@ -325,10 +309,6 @@ public class TestProxyRealObjectLoader {
         /**
          * @see com.sworddance.beans.ProxyLoader#getProxyClassFromClass(java.lang.Class)
          */
-<<<<<<< HEAD
-=======
-        @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         public <I> Class<? extends I> getProxyClassFromClass(Class<? extends I> clazz) {
             assertTrue(GreatGrandparent.class.isAssignableFrom(clazz), "should only be called for the RootProxyMapper objects");
             Class<? extends I> returnClass = super.getProxyClassFromClass(clazz);

@@ -44,13 +44,7 @@ public class TimeServerImpl implements TimeServer {
 
     public TimeZone getGmtTimeZone() {
         return this.gmtTimeZone;
-<<<<<<< HEAD
     }
-=======
-    }
-
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public Calendar getCurrentStandardCalendar() {
         return Calendar.getInstance(gmtTimeZone);
     }
@@ -69,13 +63,7 @@ public class TimeServerImpl implements TimeServer {
         Calendar cal = getCurrentCalendar();
         approximate(cal);
         return cal;
-<<<<<<< HEAD
     }
-=======
-    }
-
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public Calendar getApproximateCalendar(int daysOffset) {
         Calendar cal = getApproximateCalendar();
         cal.add(Calendar.DAY_OF_YEAR, daysOffset);
@@ -136,13 +124,7 @@ public class TimeServerImpl implements TimeServer {
      */
     protected void approximate(Calendar original) {
         original.set(Calendar.MILLISECOND, 0);
-<<<<<<< HEAD
     }
-=======
-    }
-
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public String formatCurrentTime(String formatString) {
         SimpleDateFormat simpleDateFormat;
         try {
@@ -157,12 +139,7 @@ public class TimeServerImpl implements TimeServer {
 
     /**
      * @see com.sworddance.core.ExpirationChecker#isExpired(com.sworddance.core.Expireable)
-<<<<<<< HEAD
      */
-=======
-     */
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public boolean isExpired(Expireable expireable) {
         Calendar expiration;
         if ( !expireable.isExpired() && (expiration=expireable.getExpiration()) != null) {
@@ -174,12 +151,7 @@ public class TimeServerImpl implements TimeServer {
     /**
      * Returns a copy of the TimeZones.
      * @see com.sworddance.scheduling.TimeServer#getTimeZones()
-<<<<<<< HEAD
      */
-=======
-     */
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public List<TimeZone> getTimeZones() {
         return new ArrayList<TimeZone>(this.timeZones);
     }
@@ -189,12 +161,7 @@ public class TimeServerImpl implements TimeServer {
      * @param currentDate
      * @param tz
      * @return converted date
-<<<<<<< HEAD
      */
-=======
-     */
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public Date convertToStandardCalendar(Date currentDate, TimeZone tz) {
         if ( currentDate == null || tz ==null) {
             return currentDate;

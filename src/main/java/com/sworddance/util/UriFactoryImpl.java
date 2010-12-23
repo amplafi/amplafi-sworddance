@@ -14,16 +14,9 @@
 
 package com.sworddance.util;
 
-<<<<<<< HEAD
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-=======
-import static com.sworddance.util.ApplicationNullPointerException.notNull;
-
-import java.net.URI;
-import java.net.URISyntaxException;
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,10 +25,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-<<<<<<< HEAD
 import static com.sworddance.util.ApplicationNullPointerException.*;
-=======
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
 import static org.apache.commons.lang.StringUtils.*;
 
 /**
@@ -43,23 +33,17 @@ import static org.apache.commons.lang.StringUtils.*;
  *
  * TODO: Most of these methods should be rolled into a UriSourceImplementor.
  *
-<<<<<<< HEAD
  *
-=======
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
  */
 public class UriFactoryImpl {
 
     public static final String HTTPS_SCHEME = "https";
     public static final String HTTP_SCHEME = "http";
-<<<<<<< HEAD
     public static final String FTP_SCHEME = "ftp";
     public static final String MAILTO_SCHEME = "mailto";
 
 
     public static final String MAILTO = "mailto:";
-=======
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public static final int DEFAULT_HTTP_PORT = 80;
     public static final int DEFAULT_HTTPS_PORT = 443;
     /**
@@ -121,11 +105,7 @@ public class UriFactoryImpl {
             }
             if (schemaRequired && !uri.isAbsolute() && !newUriStr.startsWith(PATH_SEPARATOR)) {
                 // TODO: check for a relative uri! will produce something like http:/httpdocs/demo if newUriStr does not have host information.
-<<<<<<< HEAD
                 newUriStr = HTTP_SCHEME+"://" + newUriStr;
-=======
-                newUriStr = "http://" + newUriStr;
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
             }
             //noinspection StringEquality
             if (uriStr != newUriStr) {
@@ -215,15 +195,10 @@ public class UriFactoryImpl {
      *  of this method and you want to disable encoding,
      *  please call {@link UriFactoryImpl#createUri(Object, boolean)}
      *
-<<<<<<< HEAD
      * TODO: need a createUri that checks result has {@link #isNonLocalUri(URI)} is true
      * @param uriStr {@link Object} from which {@link URI} has to be created
      * @return uri, percent encoded {@link URI}
      *
-=======
-     * @param uriStr {@link Object} from which {@link URI} has to be created
-     * @return uri, percent encoded {@link URI}
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
      */
     public static URI createUri(Object uriStr) {
         return createUri(uriStr, true);
@@ -237,7 +212,6 @@ public class UriFactoryImpl {
      * @return {@link URI}
      */
     public static URI createUri(Object uriStr, boolean forceEncoding) {
-<<<<<<< HEAD
         URI uri = null;
         if (uriStr == null || uriStr instanceof URI) {
             // TODO handle UriSource
@@ -249,13 +223,6 @@ public class UriFactoryImpl {
                 // just ignore, uri may be coming from user input.
             }
         } else {
-=======
-        if (uriStr == null || uriStr instanceof URI) {
-            // TODO handle UriSource
-            return (URI) uriStr;
-        } else {
-            URI uri = null;
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
             String uriString = uriStr.toString().trim();
             if (forceEncoding) {
                 uriString = percentEncoding(uriString);
@@ -267,13 +234,8 @@ public class UriFactoryImpl {
                     // just ignore, uri may be coming from user input.
                 }
             }
-<<<<<<< HEAD
         }
         return uri;
-=======
-            return uri;
-        }
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     }
 
     /**
@@ -358,7 +320,6 @@ public class UriFactoryImpl {
             return false;
         } else {
             String scheme = uri.getScheme();
-<<<<<<< HEAD
             return !uri.isAbsolute() || HTTPS_SCHEME.equalsIgnoreCase(scheme) || HTTP_SCHEME.equalsIgnoreCase(scheme);
         }
     }
@@ -368,9 +329,6 @@ public class UriFactoryImpl {
             return !HTTPS_SCHEME.equalsIgnoreCase(scheme) && !HTTP_SCHEME.equalsIgnoreCase(scheme)&& !FTP_SCHEME.equalsIgnoreCase(scheme);
         } else {
             return false;
-=======
-            return !uri.isAbsolute() || "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme);
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         }
     }
     public static boolean isNonLocalUri(URI uri) {
@@ -471,13 +429,8 @@ public class UriFactoryImpl {
      * This method is implemented as per specifications in RFC 1738 (section 2).
      *
      * I also had a look at <br/>
-<<<<<<< HEAD
      * {@link java.net.URLEncoder} does not meet out requirements <br/>
      * {@link java.net.URI} also does not meet our requirements <br/>
-=======
-     * {@link URLEncoder} does not meet out requirements <br/>
-     * {@link URI} also does not meet our requirements <br/>
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
      *
      *
      *  TODO There is one issue in this implementation, RFC 1738 section 2.2,
@@ -501,10 +454,6 @@ public class UriFactoryImpl {
      * to use URIBuilder
      * {@linkplain "http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars"}
      * {@linkplain "http://www.ietf.org/rfc/rfc1738.txt"} (section 2.2)
-<<<<<<< HEAD
-=======
-
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
      */
     public static String percentEncoding(String input){
         StringBuilder sb = new StringBuilder();

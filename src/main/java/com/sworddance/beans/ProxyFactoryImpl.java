@@ -36,18 +36,10 @@ public class ProxyFactoryImpl implements ProxyFactory {
         this.defaultProxyMethodHelper = defaultProxyMethodHelper;
     }
 
-<<<<<<< HEAD
-=======
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public <I,O extends I> I getProxy(O realObject, String...propertyChains) {
         return getProxy(realObject, ProxyBehavior.leafStrict, Arrays.asList(propertyChains));
     }
 
-<<<<<<< HEAD
-=======
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public <I,O extends I> I getProxy(O realObject, Class<O>realClass,  String...propertyChains) {
         return getProxy(realObject, realClass, ProxyBehavior.leafStrict, Arrays.asList(propertyChains));
     }
@@ -82,16 +74,11 @@ public class ProxyFactoryImpl implements ProxyFactory {
         Class<? extends I> proxyClass = this.getDefaultProxyLoader().getProxyClassFromClass(realClass);
         Map<String, Object> newValues = null;
         Map<String, Object> originalValues = null;
-<<<<<<< HEAD
         RootProxyMapper<I, O> proxyMapper = newProxyMapper(realObject, realClass, proxyBehavior, propertyChains, proxyClass, newValues, originalValues);
-=======
-        RootProxyMapper<I, O> proxyMapper = new RootProxyMapper<I, O>(realObject, realClass, proxyClass, proxyBehavior, defaultProxyLoader, propertyChains, originalValues, newValues );
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         initProxyMapper(proxyMapper);
         return proxyMapper.getExternalFacingProxy();
     }
 
-<<<<<<< HEAD
 	protected <I,O extends I> RootProxyMapper<I, O> newProxyMapper(O realObject,
 			Class<O> realClass, ProxyBehavior proxyBehavior,
 			List<String> propertyChains, Class<? extends I> proxyClass,
@@ -99,24 +86,15 @@ public class ProxyFactoryImpl implements ProxyFactory {
 		return new RootProxyMapper<I, O>(realObject, realClass, proxyClass, proxyBehavior, defaultProxyLoader, propertyChains, originalValues, newValues );
 	}
 
-=======
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     /**
      * @see com.sworddance.beans.ProxyFactory#initProxyMapper(java.lang.Object)
      */
     @SuppressWarnings("unchecked")
-<<<<<<< HEAD
     public <I, R extends ProxyMapper<I, ? extends I>> R initProxyMapper(I proxy) {
         R proxyMapper = (R) getProxyMapper(proxy);
         if ( proxyMapper instanceof RootProxyMapper) {
             initProxyMapper((RootProxyMapper)proxyMapper);
         } else if ( proxyMapper instanceof ProxyMapperImplementor<?, ?>) {
-=======
-    @Override
-    public <I, R extends ProxyMapper<I, ? extends I>> R initProxyMapper(I proxy) {
-        R proxyMapper = (R) getProxyMapper(proxy);
-        if ( proxyMapper instanceof ProxyMapperImplementor<?, ?>) {
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
             initProxyMapper(proxyMapper);
         }
         return proxyMapper;
@@ -131,11 +109,7 @@ public class ProxyFactoryImpl implements ProxyFactory {
     public <I> I getRealObject(I proxy) {
         ProxyMapper<I, ? extends I> proxyMapper = getProxyMapper(proxy);
         if ( proxyMapper != null) {
-<<<<<<< HEAD
             return proxyMapper.getRealObject(true);
-=======
-            return proxyMapper.getRealObject();
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         }
         return proxy;
     }

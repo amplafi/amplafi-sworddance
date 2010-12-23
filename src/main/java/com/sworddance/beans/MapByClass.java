@@ -115,10 +115,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#clear()
      */
-<<<<<<< HEAD
-=======
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public void clear() {
         this.byClassMap.clear();
     }
@@ -126,10 +122,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#containsKey(java.lang.Object)
      */
-<<<<<<< HEAD
-=======
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public boolean containsKey(Object key) {
         return this.byClassMap.containsKey(key);
     }
@@ -137,10 +129,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#containsValue(java.lang.Object)
      */
-<<<<<<< HEAD
-=======
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public boolean containsValue(Object value) {
         return this.byClassMap.containsValue(value);
     }
@@ -149,10 +137,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
      *
      * @see java.util.Map#entrySet()
      */
-<<<<<<< HEAD
-=======
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public Set<Entry<Class<?>, V>> entrySet() {
         return this.byClassMap.entrySet();
     }
@@ -160,10 +144,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#isEmpty()
      */
-<<<<<<< HEAD
-=======
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public boolean isEmpty() {
         return this.byClassMap.isEmpty();
     }
@@ -171,10 +151,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#keySet()
      */
-<<<<<<< HEAD
-=======
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public Set<Class<?>> keySet() {
         return this.byClassMap.keySet();
     }
@@ -182,10 +158,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#size()
      */
-<<<<<<< HEAD
-=======
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public int size() {
         return this.byClassMap.size();
     }
@@ -193,10 +165,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#put(java.lang.Object, java.lang.Object)
      */
-<<<<<<< HEAD
-=======
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public V put(Class<?> key, V value) {
         return this.byClassMap.put(key, value);
     }
@@ -204,10 +172,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#putAll(java.util.Map)
      */
-<<<<<<< HEAD
-=======
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public void putAll(Map<? extends Class<?>, ? extends V> m) {
         this.byClassMap.putAll(m);
     }
@@ -215,50 +179,30 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.concurrent.ConcurrentMap#putIfAbsent(java.lang.Object, java.lang.Object)
      */
-<<<<<<< HEAD
-=======
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public V putIfAbsent(Class<?> key, V value) {
         return this.byClassMap.putIfAbsent(key, value);
     }
     /**
      * @see java.util.concurrent.ConcurrentMap#remove(java.lang.Object, java.lang.Object)
      */
-<<<<<<< HEAD
-=======
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public boolean remove(Object key, Object value) {
         return remove(key, value);
     }
     /**
      * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object, java.lang.Object)
      */
-<<<<<<< HEAD
-=======
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public boolean replace(Class<?> key, V oldValue, V newValue) {
         return replace(key, oldValue, newValue);
     }
     /**
      * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object)
      */
-<<<<<<< HEAD
-=======
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public V replace(Class<?> key, V value) {
         return replace(key, value);
     }
     /**
      * @see java.util.Map#remove(java.lang.Object)
      */
-<<<<<<< HEAD
-=======
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public V remove(Object key) {
         return this.byClassMap.remove(key);
     }
@@ -266,18 +210,9 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     /**
      * @see java.util.Map#values()
      */
-<<<<<<< HEAD
     public Collection<V> values() {
         return this.byClassMap.values();
     }
-=======
-    @Override
-    public Collection<V> values() {
-        return this.byClassMap.values();
-    }
-
-    @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
     public String toString() {
         return this.byClassMap.toString();
     }
@@ -288,10 +223,6 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
         /**
          * @see com.sworddance.util.ParameterizedCallable#executeCall(java.lang.Object[])
          */
-<<<<<<< HEAD
-=======
-        @Override
->>>>>>> d9837c1bd14d3b3a2b0822f0efefa4e4cda50970
         public V executeCall(Object... parameters) {
             MapByClass<V> mapByClass = CUtilities.get(parameters, 0);
             // first parameter is the map, second is the key.
