@@ -24,6 +24,7 @@ public interface NamespaceMap extends NamespaceMapProvider, Emptyable {
     // TODO : should return a subMap so that the returned map can be modified.
     public Map<String, String> getAsStringMap(Object namespace);
 
+
     public String remove(Object namespace, Object key);
 
     public String put(Object namespace, Object key, Object value);
@@ -35,6 +36,7 @@ public interface NamespaceMap extends NamespaceMapProvider, Emptyable {
     public boolean containsKey(Object namespace, Object key);
 
     Set<? extends NamespaceMapKey> keySet();
+//    SortedMap<? extends NamespaceMapKey, String> getNamespaceMap(Object namespace);
 
     // Conflicts with static import of isEmpty
 //    public boolean isEmpty(Object namespace);

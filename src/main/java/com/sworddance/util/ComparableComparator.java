@@ -33,23 +33,23 @@ public class ComparableComparator extends AbstractComparator<Comparable<?>> {
     }
 
     public int compare(int o1, Number o2) {
-        return compare(new Integer(o1), o2);
+        return doCompare(Integer.valueOf(o1), o2);
     }
 
     public int compare(Number o1, int o2) {
-        return compare(o1, new Integer(o2));
+        return doCompare(o1, Integer.valueOf(o2));
     }
     public int compare(int o1, int o2) {
         return o1-o2;
     }
 
     public boolean less(int o1, Number o2) {
-        Integer result = doCompare(new Integer(o1), o2);
+        Integer result = doCompare(Integer.valueOf(o1), o2);
         return result != null && result < 0;
     }
 
     public boolean less(Number o1, int o2) {
-        Integer result = doCompare(o1, new Integer(o2));
+        Integer result = doCompare(o1, Integer.valueOf(o2));
         return result != null && result < 0;
     }
     public boolean less(int o1, int o2) {
@@ -66,12 +66,12 @@ public class ComparableComparator extends AbstractComparator<Comparable<?>> {
         return result != null && result < 0;
     }
     public boolean greater(int o1, Number o2) {
-        Integer result = doCompare(new Integer(o1), o2);
+        Integer result = doCompare(Integer.valueOf(o1), o2);
         return result != null && result > 0;
     }
 
     public boolean greater(Number o1, int o2) {
-        Integer result = doCompare(o1, new Integer(o2));
+        Integer result = doCompare(o1, Integer.valueOf(o2));
         return result != null && result > 0;
     }
 

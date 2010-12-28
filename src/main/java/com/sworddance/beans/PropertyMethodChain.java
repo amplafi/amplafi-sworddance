@@ -21,6 +21,8 @@ import java.util.List;
 import com.sworddance.util.BaseIterableIterator;
 import com.sworddance.util.CurrentIterator;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * a list of methods that called in sequence will result in either setting or getting a value.
  * @author patmoore
@@ -141,7 +143,7 @@ public class PropertyMethodChain implements Iterable<PropertyAdaptor>{
                 clazz = propertyAdaptor.getReturnType();
                 propertyMethodChain.add(propertyAdaptor);
             } else {
-                throw new IllegalArgumentException(propertyNamesList+" has bad property " + propertyName);
+                throw new IllegalArgumentException(StringUtils.join(propertyNamesList)+" has bad property " + propertyName);
             }
         }
         return propertyMethodChain;
@@ -153,6 +155,7 @@ public class PropertyMethodChain implements Iterable<PropertyAdaptor>{
     public Class<?> getReturnType() {
         return get(this.size()-1).getReturnType();
     }
+    @Override
     public String toString() {
         return this.propertyMethodList.toString();
     }

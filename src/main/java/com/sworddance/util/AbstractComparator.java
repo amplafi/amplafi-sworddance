@@ -76,6 +76,10 @@ public abstract class AbstractComparator<T> implements Comparator<T> {
         }
     }
     protected Integer invert(Integer v) {
-        return v==null?v:-v;
+        if ( v != null ) {
+            return -v;
+        } else {
+            return null;
+        }
     }
 }

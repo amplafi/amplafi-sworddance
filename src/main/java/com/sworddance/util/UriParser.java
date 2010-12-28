@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
-
 import static com.sworddance.util.CUtilities.*;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * borrowed from http://snipplr.com/view.php?codeview&id=6889
@@ -135,7 +135,6 @@ public class UriParser {
     		PATH_WHEN_NO_USERINFO + ")" +
     		QUERY_WITHOUT_DELIM +
     		FRAGMENT_WITHOUT_DELIM;
-    public static UriParser URI = new UriParser(REGEX_URI, null);
 
     //****************************************************//
     //** Validate a URI (includes delimiters in groups) **//
@@ -167,7 +166,6 @@ public class UriParser {
     public static final String REGEX_URI_DELIM_REPLACE_STR = "$1$6$2$3$4$5$7$8$9";
     private static final Pattern regexUriDelimOnly = onlyPattern(REGEX_URI_DELIM);
     private static final Pattern regexUriDelim= withinPattern(REGEX_URI_DELIM);
-    public static UriParser URI_DELIM = new UriParser(REGEX_URI_DELIM, REGEX_URI_DELIM_FORMAT_STR);
 
     //****************************************************//
     //***************** Validate a URL *******************//
@@ -191,6 +189,8 @@ public class UriParser {
     public static final String REGEX_URL_FORMAT_STR = "{1}://{2}:{3}{4}?{5}#{6}";
     public static final String REGEX_URL_REPLACE_STR = "$1://$2:$3$4?$5#$6";
     public static UriParser URL = new UriParser(REGEX_URL, REGEX_URL_FORMAT_STR);
+    public static UriParser URI = new UriParser(REGEX_URI, null);
+    public static UriParser URI_DELIM = new UriParser(REGEX_URI_DELIM, REGEX_URI_DELIM_FORMAT_STR);
 
     //****************************************************//
     //**************** Validate a Mailto *****************//

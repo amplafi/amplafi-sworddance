@@ -61,7 +61,7 @@ public abstract class TaskWrapper implements PrioritizedTask {
      * @see PrioritizedTask#releaseToRun()
      */
     public void releaseToRun() {
-        this.releaseToRun();
+        getWrappedTask().releaseToRun();
     }
 
     /**

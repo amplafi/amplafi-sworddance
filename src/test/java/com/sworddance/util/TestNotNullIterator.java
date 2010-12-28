@@ -75,7 +75,7 @@ public class TestNotNullIterator {
         List<Reference<String>> list = new ArrayList<Reference<String>>();
         String[] objects = new String[2];
         for(int i = 0; i < 4; i++) {
-            String o = new String("foo"+i);
+            String o = "foo"+i;
             objects[i/2] = o;
             list.add(new WeakReference<String>(o));
         }

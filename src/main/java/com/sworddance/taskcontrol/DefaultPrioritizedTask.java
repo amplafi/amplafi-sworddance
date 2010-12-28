@@ -13,8 +13,6 @@
  */
 package com.sworddance.taskcontrol;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,6 +23,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
 import com.sworddance.util.perf.LapTimer;
+
+import static java.util.concurrent.TimeUnit.*;
 
 /**
  * All tasks in TaskControl should extend or emulate this class's behavior.
@@ -79,7 +79,7 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
         super();
         wrappedRunnable = wrapped;
         wrappedCallable = null;
-        priority = new Integer(Thread.NORM_PRIORITY);
+        priority = Integer.valueOf(Thread.NORM_PRIORITY);
         initResourceLocker(wrapped);
     }
 
@@ -90,7 +90,7 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
         super();
         wrappedCallable = callable;
         wrappedRunnable = null;
-        priority = new Integer(Thread.NORM_PRIORITY);
+        priority = Integer.valueOf(Thread.NORM_PRIORITY);
         initResourceLocker(callable);
         setName(name);
     }
@@ -100,7 +100,7 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
         super();
         wrappedRunnable = wrapped;
         wrappedCallable = null;
-        this.priority = new Integer(priority);
+        this.priority = Integer.valueOf(priority);
         initResourceLocker(wrapped);
     }
 
@@ -389,9 +389,9 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
         Integer value = resourceLocksUsed.get(resourceName);
         // TODO verify had the lock that was claimed to be used
         if (value == null) {
-            value = new Integer(lockTypeUsed);
+            value = Integer.valueOf(lockTypeUsed);
         } else {
-            value = new Integer(value.intValue() | lockTypeUsed);
+            value = Integer.valueOf(value.intValue() | lockTypeUsed);
         }
         resourceLocksUsed.put(resourceName, value);
     }

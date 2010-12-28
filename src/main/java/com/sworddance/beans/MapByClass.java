@@ -186,19 +186,19 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
      * @see java.util.concurrent.ConcurrentMap#remove(java.lang.Object, java.lang.Object)
      */
     public boolean remove(Object key, Object value) {
-        return remove(key, value);
+        return this.byClassMap.remove(key, value);
     }
     /**
      * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object, java.lang.Object)
      */
     public boolean replace(Class<?> key, V oldValue, V newValue) {
-        return replace(key, oldValue, newValue);
+        return this.byClassMap.replace(key, oldValue, newValue);
     }
     /**
      * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object)
      */
     public V replace(Class<?> key, V value) {
-        return replace(key, value);
+        return this.byClassMap.replace(key, value);
     }
     /**
      * @see java.util.Map#remove(java.lang.Object)
@@ -213,6 +213,7 @@ public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
     public Collection<V> values() {
         return this.byClassMap.values();
     }
+    @Override
     public String toString() {
         return this.byClassMap.toString();
     }

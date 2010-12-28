@@ -40,6 +40,8 @@ public class UriFactoryImpl {
     public static final String HTTPS_SCHEME = "https";
     public static final String HTTP_SCHEME = "http";
     public static final String FTP_SCHEME = "ftp";
+    public static final Pattern KNOWN_GOOD_SCHEMES = Pattern.compile("^("+HTTP_SCHEME+"|"+HTTPS_SCHEME+"|"+FTP_SCHEME+")$", Pattern.CASE_INSENSITIVE);
+    public static final Pattern HTTP_SCHEMES =  Pattern.compile("^("+HTTP_SCHEME+"|"+HTTPS_SCHEME+")$", Pattern.CASE_INSENSITIVE);
     public static final String MAILTO_SCHEME = "mailto";
 
 
@@ -319,14 +321,13 @@ public class UriFactoryImpl {
         if ( uri == null ) {
             return false;
         } else {
-            String scheme = uri.getScheme();
-            return !uri.isAbsolute() || HTTPS_SCHEME.equalsIgnoreCase(scheme) || HTTP_SCHEME.equalsIgnoreCase(scheme);
+            return !uri.isAbsolute() || isHttpProtocol(uri);
         }
     }
     public static boolean hasQuestionableScheme(URI uri) {
         if ( uri.isAbsolute()) {
             String scheme = uri.getScheme();
-            return !HTTPS_SCHEME.equalsIgnoreCase(scheme) && !HTTP_SCHEME.equalsIgnoreCase(scheme)&& !FTP_SCHEME.equalsIgnoreCase(scheme);
+            return !KNOWN_GOOD_SCHEMES.matcher(scheme).find();
         } else {
             return false;
         }
@@ -643,7 +644,7 @@ public class UriFactoryImpl {
     public static boolean isHttpProtocol(URI uri) {
         if ( uri != null) {
             String scheme = uri.getScheme();
-            return HTTP_SCHEME.equalsIgnoreCase(scheme) || HTTPS_SCHEME.equalsIgnoreCase(scheme);
+            return HTTP_SCHEMES.matcher(scheme).find();
         } else {
             return false;
         }

@@ -15,6 +15,7 @@
 package com.sworddance.util;
 
 import org.testng.annotations.Test;
+
 import static org.testng.Assert.*;
 /**
  * @author patmoore
@@ -25,12 +26,12 @@ public class TestComparableComparator {
     @Test
     public void testMin() {
         Integer result = ComparableComparator.INSTANCE.min(1,4, 2, null);
-        assertTrue(new Integer(1).equals(result), "result="+result);
+        assertTrue(Integer.valueOf(1).equals(result), "result="+result);
     }
 
     @Test
     public void testMax() {
         Integer result = ComparableComparator.INSTANCE.max(1,4, 2, null);
-        assertTrue(new Integer(4).equals(result), "result="+result);
+        assertTrue(Integer.valueOf(4).equals(result), "result="+result);
     }
 }
