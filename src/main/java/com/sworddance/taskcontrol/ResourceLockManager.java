@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
-
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -663,7 +662,7 @@ public class ResourceLockManager {
      * subtask for this parent.
      *
      */
-    private class DefaultInsertionPoint implements Comparator<ResourceLock> {
+    private static class DefaultInsertionPoint implements Comparator<ResourceLock> {
         // TODO for now always assume that l1 is the lock to be added
         /**
          * Sort 2 resource locks. t1 is the parent of t2 then t1 needs to come
@@ -715,7 +714,7 @@ public class ResourceLockManager {
     /**
      * Holds the information showing which other tasks a given task is blocking.
      */
-    private class Ordering {
+    private static class Ordering {
         final ResourceLocker task;
 
         final Set<ResourceLocker> blockedSet;
@@ -738,7 +737,7 @@ public class ResourceLockManager {
      * task, then that doesn't count.
      *
      */
-    private class CompareOrdering implements Comparator<Ordering> {
+    private static class CompareOrdering implements Comparator<Ordering> {
         public int compare(Ordering o1, Ordering o2) {
             if (o1.task == o2.task) {
                 return 0;

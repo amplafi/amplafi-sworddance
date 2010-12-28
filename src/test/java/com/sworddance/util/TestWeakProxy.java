@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.testng.annotations.Test;
+
 import static org.testng.Assert.*;
 /**
  * @author patmoore
@@ -78,7 +79,7 @@ public class TestWeakProxy {
     interface Bar {
 
     }
-    class TestObject implements Foo, Bar {
+    static class TestObject implements Foo, Bar {
 
     }
 }

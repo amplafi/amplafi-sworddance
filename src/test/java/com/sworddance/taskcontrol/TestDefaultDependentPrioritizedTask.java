@@ -14,14 +14,13 @@
 
 package com.sworddance.taskcontrol;
 
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.fail;
-
 import java.util.concurrent.Callable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.Test;
+
+import static org.testng.Assert.*;
 /**
  * Test the behavior of the {@link DefaultDependentPrioritizedTask} class.
  *
@@ -59,7 +58,7 @@ public class TestDefaultDependentPrioritizedTask {
     /**
      * generate a exception for the test.
      */
-    public class ExceptionGenerator implements Callable<Object> {
+    public static class ExceptionGenerator implements Callable<Object> {
         public Object call() throws Exception {
             throw new UnsupportedOperationException("TODO");
         }

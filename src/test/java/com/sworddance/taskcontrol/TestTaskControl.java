@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+
 import static org.testng.Assert.*;
 /**
  * test TaskControl.
@@ -395,7 +396,7 @@ public class TestTaskControl {
      * used to track that the order of task execution is correct.
      * @author Patrick Moore
      */
-    private class OrderedOut {
+    private static class OrderedOut {
         private int expected;
 
         private boolean down;
@@ -425,7 +426,7 @@ public class TestTaskControl {
      * a test comparator.
      * @author Patrick Moore
      */
-    private class TestPriorityComparator implements Comparator<PrioritizedTask> {
+    private static class TestPriorityComparator implements Comparator<PrioritizedTask> {
 
         public int compare(PrioritizedTask o1, PrioritizedTask o2) {
             TestTask t1 = (TestTask) ((TaskWrapper) o1).getBaseWrappedTask();

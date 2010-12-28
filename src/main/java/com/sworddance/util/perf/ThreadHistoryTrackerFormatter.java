@@ -63,7 +63,7 @@ public class ThreadHistoryTrackerFormatter implements Iterator<String[]> {
 
     private List<ThreadHistory> nextEntries;
 
-    private List<Iterator<?>> iterators;
+    private List<Iterator<ThreadHistory>> iterators;
 
     private List<Boolean> threadStatus;
 
@@ -85,15 +85,15 @@ public class ThreadHistoryTrackerFormatter implements Iterator<String[]> {
             history.put(threadId, tracker.getThreadHistoryCopy(threadId));
         }
         nextEntries = new ArrayList<ThreadHistory>(history.values().size());
-        iterators = new ArrayList<Iterator<?>>(history.values().size());
+        iterators = new ArrayList<Iterator<ThreadHistory>>(history.values().size());
         threadStatus = new ArrayList<Boolean>(history.values().size());
         outputStrings = new String[history.values().size() + EXTRA_COLUMNS];
         // prime iterators
         for (List<ThreadHistory> list : history.values()) {
-            Iterator<?> iterator = list.iterator();
+            Iterator<ThreadHistory> iterator = list.iterator();
             iterators.add(iterator);
             if (iterator.hasNext()) {
-                ThreadHistory next = (ThreadHistory) iterator.next();
+                ThreadHistory next = iterator.next();
                 if (next.getThreadInUse() != null) {
                     threadStatus.add(next.getThreadInUse());
                 } else {
@@ -132,11 +132,10 @@ public class ThreadHistoryTrackerFormatter implements Iterator<String[]> {
         } else if (isMore()) {
             int newest = getNextEntryIndex();
             ThreadHistory newestHistory = nextEntries.get(newest);
-            // check to see if there is any earlier ThreadHistory for this
-            // thread
-            if (iterators.get(newest).hasNext()) {
-                ThreadHistory next = (ThreadHistory) iterators.get(newest)
-                        .next();
+            // check to see if there is any earlier ThreadHistory for this thread
+            Iterator<ThreadHistory> currentIterator = iterators.get(newest);
+			if (currentIterator.hasNext()) {
+                ThreadHistory next = currentIterator.next();
                 nextEntries.set(newest, next);
                 /*
                  * if going back in time we have a ThreadHistory that indicates
@@ -151,21 +150,15 @@ public class ThreadHistoryTrackerFormatter implements Iterator<String[]> {
                 if (newestHistory.getThreadInUse() != null) {
                     // if last history was completing a task then
                     // that means that earlier the thread was idle.
-                    threadStatus
-                            .set(
-                                    newest,
-                                    newestHistory.getThreadInUse() == Boolean.FALSE ? Boolean.TRUE
-                                            : Boolean.FALSE);
+                    Boolean threadIdle = Boolean.FALSE.equals(newestHistory.getThreadInUse()) ? Boolean.TRUE : Boolean.FALSE;
+					threadStatus.set(newest,threadIdle);
                 }
                 nextEntries.set(newest, null);
             }
             // create
-            outputStrings[TIME_COL] = format.format(new Date(
-                    newestHistory.getTimestampInMillis()));
-            outputStrings[NOTES_COL] = newestHistory.getNote() != null ? newestHistory.getNote()
-                    : "";
-            outputStrings[SEQUENTIAL_TIME] = Long
-                    .toString(newestHistory.getSequentialTime());
+            outputStrings[TIME_COL] = format.format(new Date( newestHistory.getTimestampInMillis()));
+            outputStrings[NOTES_COL] = newestHistory.getNote() != null ? newestHistory.getNote() : "";
+            outputStrings[SEQUENTIAL_TIME] = Long.toString(newestHistory.getSequentialTime());
             int outputStringIndex = EXTRA_COLUMNS;
             int activeThreads = 0;
             // output character indicating thread status until the column
