@@ -5,6 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.amplafi</groupId>
     <artifactId>amplafi-sworddance</artifactId>
+    
     <packaging>jar</packaging>
     <name>Amplafi Sworddance</name>
     <description>Sworddance utility methods</description>

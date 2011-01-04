@@ -78,6 +78,11 @@ public interface TimeServer extends ExpirationChecker  {
 
     public long currentTimeMillis();
 
+    /**
+     *
+     * @param formatString a {@link java.text.SimpleDateFormat} format string ( use <code>'</code> to quote text )
+     * @return
+     */
     public String formatCurrentTime(String formatString);
 
     /**

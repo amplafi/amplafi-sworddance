@@ -14,14 +14,14 @@
 
 package com.sworddance.scheduling;
 
-import com.sworddance.core.Expireable;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+
+import com.sworddance.core.Expireable;
 
 /**
  * The normal production instance of the time server. This service is to be used
