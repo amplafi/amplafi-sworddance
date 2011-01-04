@@ -20,6 +20,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.sworddance.util.ApplicationIllegalStateException;
 import com.sworddance.util.NotNullIterator;
@@ -36,6 +38,9 @@ import com.sworddance.util.NotNullIterator;
  *
  */
 public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, N> {
+	private final ReentrantReadWriteLock rwListenersLock = new ReentrantReadWriteLock();
+	private final Lock readListenersLock = rwListenersLock.readLock();
+	private final Lock writeListenersLock = rwListenersLock.writeLock();
     private CountDownLatch done = new CountDownLatch(1);
     private WeakReference<? extends Future<N>> returnedFuture;
     private WeakReference<? extends Future<L>> monitoredFuture;
@@ -74,21 +79,26 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
      */
     @SuppressWarnings({ "hiding", "unchecked" })
     public <P extends Future<L>> void futureSet(P future, L returnedValue) {
-        checkDoneStateAndSaveStack();
-        this.setMonitoredFuture(future);
-        if ( this.returnedFuture == null ) {
-            this.setReturnedFuture( (Future<N>)this.monitoredFuture.get());
-        }
-        if ( this.returnedFuture == null || this.returnedFuture.get() == null ) {
-            // TODO maybe should catch ClassCastExceptions?
-            this.setReturnedValue((N)returnedValue);
-        }
-        // all following threads should have the notify happen immediately
-        this.done.countDown();
-        for(FutureListener<N> futureListener: NotNullIterator.<FutureListener<N>>newNotNullIterator(listeners)) {
-            notifyListener(futureListener);
-        }
-        clearReferences();
+    	this.readListenersLock.lock();
+    	try {
+	        checkDoneStateAndSaveStack();
+	        this.setMonitoredFuture(future);
+	        if ( this.returnedFuture == null ) {
+	            this.setReturnedFuture( (Future<N>)this.monitoredFuture.get());
+	        }
+	        if ( this.returnedFuture == null || this.returnedFuture.get() == null ) {
+	            // TODO maybe should catch ClassCastExceptions?
+	            this.setReturnedValue((N)returnedValue);
+	        }
+	        // all following threads should have the notify happen immediately
+	        this.done.countDown();
+	        for(FutureListener<N> futureListener: NotNullIterator.<FutureListener<N>>newNotNullIterator(listeners)) {
+	            notifyListener(futureListener);
+	        }
+	        clearReferences();
+    	} finally {
+    		this.readListenersLock.unlock();
+    	}
     }
 
     /**
@@ -97,17 +107,21 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
      */
     @SuppressWarnings("hiding")
     public <P extends Future<L>> void futureSetException(P future, Throwable throwable) {
-        checkDoneStateAndSaveStack();
-        this.setMonitoredFuture(future);
-        this.throwable = throwable;
-        // all following threads should have the notify happen immediately
-        this.done.countDown();
-        for(FutureListener<N> futureListener: NotNullIterator.<FutureListener<N>>newNotNullIterator( listeners)) {
-            notifyListenerException(futureListener);
-        }
-        clearReferences();
+    	this.readListenersLock.lock();
+    	try {
+	        checkDoneStateAndSaveStack();
+	        this.setMonitoredFuture(future);
+	        this.throwable = throwable;
+	        // all following threads should have the notify happen immediately
+	        this.done.countDown();
+	        for(FutureListener<N> futureListener: NotNullIterator.<FutureListener<N>>newNotNullIterator( listeners)) {
+	            notifyListenerException(futureListener);
+	        }
+	        clearReferences();
+    	} finally {
+    		this.readListenersLock.unlock();
+    	}
     }
-
 
     /**
      *
@@ -122,23 +136,31 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
      * there is no need to hang on to the listeners nor the monitoredFuture. They are released so they can be  gc'ed.
      */
     private void clearReferences() {
-        this.listeners.clear();
-        this.listeners = null;
-        this.monitoredFuture = null;
+    	this.writeListenersLock.lock();
+    	try {
+	        this.listeners.clear();
+	        this.listeners = null;
+	        this.monitoredFuture = null;
+	    } finally {
+	    	this.writeListenersLock.unlock();
+	    }
     }
-
     public void addFutureListener(FutureListener<N> futureListener) {
-        if ( isDone()) {
-            if ( this.throwable == null) {
-                notifyListener(futureListener);
-            } else {
-                notifyListenerException(futureListener);
-            }
-        } else {
-            this.listeners.add(new WeakReference<FutureListener<N>>(futureListener));
-        }
+    	if ( isDone()) {
+    		if ( this.throwable == null) {
+    			notifyListener(futureListener);
+    		} else {
+    			notifyListenerException(futureListener);
+    		}
+    	} else {
+    		this.writeListenersLock.lock();
+    		try {
+	            this.listeners.add(new WeakReference<FutureListener<N>>(futureListener));
+    		} finally {
+    			this.writeListenersLock.unlock();
+    		}
+    	}
     }
-
     /**
      * @return this listener has completed.
      */
