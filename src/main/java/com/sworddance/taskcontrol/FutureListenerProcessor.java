@@ -95,10 +95,10 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
 	        for(FutureListener<N> futureListener: NotNullIterator.<FutureListener<N>>newNotNullIterator(listeners)) {
 	            notifyListener(futureListener);
 	        }
-	        clearReferences();
     	} finally {
     		this.readListenersLock.unlock();
     	}
+    	clearReferences();
     }
 
     /**
@@ -117,10 +117,10 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
 	        for(FutureListener<N> futureListener: NotNullIterator.<FutureListener<N>>newNotNullIterator( listeners)) {
 	            notifyListenerException(futureListener);
 	        }
-	        clearReferences();
     	} finally {
     		this.readListenersLock.unlock();
     	}
+    	clearReferences();
     }
 
     /**
@@ -138,9 +138,11 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
     private void clearReferences() {
     	this.writeListenersLock.lock();
     	try {
-	        this.listeners.clear();
-	        this.listeners = null;
-	        this.monitoredFuture = null;
+    		if ( this.listeners != null) {
+		        this.listeners.clear();
+		        this.listeners = null;
+		        this.monitoredFuture = null;
+    		}
 	    } finally {
 	    	this.writeListenersLock.unlock();
 	    }
