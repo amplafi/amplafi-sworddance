@@ -31,6 +31,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
+import com.sworddance.util.map.MapKeyed;
+
 import static org.apache.commons.lang.StringUtils.*;
 
 /**

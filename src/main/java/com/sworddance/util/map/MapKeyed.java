@@ -11,7 +11,7 @@
  * the specific language governing permissions and limitations under the
  * License.
  */
-package com.sworddance.util;
+package com.sworddance.util.map;
 
 /**
  * Implementers supply their own key if stored in a map.

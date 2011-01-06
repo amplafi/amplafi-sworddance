@@ -79,9 +79,9 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
      */
     @SuppressWarnings({ "hiding", "unchecked" })
     public <P extends Future<L>> void futureSet(P future, L returnedValue) {
+    	checkDoneStateAndSaveStack();
     	this.readListenersLock.lock();
     	try {
-	        checkDoneStateAndSaveStack();
 	        this.setMonitoredFuture(future);
 	        if ( this.returnedFuture == null ) {
 	            this.setReturnedFuture( (Future<N>)this.monitoredFuture.get());
@@ -107,9 +107,9 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
      */
     @SuppressWarnings("hiding")
     public <P extends Future<L>> void futureSetException(P future, Throwable throwable) {
+    	checkDoneStateAndSaveStack();
     	this.readListenersLock.lock();
     	try {
-	        checkDoneStateAndSaveStack();
 	        this.setMonitoredFuture(future);
 	        this.throwable = throwable;
 	        // all following threads should have the notify happen immediately

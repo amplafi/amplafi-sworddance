@@ -12,11 +12,14 @@
  * License.
  */
 
-package com.sworddance.util;
+package com.sworddance.util.map;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.sworddance.util.AbstractParameterizedCallableImpl;
+import com.sworddance.util.map.ConcurrentInitializedMap;
 
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;

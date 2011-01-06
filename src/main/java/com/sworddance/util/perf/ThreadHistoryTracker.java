@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.sworddance.scheduling.TimeServer;
 import com.sworddance.scheduling.TimeServerImpl;
-import com.sworddance.util.ConcurrentInitializedMap;
+import com.sworddance.util.map.ConcurrentInitializedMap;
 
 /**
  * Stores the ThreadHistory objects by {@link Thread#getId()}

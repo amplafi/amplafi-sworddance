@@ -14,7 +14,7 @@
 
 package com.sworddance.util;
 
-import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.commons.lang.StringUtils.*;
 
 /**
  * An application-specific {@link IllegalArgumentException} so that it is possible
@@ -54,10 +54,14 @@ public class ApplicationIllegalArgumentException extends
      */
     public static ApplicationIllegalArgumentException valid(boolean validResult, Object... failMessageParts) {
         if (!validResult) {
-            throw new ApplicationIllegalArgumentException(failMessageParts);
+            fail(failMessageParts);
         }
         return null;
     }
+
+	public static ApplicationIllegalArgumentException fail(Object... failMessageParts) {
+		throw new ApplicationIllegalArgumentException(failMessageParts);
+	}
     public static ApplicationIllegalArgumentException notNull(Object notNullArgument, Object... failMessageParts) {
         return valid(notNullArgument != null, failMessageParts);
     }
