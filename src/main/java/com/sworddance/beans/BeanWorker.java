@@ -25,10 +25,10 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.sworddance.util.CUtilities.*;
-
 import com.sworddance.util.ApplicationIllegalArgumentException;
 import com.sworddance.util.NotNullIterator;
+
+import static com.sworddance.util.CUtilities.*;
 
 /**
  * Provides some general utility methods so that bean operations can be used more easily.
@@ -55,7 +55,7 @@ public class BeanWorker {
 
     }
     public BeanWorker(String... propertyNames) {
-        this( Arrays.asList(propertyNames));
+    	addPropertyNames(propertyNames);
     }
     /**
      * @param propertyNames
@@ -70,6 +70,9 @@ public class BeanWorker {
      */
     public void setPropertyNames(List<String> propertyNames) {
         this.propertyNames = propertyNames;
+    }
+    public void addPropertyNames(String... additionalPropertyNames) {
+    	this.propertyNames.addAll(Arrays.asList(additionalPropertyNames));
     }
     /**
      * @return the propertyNames
@@ -150,7 +153,7 @@ public class BeanWorker {
         }
         propMap = methodsMap.get(clazz);
 
-        for(String property: NotNullIterator.<String>newNotNullIterator( propertyNames)) {
+        for(String property: NotNullIterator.<String>newNotNullIterator( getPropertyNames())) {
             addPropertyMethodChainIfAbsent(clazz, propMap, property, false);
         }
         return propMap;

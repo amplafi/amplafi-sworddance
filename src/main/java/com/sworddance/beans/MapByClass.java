@@ -14,6 +14,7 @@
 
 package com.sworddance.beans;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -30,7 +31,7 @@ import com.sworddance.util.CUtilities;
  * @param <V>
  *
  */
-public class MapByClass<V> implements ConcurrentMap<Class<?>, V>{
+public class MapByClass<V> implements ConcurrentMap<Class<?>, V>, Serializable {
     // TODO : should be able to use ConcurrentInitializedMap now
     private ConcurrentMap<Class<?>, V> byClassMap = new ConcurrentHashMap<Class<?>, V>();
 

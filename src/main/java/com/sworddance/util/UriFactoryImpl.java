@@ -25,13 +25,14 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.sworddance.util.ApplicationNullPointerException.*;
 import static org.apache.commons.lang.StringUtils.*;
+import static com.sworddance.util.ApplicationNullPointerException.*;
 
 /**
  * @author patmoore
  *
  * TODO: Most of these methods should be rolled into a UriSourceImplementor.
+ * TODO: investigate google's URI checking code.
  *
  *
  */
@@ -332,6 +333,11 @@ public class UriFactoryImpl {
             return false;
         }
     }
+    /**
+     *
+     * @param uri
+     * @return false if uri == null or !uri.{@link java.net.URI#isAbsolute()} or the uri.getHost() has no top-level-domain (no '.' in the last 5 chracters )
+     */
     public static boolean isNonLocalUri(URI uri) {
         if ( uri == null ) {
             return false;
