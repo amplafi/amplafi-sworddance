@@ -81,7 +81,7 @@ public interface TimeServer extends ExpirationChecker  {
     /**
      *
      * @param formatString a {@link java.text.SimpleDateFormat} format string ( use <code>'</code> to quote text )
-     * @return
+     * @return formatted time string
      */
     public String formatCurrentTime(String formatString);
 
