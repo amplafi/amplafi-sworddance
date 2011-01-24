@@ -605,19 +605,25 @@ public class UriFactoryImpl {
         if ( filePath != null ) {
             String path = filePath.toString();
 
-            // chop up path and look for '..' and '.' and remove or collapse them.
+            // chop up path based on \ or / characters.
             String[] pathParts = path.split("[/\\\\]");
+            // and look for '..' and '.' and resolve the final path,
+            // looking for attempts to navigate to the root directory of 'filePath'
             List<String> pathArr = new ArrayList<String>();
             int index = -1;
             for(String pathPart: pathParts) {
                 pathPart = pathPart.trim();
                 if ( pathPart.isEmpty() || ".".equals(pathPart)) {
+                	// a '//' in the path or '/./'
                     continue;
                 } else if ( "..".equals(pathPart)) {
                     if ( index >= 0 ) {
                         pathArr.remove(index--);
+                    } else {
+                    	// TODO: possible security violation
                     }
                 } else {
+                	// TODO: look for forbidden elements : "etc" "passwd" "shadow" a file name that starts with a "." like ".htaccess"
                     pathArr.add(pathPart);
                     index++;
                 }
