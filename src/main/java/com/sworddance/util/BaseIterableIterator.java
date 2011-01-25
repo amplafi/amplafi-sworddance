@@ -18,6 +18,7 @@ import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ import java.util.Map;
  * @param <T> type returned by iteration.
  * @author Patrick Moore
  */
-public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIterator<T> {
+public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIterator<T>, Enumeration<T> {
     private int index = -1;
 
     private Iterator<T> iter;
@@ -41,6 +42,10 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
     }
     public BaseIterableIterator(Iterable<?> iter) {
         setIterator(iter!=null?iter.iterator():null);
+    }
+    public BaseIterableIterator(Enumeration<?> iter) {
+
+        setIterator(iter!=null?new IterEnum<T>(iter):null);
     }
     public BaseIterableIterator(T... objects) {
         setIterator(Arrays.asList(objects).iterator());
@@ -113,5 +118,30 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
     public int getIndex() {
         return index;
     }
+	public boolean hasMoreElements() {
+		return this.hasNext();
+	}
+	public T nextElement() {
+		return this.next();
+	}
+	private static class IterEnum<T> implements Iterator<T> {
+		private Enumeration<?> enumeration;
+
+		public IterEnum(Enumeration<?> enumeration) {
+			this.enumeration = enumeration;
+		}
+
+		public boolean hasNext() {
+			return enumeration.hasMoreElements();
+		}
+
+		public T next() {
+			return (T) this.enumeration.nextElement();
+		}
+
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+	}
 
 }
