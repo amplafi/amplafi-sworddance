@@ -97,7 +97,7 @@ public class TestPredicatedTransformingIterator {
                 Integer i = (Integer)input;
                 HashSet<Double> d = new HashSet<Double>();
                 for(int k = 0; k < i; k++) {
-                    d.add(new Double(i*10+k));
+                    d.add(Double.valueOf(i*10+k));
                 }
                 return d;
             }
@@ -109,7 +109,7 @@ public class TestPredicatedTransformingIterator {
         for(Integer i : ints) {
             if ( i % 2 == 0) {
                 for(int k = 0; k < i; k++) {
-                    expected.add(new Double(i*10+k));
+                    expected.add(Double.valueOf(i*10+k));
                 }
             }
         }
