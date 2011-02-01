@@ -148,9 +148,12 @@ public class LapTimerCollection {
     public void writeCSV(String fileName) throws IOException {
         FileOutputStream f = new FileOutputStream(fileName);
         OutputStreamWriter f0 = new OutputStreamWriter(f);
-        this.writeCSV(f0);
-        f0.close();
-        f.close();
+        try {
+        	this.writeCSV(f0);
+        } finally {
+        	f0.close();
+    		f.close();
+        }
     }
 
     public void writeCSV(Writer output) throws IOException {

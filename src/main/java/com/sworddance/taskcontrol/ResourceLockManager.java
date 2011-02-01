@@ -681,13 +681,12 @@ public class ResourceLockManager {
             if (t1 == t2) {
                 return 0;
             } else if (!(t1 instanceof DependentPrioritizedTask)
-                    || !(t1 instanceof DependentPrioritizedTask)) {
+                    || !(t2 instanceof DependentPrioritizedTask)) {
+            	// HACK: bad because order is randomly determined by the argument ordering.
                 return -1;
             }
-            DependentPrioritizedTask task1 = (DependentPrioritizedTask) l1
-                    .getTask();
-            DependentPrioritizedTask task2 = (DependentPrioritizedTask) l2
-                    .getTask();
+            DependentPrioritizedTask task1 = (DependentPrioritizedTask) l1.getTask();
+            DependentPrioritizedTask task2 = (DependentPrioritizedTask) l2.getTask();
             if (task1 == task2.getParentTask()) {
                 return -1;
             } else if (task1.getParentTask() == task2) {

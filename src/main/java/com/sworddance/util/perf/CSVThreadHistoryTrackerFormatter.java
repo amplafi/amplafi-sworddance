@@ -19,6 +19,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
+
 import static com.sworddance.util.perf.ThreadHistoryTrackerFormatter.*;
 
 public class CSVThreadHistoryTrackerFormatter implements Iterator<String> {
@@ -171,7 +172,7 @@ public class CSVThreadHistoryTrackerFormatter implements Iterator<String> {
             f.delete();
             writer = new FileWriter(f);
             for (; this.hasNext();) {
-                writer.write(this.next().toString());
+                writer.write(this.next());
                 writer.write('\n');
             }
         } catch (IOException e) {

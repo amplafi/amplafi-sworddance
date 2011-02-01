@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.sworddance.util.CUtilities.*;
-
 import org.apache.commons.lang.StringUtils;
+
+import static com.sworddance.util.CUtilities.*;
 
 /**
  * borrowed from http://snipplr.com/view.php?codeview&id=6889
@@ -188,9 +188,9 @@ public class UriParser {
 
     public static final String REGEX_URL_FORMAT_STR = "{1}://{2}:{3}{4}?{5}#{6}";
     public static final String REGEX_URL_REPLACE_STR = "$1://$2:$3$4?$5#$6";
-    public static UriParser URL = new UriParser(REGEX_URL, REGEX_URL_FORMAT_STR);
-    public static UriParser URI = new UriParser(REGEX_URI, null);
-    public static UriParser URI_DELIM = new UriParser(REGEX_URI_DELIM, REGEX_URI_DELIM_FORMAT_STR);
+    public static final UriParser URL = new UriParser(REGEX_URL, REGEX_URL_FORMAT_STR);
+    public static final UriParser URI = new UriParser(REGEX_URI, null);
+    public static final UriParser URI_DELIM = new UriParser(REGEX_URI_DELIM, REGEX_URI_DELIM_FORMAT_STR);
 
     //****************************************************//
     //**************** Validate a Mailto *****************//
@@ -205,7 +205,7 @@ public class UriParser {
     		QUERY_WITHOUT_DELIM;
     public static final String REGEX_MAILTO_FORMAT_STR = "{1}:{2}?{3}";
     public static final String REGEX_MAILTO_REPLACE_STR = "$1:$2?$3";
-    public static UriParser MAIL_TO = new UriParser(REGEX_MAILTO, REGEX_MAILTO_REPLACE_STR);
+    public static final UriParser MAIL_TO = new UriParser(REGEX_MAILTO, REGEX_MAILTO_REPLACE_STR);
 
     private final Pattern uriOnly;
     private final Pattern uriWithin;

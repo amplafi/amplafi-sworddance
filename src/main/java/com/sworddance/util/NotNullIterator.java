@@ -34,7 +34,7 @@ import org.apache.commons.collections.iterators.TransformIterator;
  */
 public class NotNullIterator<T> extends BaseIterableIterator<T> {
 
-    public static NotNullIterator<?>EMPTY = new NotNullIterator<Object>();
+    public static final NotNullIterator<?>EMPTY = new NotNullIterator<Object>();
     /**
      *
      */
