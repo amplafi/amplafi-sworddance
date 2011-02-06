@@ -54,4 +54,13 @@ public class ApplicationIllegalStateException extends IllegalStateException {
     public static ApplicationIllegalStateException notNull(Object mustBeNotNull,Object... failMessageParts) {
         return checkState(mustBeNotNull != null, failMessageParts);
     }
+    /**
+     * Used to make sure a value is not already set
+     * @param mustBeNotNull
+     * @param failMessageParts
+     * @return
+     */
+    public static ApplicationIllegalStateException notSet(Object mustBeNull,Object... failMessageParts) {
+        return checkState(mustBeNull == null, failMessageParts);
+    }
 }
