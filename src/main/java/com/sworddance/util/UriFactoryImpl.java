@@ -34,6 +34,8 @@ import static com.sworddance.util.ApplicationNullPointerException.*;
  * TODO: Most of these methods should be rolled into a UriSourceImplementor.
  * TODO: investigate google's URI checking code.
  *
+ * TODO: Too simplistic wrt Ipv6 addresses. Roll together with UriTranslator/UriParser.
+ *
  *
  */
 public class UriFactoryImpl {
