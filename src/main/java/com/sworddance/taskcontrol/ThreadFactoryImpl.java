@@ -24,6 +24,8 @@ import static java.util.concurrent.TimeUnit.*;
 /**
  * A general thread pool that can be used.
  *
+ * Maybe replace with {@link java.util.concurrent.Executors}
+ *
  * @author pmoore
  *
  */
@@ -50,6 +52,7 @@ public class ThreadFactoryImpl implements ThreadFactory {
     }
 
     /**
+     * Thread is not started.
      * @see java.util.concurrent.ThreadFactory#newThread(java.lang.Runnable)
      */
     public Thread newThread(Runnable command) {
