@@ -975,14 +975,15 @@ public class LapTimer implements Runnable, Serializable {
             sb.append("(stopped)");
         }
         sb.append("; elapsed=").append(elapsed()).append("ms; hops=");
-        sb.append(this.hopCount).append(" laps=(");
+        sb.append(this.hopCount).append(" laps=(\n");
         long[] history = this.getLapHistory();
         String[] names = this.getLapNames();
         for (int i = 0; i < history.length; i++) {
+            sb.append("spent ").append(history[i]).append("ms until:");
             if (names[i] != null) {
-                sb.append(' ').append(names[i]).append(':');
+                sb.append(' ').append(names[i]).append(';');
             }
-            sb.append(history[i]).append(';');
+            sb.append("\n");
         }
         sb.append(")]");
         return sb.toString();
