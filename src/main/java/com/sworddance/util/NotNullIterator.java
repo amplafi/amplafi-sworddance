@@ -15,6 +15,7 @@
 package com.sworddance.util;
 
 import java.lang.ref.Reference;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -87,16 +88,21 @@ public class NotNullIterator<T> extends BaseIterableIterator<T> {
      * @param iterable
      * @return a {@link NotNullIterator}
      */
-    public static <T> NotNullIterator<T> newNotNullIterator(Object iterable) {
-        return newNotNullIterator(extractIterator(iterable));
-    }
     @SuppressWarnings("unchecked")
-    public static <T> NotNullIterator<T> newNotNullIterator(Iterator<?> iterator) {
+    public static <T> NotNullIterator<T> newNotNullIterator(Object iterable) {
+        Iterator<?> iterator = extractIterator(iterable);
         if ( iterator == null || !iterator.hasNext()) {
             return (NotNullIterator<T>) EMPTY;
         } else {
             return new NotNullIterator<T>(iterator);
         }
 
+    }
+    public static <T, C extends Collection<T>> C notNullAdd(C collection, Object iterable) {
+        NotNullIterator<T> iterator = newNotNullIterator(iterable);
+        for(T element: iterator) {
+            collection.add(element);
+        }
+        return collection;
     }
 }

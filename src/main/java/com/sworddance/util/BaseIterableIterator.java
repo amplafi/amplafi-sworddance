@@ -88,6 +88,8 @@ public class BaseIterableIterator<T> implements IterableIterator<T>, CurrentIter
             return ((Iterable<T>)k).iterator();
         } else if ( k instanceof Map ) {
             return ((Map)k).entrySet().iterator();
+        } else if ( k instanceof Enumeration) {
+            return new IterEnum<T>((Enumeration<T>)k);
         } else if ( k.getClass().isArray()) {
             return Arrays.asList((T[])k).iterator();
         } else {
