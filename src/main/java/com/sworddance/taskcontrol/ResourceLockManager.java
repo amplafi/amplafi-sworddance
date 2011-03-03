@@ -161,8 +161,7 @@ public class ResourceLockManager {
             Comparator<ResourceLock> insertionComparator) {
         // TODO get rid of this cast
         PrioritizedTask task = (PrioritizedTask) lock.getTask();
-        List<ResourceLock> lockList = getResourceLockList(lock
-                .getResourceName());
+        List<ResourceLock> lockList = getResourceLockList(lock.getResourceName());
         // find insertion point of lock for subtasks
         // non-subtasks are always add to the end.
         // first find parent.
@@ -303,8 +302,7 @@ public class ResourceLockManager {
             return true;
         }
         for (ResourceLock lock: taskLocks) {
-            List<ResourceLock> lockList = getResourceLockListCopy(lock.getResourceName(),
-                    true);
+            List<ResourceLock> lockList = getResourceLockListCopy(lock.getResourceName(), true);
             // race condition: because lock maybe released by another thread,
             // need to check after retrieving lockList.
             if (lock.isLockReleased()) {

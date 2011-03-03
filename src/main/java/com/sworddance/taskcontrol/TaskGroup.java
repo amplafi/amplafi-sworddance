@@ -30,12 +30,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.logging.Log;
-
 import com.sworddance.scheduling.TimeServer;
 import com.sworddance.scheduling.TimeServerImpl;
 import com.sworddance.util.perf.CSVThreadHistoryTrackerFormatter;
 import com.sworddance.util.perf.ThreadHistoryTracker;
+
+import org.apache.commons.logging.Log;
 
 import static java.util.concurrent.TimeUnit.*;
 
@@ -440,6 +440,7 @@ public class TaskGroup<T> implements NotificationObject {
                 locklessTasks.remove(nextTask);
             }
             return new TaskWrapper(nextTask) {
+                @Override
                 public void run() {
                     taskStart(getWrappedTask());
                     try {
@@ -702,6 +703,7 @@ public class TaskGroup<T> implements NotificationObject {
             }
         }
     }
+    @Override
     public String toString() {
         return getName();
     }

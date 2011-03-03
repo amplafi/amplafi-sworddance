@@ -16,8 +16,8 @@ package com.sworddance.taskcontrol;
 
 import java.util.Collections;
 import java.util.Set;
-
 import java.util.concurrent.CountDownLatch;
+
 import static java.util.concurrent.TimeUnit.*;
 
 /**
@@ -204,7 +204,7 @@ public class ResourceLock implements Cloneable {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append('[');
 
         if (task != null) {
@@ -216,7 +216,7 @@ public class ResourceLock implements Cloneable {
     }
 
     public String getLockStr() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (generatedLock) {
             sb.append('(');
         }
@@ -235,7 +235,7 @@ public class ResourceLock implements Cloneable {
         return sb.toString();
     }
 
-    private void appendLockTypeStr(StringBuffer sb, int lockTypeVal) {
+    private void appendLockTypeStr(StringBuilder sb, int lockTypeVal) {
         if (lockTypeVal == NONEXCLUSIVE) {
             // only show the 'N' if there are no other details about this lock
             // this will reduce the noise in the output.
