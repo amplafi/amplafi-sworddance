@@ -14,8 +14,8 @@
 
 package com.sworddance.util;
 
-import static org.apache.commons.lang.StringUtils.join;
 import static com.sworddance.util.CUtilities.*;
+import static org.apache.commons.lang.StringUtils.*;
 
 public class ApplicationIllegalStateException extends IllegalStateException {
 
@@ -56,7 +56,7 @@ public class ApplicationIllegalStateException extends IllegalStateException {
     }
     /**
      * Used to make sure a value is not already set
-     * @param mustBeNotNull
+     * @param mustBeNull
      * @param failMessageParts
      * @return
      */
