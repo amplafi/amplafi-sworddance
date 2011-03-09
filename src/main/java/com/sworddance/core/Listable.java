@@ -25,6 +25,12 @@ public interface Listable {
      *
      */
     public static final String LIST_DISPLAY_VALUE = "listDisplayValue";
+    /**
+     * {@link #getListDisplayValue()} should return this string to indicate that
+     * the displayer should use a key to look up the actual display value.
+     * (Use utility classes (ListableComparator) to find the key).
+     */
+    public static final String USE_KEY_LOOKUP = "";
     public static final ListableComparator COMPARATOR = new ListableComparator();
     /**
      * @return the string that is suitable when implementer is displayed in a list of similar items.
