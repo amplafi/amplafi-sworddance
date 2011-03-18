@@ -68,7 +68,7 @@ public interface FiniteStateHolder<FS extends FiniteState<FS>> {
      * @param nextFiniteState
      * @return true if calling {@link #initTransition(FiniteState)} with nextFiniteState will result in a new FiniteStateHolder
      */
-    public boolean isNewTransitionableResourceNeeded(FS nextFiniteState);
+    public boolean isNewFiniteStateHolderNeeded(FS nextFiniteState);
 
     /**
      * Move {@link #getNextFiniteState()} to the {@link #getFiniteState()} and clear {@link #getNextFiniteState()}
@@ -86,9 +86,6 @@ public interface FiniteStateHolder<FS extends FiniteState<FS>> {
 
     /**
      * Cancels current transition.
-     *
-     * @param <TR>
-     * @return this or possibly new FiniteStateHolder.
      */
     public void cancelTransition();
 }
