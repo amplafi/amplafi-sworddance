@@ -16,7 +16,17 @@ package com.sworddance.core;
 import com.sworddance.core.FiniteState;
 
 /**
- * Holds the current FiniteState for an object.
+ * Holds a FiniteState for an object.
+ * FiniteStateHolders are expected to be somewhat immutable.
+ *
+ * The somewhat nature is still being worked out in the propetitary code. Right now there are transitions between a FS1 -> FS2
+ * which require a new FiniteStateHolder. The usual example is that FS1 is an auditable event ( something being posted public for example)
+ * and we want to preserve that the posting was public.
+ *
+ * Other transitions may not require such audit records, for example, "unread" -> "read" transitions, (assuming no audit log is expected on read actions).
+ *
+ * Note that this "auditness" is defined in the transition note in the FiniteState itself. ( there can't be a FiniteState.isNewFiniteStateHolderNeeded() )
+ *
  * @author patmoore
  */
 public interface FiniteStateHolder<FS extends FiniteState<FS>> {
