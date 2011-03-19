@@ -74,6 +74,12 @@ public interface FiniteState<T extends FiniteState<T>> {
             this.alwaysAllowedTransitions = Arrays.asList(alwaysAllowedTransitions);
         }
 
+        /**
+         * Only intended to be called by {@link FiniteState#isAllowedTransition(FiniteState)}
+         * @param oldFiniteState
+         * @param newFiniteState
+         * @return
+         */
         public boolean isAllowedTransition(T oldFiniteState, T newFiniteState) {
             if ( oldFiniteState == null || oldFiniteState == newFiniteState) {
                 return true;
@@ -85,7 +91,21 @@ public interface FiniteState<T extends FiniteState<T>> {
                 return oldFiniteState.getAllowedTransitions().contains(newFiniteState);
             }
         }
-
+        public boolean isAllowedTransition(FiniteStateHolder<T> finiteStateHolder, T nextFiniteState) {
+            // do not call isAllowedTransition(FiniteState,FiniteState) directly. want to allow the FiniteState to
+            // have its own coding.
+            T currentNextFiniteState = finiteStateHolder.getNextFiniteState();
+            T finiteState = finiteStateHolder.getFiniteState();
+            if ( currentNextFiniteState != null) {
+                return currentNextFiniteState.isAllowedTransition(nextFiniteState)
+                && ( finiteState == null || finiteState.isAllowedTransition(nextFiniteState));
+            } else if ( finiteState != null ) {
+                return finiteState.isAllowedTransition(nextFiniteState);
+            } else {
+                // no current state at all
+                return true;
+            }
+        }
         /**
          * @param finiteState
          * @return true if finiteState != null and there are no allowed transitions.
@@ -94,6 +114,20 @@ public interface FiniteState<T extends FiniteState<T>> {
             return finiteState != null && (isEmpty(finiteState.getAllowedTransitions()));
         }
 
+        public T getCurrentFiniteState(FiniteStateHolder<T> finiteStateHolder) {
+            return finiteStateHolder.getNextFiniteState() != null? finiteStateHolder.getNextFiniteState(): finiteStateHolder.getFiniteState();
+        }
+
+        /**
+         *
+         * @param finiteStateHolder
+         * @param nextFiniteState
+         * @return
+         */
+        public boolean isTransitionNeeded(FiniteStateHolder<T> finiteStateHolder, T nextFiniteState) {
+            T currentFiniteState = finiteStateHolder.getCurrentFiniteState();
+            return currentFiniteState != nextFiniteState && currentFiniteState.isAllowedTransition(nextFiniteState);
+        }
         /**
          *
          * @param oldFiniteState
