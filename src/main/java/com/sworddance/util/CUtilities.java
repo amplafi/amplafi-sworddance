@@ -472,21 +472,39 @@ public class CUtilities {
      * @param keysAndValues
      * @return a Map<K,V> of the values.
      */
-    @SuppressWarnings("unchecked")
     public static <K, V> Map<K, V> createMap(Object... keysAndValues) {
+        return createMap(false, keysAndValues);
+    }
+
+    /**
+     * Same as {@link #createMap(Object...)} but also skips pairs with null values.
+     * 
+     * @param <K>
+     * @param <V>
+     * @param keysAndValues
+     * @return
+     */
+    public static <K, V> Map<K, V> createMapSkipNullValues(Object... keysAndValues) {
+        return createMap(true, keysAndValues);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <K, V> Map<K, V> createMap(boolean skipNullValues, Object... keysAndValues) {
         Map<K, V> map = new LinkedHashMap<K, V>();
         if (keysAndValues != null && keysAndValues.length != 0) {
             if (keysAndValues.length % 2 != 0) {
-                throw new ApplicationIllegalStateException("Non-even number of parameters to createMap. Need matched set of keys and values. got=", join(keysAndValues, ","));
+                throw new ApplicationIllegalStateException("Non-even number of parameters to createMap. Need matched set of keys and values. got=",
+                    join(keysAndValues, ","));
             }
             for (int i = 0; i < keysAndValues.length; i += 2) {
-                if (keysAndValues[i] != null) {
+                if (keysAndValues[i] != null && (!skipNullValues || keysAndValues[i + 1] != null)) {
                     map.put((K) keysAndValues[i], (V) keysAndValues[i + 1]);
                 }
             }
         }
         return map;
     }
+
 
     /**
      * conceptually equivalent to masterCollection.clear(); masterCollection.addAll(newValues);
