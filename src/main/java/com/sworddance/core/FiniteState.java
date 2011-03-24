@@ -68,6 +68,12 @@ public interface FiniteState<T extends FiniteState<T>> {
     T checkToChange(T newFiniteState);
     Collection<T> getAllowedTransitions();
 
+    /**
+     * Methods in this class are expected to be called only by {@link FiniteStateHolder}s and {@link FiniteState} methods.
+     * This class and its methods are provided to ensure a consistent behavior across {@link FiniteStateHolder}s.
+     *
+     * @param <T>
+     */
     public class FiniteStateChecker<T extends FiniteState<T>> {
         private final List<T> alwaysAllowedTransitions;
         public FiniteStateChecker(T... alwaysAllowedTransitions) {
@@ -91,6 +97,7 @@ public interface FiniteState<T extends FiniteState<T>> {
                 return oldFiniteState.getAllowedTransitions().contains(newFiniteState);
             }
         }
+        @Deprecated
         public boolean isAllowedTransition(FiniteStateHolder<T> finiteStateHolder, T nextFiniteState) {
             // do not call isAllowedTransition(FiniteState,FiniteState) directly. want to allow the FiniteState to
             // have its own coding.
@@ -114,16 +121,18 @@ public interface FiniteState<T extends FiniteState<T>> {
             return finiteState != null && (isEmpty(finiteState.getAllowedTransitions()));
         }
 
+        @Deprecated
         public T getCurrentFiniteState(FiniteStateHolder<T> finiteStateHolder) {
             return finiteStateHolder.getNextFiniteState() != null? finiteStateHolder.getNextFiniteState(): finiteStateHolder.getFiniteState();
         }
 
         /**
-         *
+         * Also checks to make sure the transition is allowed.
          * @param finiteStateHolder
          * @param nextFiniteState
          * @return
          */
+        @Deprecated
         public boolean isTransitionNeeded(FiniteStateHolder<T> finiteStateHolder, T nextFiniteState) {
             T currentFiniteState = finiteStateHolder.getCurrentFiniteState();
             return currentFiniteState != nextFiniteState && currentFiniteState.isAllowedTransition(nextFiniteState);
