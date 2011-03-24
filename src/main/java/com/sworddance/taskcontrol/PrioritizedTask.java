@@ -26,7 +26,7 @@ import java.util.concurrent.Callable;
  *
  */
 public interface PrioritizedTask extends Runnable, TaskGroupAware,
-        ResourceLocker {
+        ResourceLocker, FutureResult {
 
     /**
      * @return true if ready to run
@@ -34,8 +34,6 @@ public interface PrioritizedTask extends Runnable, TaskGroupAware,
     public boolean isReadyToRun();
 
     public void releaseToRun();
-
-    public boolean isSuccessful();
 
     /**
      * Indicates that the task has determined that it will never be eligible to
@@ -69,8 +67,6 @@ public interface PrioritizedTask extends Runnable, TaskGroupAware,
      */
     public boolean isDone();
 
-    public Throwable getError();
-
-    public Object getResult();
+    public Object get();
     <R> Callable<? extends R> getWrappedCallable();
 }

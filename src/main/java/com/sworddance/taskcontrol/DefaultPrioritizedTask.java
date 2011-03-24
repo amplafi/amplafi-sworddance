@@ -21,6 +21,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.sworddance.util.perf.LapTimer;
 
@@ -132,7 +134,7 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
 
     public boolean isReadyToRun() {
         try {
-            return shouldRun.await(0, MILLISECONDS) && !isSuccessful();
+            return shouldRun.await(0, MILLISECONDS) && !isDone();
         } catch (InterruptedException e) {
             return false;
         }
@@ -145,13 +147,20 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
     public boolean isSuccessful() {
         return isDone() && this.result.getException() == null;
     }
-
+    // 23 mar 2011 why was this needed. Just for tests?
     protected void setSuccess() {
         if ( !this.result.isDone()) {
             this.result.set(null);
         }
     }
 
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        return this.result.cancel(mayInterruptIfRunning);
+    }
+
+    public boolean isCancelled() {
+        return this.result.isCancelled();
+    }
     protected String getTimingString() {
         StringBuilder sb = new StringBuilder();
         sb.append(getElapsedInMillis());
@@ -183,19 +192,19 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
             setSuccess();
             return result.get();
         } catch (Exception e) {
-            setError(e);
+            setException(e);
             throw e;
         } catch (Error e) {
-            setError(e);
+            setException(e);
             throw e;
         } catch (Throwable e) {
-            setError(e);
+            setException(e);
             throw new RuntimeException(e);
         } finally {
             Thread.currentThread().setName(threadName);
             finishTiming();
             if (!isSuccessful()) {
-                setStatus("exception thrown: " + getError());
+                setStatus("exception thrown: " + getException());
             } else {
                 setSuccessStatus();
             }
@@ -288,13 +297,21 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
         this.status = status;
     }
 
-    protected void setError(Throwable e) {
+    protected void setException(Throwable e) {
         result.setException(e);
     }
 
-    public Throwable getError() {
+    public Throwable getException() {
         Throwable exception = result.getException();
         return exception == null ? null : exception;
+    }
+
+    public void addFutureListener(FutureListener futureListener) {
+        this.result.addFutureListener(futureListener);
+    }
+
+    public boolean isFailed() {
+        return this.result.isFailed();
     }
 
     public void setName(String name) {
@@ -314,7 +331,7 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
         return this.result.isDone();
     }
 
-    public Object getResult() {
+    public Object get() {
         try {
             return result.get();
         } catch (InterruptedException e) {
@@ -323,7 +340,9 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
             return null;
         }
     }
-
+    public Object get(long timeout, TimeUnit timeUnit) throws TimeoutException, InterruptedException, ExecutionException {
+        return result.get(timeout, timeUnit);
+    }
     /**
      * @return either the wrapped Runnable or wrapped Callable
      */
@@ -404,11 +423,11 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
     private void downgradeUsedLocks() {
         if (lockDowngradeEnabled) {
             for (Object element : getResourceLocksNeeded()) {
-            ResourceLock lock = (ResourceLock) element;
-            Integer value = resourceLocksUsed.get(lock.getResourceName());
-            int intvalue = value == null ? 0 : value.intValue();
-            lock.downGrade(intvalue);
-         }
+                ResourceLock lock = (ResourceLock) element;
+                Integer value = resourceLocksUsed.get(lock.getResourceName());
+                int intvalue = value == null ? 0 : value.intValue();
+                lock.downGrade(intvalue);
+            }
         }
     }
 

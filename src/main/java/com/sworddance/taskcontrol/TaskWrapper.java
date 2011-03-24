@@ -16,6 +16,9 @@ package com.sworddance.taskcontrol;
 
 import java.util.Collection;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * used by TaskControl and TaskGroup tasks to provide initialization and clean
@@ -121,17 +124,17 @@ public abstract class TaskWrapper implements PrioritizedTask {
     }
 
     /**
-     * @see PrioritizedTask#getError()
+     * @see PrioritizedTask#getException()
      */
-    public Throwable getError() {
-        return getWrappedTask().getError();
+    public Throwable getException() {
+        return getWrappedTask().getException();
     }
 
     /**
-     * @see PrioritizedTask#getResult()
+     * @see PrioritizedTask#get()
      */
-    public Object getResult() {
-        return getWrappedTask().getResult();
+    public Object get() {
+        return getWrappedTask().get();
     }
 
     /**
@@ -158,6 +161,26 @@ public abstract class TaskWrapper implements PrioritizedTask {
 
     public boolean hasLocks() {
         return getWrappedTask().hasLocks();
+    }
+
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        return this.getWrappedTask().cancel(mayInterruptIfRunning);
+    }
+
+    public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        return this.getWrappedTask().get(timeout, unit);
+    }
+
+    public boolean isCancelled() {
+        return this.getWrappedTask().isCancelled();
+    }
+
+    public void addFutureListener(FutureListener futureListener) {
+        this.wrappedTask.addFutureListener(futureListener);
+    }
+
+    public boolean isFailed() {
+        return this.wrappedTask.isFailed();
     }
 
     public PrioritizedTask getWrappedTask() {

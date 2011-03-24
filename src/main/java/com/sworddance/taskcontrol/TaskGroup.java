@@ -30,8 +30,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.sworddance.scheduling.TimeServer;
-import com.sworddance.scheduling.TimeServerImpl;
 import com.sworddance.util.perf.CSVThreadHistoryTrackerFormatter;
 import com.sworddance.util.perf.ThreadHistoryTracker;
 
@@ -112,7 +110,7 @@ public class TaskGroup<T> implements NotificationObject {
     private Set<PrioritizedTask> runningTasks = Collections.newSetFromMap(new ConcurrentHashMap<PrioritizedTask, Boolean>());
     private String latestStatsFilename;
 
-    public TaskGroup(String name, Comparator<PrioritizedTask> taskComparator, FutureResultImplementor<T> result, TimeServer timeServer) {
+    public TaskGroup(String name, Comparator<PrioritizedTask> taskComparator, FutureResultImplementor<T> result) {
         this.name = name;
         this.taskComparator = taskComparator;
         this.result = result;
@@ -129,18 +127,18 @@ public class TaskGroup<T> implements NotificationObject {
      * @param name
      */
     public TaskGroup(String name) {
-        this(name, new PossibleWorkItemComparator(), new FutureResultImpl<T>(), new TimeServerImpl());
+        this(name, new PossibleWorkItemComparator(), new FutureResultImpl<T>());
     }
     public TaskGroup(String name, FutureResultImplementor<T> result) {
-        this(name, new PossibleWorkItemComparator(), result, new TimeServerImpl());
+        this(name, new PossibleWorkItemComparator(), result);
     }
 
     /**
      * @return taskGroup's result exception.
      */
-    public Throwable getError() {
+    public Throwable getException() {
         Throwable exception = result.getException();
-        return exception == null ? null : exception;
+        return exception;
     }
 
     public FutureResult<T> getResult() {
@@ -169,21 +167,21 @@ public class TaskGroup<T> implements NotificationObject {
         runningTasks.remove(task);
         String id = getTaskId(task);
         resourceManager.releaseTaskLocks(task);
-        if (task.getError() != null) {
+        if (task.getException() != null) {
             synchronized (result) {
                 // save only the first error
                 if (result.getException() == null) {
-                    result.setException(task.getError());
+                    result.setException(task.getException());
                 }
             }
             if (task instanceof DefaultPrioritizedTask) {
                 threadHistoryTracker.addStopHistory(id,
-                        task.getError().toString(),
+                        task.getException().toString(),
                         ((DefaultPrioritizedTask) task).getElapsedInMillis()
                         + "ms",
                         ((DefaultPrioritizedTask) task).getElapsedInMillis());
             } else {
-                threadHistoryTracker.addStopHistory(id, task.getError().toString(), null, 0);
+                threadHistoryTracker.addStopHistory(id, task.getException().toString(), null, 0);
             }
         } else {
             if (task instanceof DefaultPrioritizedTask) {
@@ -534,7 +532,7 @@ public class TaskGroup<T> implements NotificationObject {
         File latestStatsFile = null;
         File postRunResourceMapFile = null;
         String dateStr = getDateStr();
-        String exitStatus = getError() == null ? "-success" : "-fail";
+        String exitStatus = getException() == null ? "-success" : "-fail";
         latestStatsFilename = getName() + exitStatus + "-stats-" + dateStr+ ".csv";
         String postRunResourceMapFilename = getName() + "-post-resource-map-" + dateStr + ".csv";
         if (statsFileDirectory != null) {

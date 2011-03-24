@@ -88,17 +88,17 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
     }
 
     private boolean doDependencyCheck() {
-        if (!this.ignoreTaskGroupFailure && this.getTaskGroup() != null && this.getTaskGroup().getError() != null) {
-            this.setError(new RuntimeException("TaskGroup in error", this.getTaskGroup().getError()));
-            this.getTaskGroup().debug(this.getName() + ": TaskGroup in error " + this.getTaskGroup().getError().getClass());
+        if (!this.ignoreTaskGroupFailure && this.getTaskGroup() != null && this.getTaskGroup().getException() != null) {
+            this.setException(new RuntimeException("TaskGroup in error", this.getTaskGroup().getException()));
+            this.getTaskGroup().debug(this.getName() + ": TaskGroup in error " + this.getTaskGroup().getException().getClass());
             return false;
         }
         for (PrioritizedTask dependency : this.dependencyTasks) {
             if (!dependency.isSuccessful()) {
                 if (dependency.isDone()) {
                     // dependency failed ... this task will never be run
-                    Throwable error = dependency.getError();
-                    this.setError(new RuntimeException("Dependency "+ dependency.getName() + " failed.", error));
+                    Throwable error = dependency.getException();
+                    this.setException(new RuntimeException("Dependency "+ dependency.getName() + " failed.", error));
                     this.getTaskGroup().warning( this.getName() + "Dependency " + dependency.getName() + " failed. "+ error);
                 }
                 return false;

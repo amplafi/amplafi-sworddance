@@ -48,11 +48,5 @@ public interface FutureResult<T> extends Future<T>, FutureListenerNotifier {
      *  {@link FutureResult#getException()}!=null)
      */
     public boolean isFailed();
-    /**
-     *
-     * @return null if ! {@link #isDone()} otherwise
-     * ! {@link #isCancelled()} &&
-     *  {@link FutureResult#getException()}==null
-     */
-    public Boolean getSuccessState();
+
 }

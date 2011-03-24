@@ -140,19 +140,7 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
     public boolean isFailed() {
         return isDone() && (isCancelled() || getException() != null);
     }
-    /**
-     *
-     * @return null if ! {@link #isDone()} otherwise
-     * ! {@link #isCancelled()} &&
-     *  {@link FutureResult#getException()}==null
-     */
-    public Boolean getSuccessState() {
-        if ( isDone()) {
-            return !isCancelled() && getException()== null;
-        } else {
-            return null;
-        }
-    }
+
     public static class NullCallable<T> implements Callable<T> {
         @SuppressWarnings("unused")
         public T call() throws Exception {
