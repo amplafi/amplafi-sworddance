@@ -338,7 +338,7 @@ public class UriFactoryImpl {
     /**
      *
      * @param uri
-     * @return false if uri == null or !uri.{@link java.net.URI#isAbsolute()} or the uri.getHost() has no top-level-domain (no '.' in the last 5 chracters )
+     * @return false if uri == null or !uri.{@link java.net.URI#isAbsolute()} or the uri.getHost() has no top-level-domain (no '.' in the last 5 characters )
      */
     public static boolean isNonLocalUri(URI uri) {
         if ( uri == null ) {
