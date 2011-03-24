@@ -52,7 +52,7 @@ public class TestDefaultDependentPrioritizedTask {
         Thread t = new Thread(taskControl);
         t.start();
         t.join();
-        assertNotNull(taskGroup.getError(), "Should throw Exception");
+        assertNotNull(taskGroup.getException(), "Should throw Exception");
     }
 
     /**

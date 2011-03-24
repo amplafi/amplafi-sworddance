@@ -28,7 +28,6 @@ import static org.testng.Assert.*;
  * test TaskControl.
  * @author Patrick Moore
  */
-@Test
 public class TestTaskControl {
     @SuppressWarnings("unchecked")
     @DataProvider(name="testObjects")
@@ -55,7 +54,7 @@ public class TestTaskControl {
     public void testTestOrdering(TaskGroup<?> taskGroup, OrderedOut orderOut, Log log) throws Exception {
         TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1, log);
         for (int i = 0; i < 200; i++) {
-            TestTask task = new TestTask(i, orderOut);
+            TestTask task = new TestTask("testTestOrdering", i, orderOut);
             taskGroup.addTask(task);
         }
         startTaskControl(taskControl, taskGroup);
@@ -82,7 +81,7 @@ public class TestTaskControl {
         // add some dead tasks.
         int i = 0;
         {
-            TestTask task = new TestTask(i, orderOut);
+            TestTask task = new TestTask("testBadDependencies", i, orderOut);
             task.addDependency(blocking);
             try {
                 taskGroup.addTask(task);
@@ -93,7 +92,7 @@ public class TestTaskControl {
         }
         i++;
         {
-            TestTask task = new TestTask(i, orderOut);
+            TestTask task = new TestTask("testBadDependencies", i, orderOut);
             try {
                 task.addDependency(task);
                 fail("cannot depend on self");
@@ -110,17 +109,18 @@ public class TestTaskControl {
         DefaultPrioritizedTask<Object> blocking = new DefaultPrioritizedTask<Object>();
         blocking.setName("blocking");
         taskGroup.addTask(blocking);
+        String testName = "testBadJobs";
         // add some dead tasks.
         int i = 0;
         {
-            TestTask task = new TestTask(i, orderOut);
+            TestTask task = new TestTask(testName, i, orderOut);
             task.addDependency(blocking);
             list.add(task);
             taskGroup.addTask(task);
         }
         i++;
         {
-            TestTask task = new TestTask(i, orderOut);
+            TestTask task = new TestTask(testName, i, orderOut);
             list.add(task);
             task.setSuccess();
             try {
@@ -133,7 +133,7 @@ public class TestTaskControl {
         i++;
         {
             // task depending on itself
-            TestTask task = new TestTask(i, orderOut);
+            TestTask task = new TestTask(testName, i, orderOut);
             list.add(task);
             task.setSuccess();
             try {
@@ -146,7 +146,7 @@ public class TestTaskControl {
         i++;
         {
             // task depending on itself
-            TestTask task = new TestTask(i, orderOut);
+            TestTask task = new TestTask(testName, i, orderOut);
             list.add(task);
             task.setSuccess();
             try {
@@ -158,7 +158,7 @@ public class TestTaskControl {
         }
         i++;
         {
-            TestTask task = new TestTask(i, orderOut);
+            TestTask task = new TestTask(testName, i, orderOut);
             list.add(task);
             taskGroup.addTask(task);
             // now make it bad...
@@ -185,9 +185,10 @@ public class TestTaskControl {
     public void testChainFailure1(TaskGroup<?> taskGroup, OrderedOut orderOut, Log log) throws Exception {
         int i = 0;
         TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1, log);
-        TestTask task1 = new FailTestTask(i++, orderOut);
+        String testName = "testChainFailure1";
+        TestTask task1 = new FailTestTask(testName, i++, orderOut);
         taskGroup.addTask(task1);
-        TestTask task2 = new TestTask(i++, orderOut);
+        TestTask task2 = new TestTask(testName, i++, orderOut);
         task2.addDependency(task1);
         taskGroup.addTask(task2);
 
@@ -211,25 +212,26 @@ public class TestTaskControl {
         int i = 0;
         TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1, log);
 
-        TestTask task1 = new FailTestTask(i++, orderOut);
+        String testName = "testChainFailure2";
+        TestTask task1 = new FailTestTask(testName, i++, orderOut);
         taskGroup.addTask(task1);
-        TestTask task2 = new TestTask(i++, orderOut);
+        TestTask task2 = new TestTask(testName, i++, orderOut);
         task2.addDependency(task1);
         taskGroup.addTask(task2);
-        TestTask task3 = new TestTask(i++, orderOut);
+        TestTask task3 = new TestTask(testName, i++, orderOut);
         task3.setIgnoreTaskGroupFailure(true);
         task3.addAlwaysDependency(task2);
         taskGroup.addTask(task3);
 
         startTaskControl(taskControl, taskGroup);
         assertTrue(task1.callBodyCalled, "Task #" + task1.id + " should be run");
-        Throwable error = task1.getError();
+        Throwable error = task1.getException();
         assertNotNull(error);
         assertFalse(task2.callBodyCalled, "Task #" + task2.id + " should not be run");
-        assertNotNull(task2.getError());
+        assertNotNull(task2.getException());
         assertTrue(task3.callBodyCalled,
                 "Task #" + task3.id + " should be run");
-        assertNull(task3.getError());
+        assertNull(task3.getException());
     }
 
     /**
@@ -244,10 +246,11 @@ public class TestTaskControl {
     public void testChainFailure3(TaskGroup<?> taskGroup, OrderedOut orderOut, Log log) throws Exception {
         int i = 0;
         TaskControl taskControl = new TaskControl(new TestPriorityComparator(), 1, log);
+        String testName = "testChainFailure3";
 
-        TestTask task1 = new FailTestTask(i++, orderOut);
+        TestTask task1 = new FailTestTask(testName, i++, orderOut);
         taskGroup.addTask(task1);
-        TestTask task2 = new TestTask(i++, orderOut);
+        TestTask task2 = new TestTask(testName, i++, orderOut);
         task2.setIgnoreTaskGroupFailure(true);
         task2.addAlwaysDependency(task1);
         taskGroup.addTask(task2);
@@ -265,7 +268,7 @@ public class TestTaskControl {
         // add dependencies
         int i;
         for (i = 0; i < 20; i++) {
-            TestTask task = new TestTask(i, orderOut);
+            TestTask task = new TestTask("testSimpleDependency", i, orderOut);
             list.add(task);
             orderOut.expected = i;
         }
@@ -296,7 +299,7 @@ public class TestTaskControl {
         // add dependencies
         int i;
         for (i = 0; i < 20; i++) {
-            TestTask task = new TestTask(i, orderOut);
+            TestTask task = new TestTask("testComplexDependency", i, orderOut);
             list.add(task);
             orderOut.expected = i;
         }
@@ -349,8 +352,8 @@ public class TestTaskControl {
 
         private OrderedOut orderOut;
 
-        public TestTask(int id, OrderedOut orderOut) {
-            setName("Test Task #" + id);
+        public TestTask(String testName, int id, OrderedOut orderOut) {
+            setName(testName+"_TestTask_" + id);
             this.id = id;
             this.orderOut = orderOut;
         }
@@ -365,11 +368,6 @@ public class TestTaskControl {
             Thread.sleep(sleepTime);
             return null;
         }
-
-        @Override
-        protected void setSuccess() {
-            super.setSuccess();
-        }
     }
 
     /**
@@ -378,11 +376,12 @@ public class TestTaskControl {
      */
     private class FailTestTask extends TestTask {
         /**
+         * @param testName TODO
          * @param i
          * @param orderOut
          */
-        public FailTestTask(int i, OrderedOut orderOut) {
-            super(i, orderOut);
+        public FailTestTask(String testName, int i, OrderedOut orderOut) {
+            super(testName, i, orderOut);
         }
 
         @Override
