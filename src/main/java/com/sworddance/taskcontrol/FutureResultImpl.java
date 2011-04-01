@@ -62,18 +62,21 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
         processor.futureSet(this, value);
     }
     public Throwable getException() {
-        try {
-            // just to trigger the exception to be thrown.
-            @SuppressWarnings("unused")
-            Object o = super.get(1, TimeUnit.NANOSECONDS);
-            return null;
-        } catch (ExecutionException e) {
-            return e.getCause();
-        } catch (InterruptedException e) {
-            return e;
-        } catch(TimeoutException e) {
-            return null;
+        if ( super.isDone()) {
+            try {
+                // just to trigger the exception to be thrown.
+                @SuppressWarnings("unused")
+                Object o = super.get(1, TimeUnit.NANOSECONDS);
+            } catch (ExecutionException e) {
+                Throwable cause = e.getCause();
+                return cause;
+            } catch (InterruptedException e) {
+                return e;
+            } catch(TimeoutException e) {
+                return null;
+            }
         }
+        return null;
     }
     /**
      * make the super class method visible.

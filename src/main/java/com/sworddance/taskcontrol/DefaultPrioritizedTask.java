@@ -145,7 +145,7 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
     }
 
     public boolean isSuccessful() {
-        return isDone() && this.result.getException() == null;
+        return this.result.isSuccessful();
     }
     // 23 mar 2011 why was this needed. Just for tests?
     protected void setSuccess() {
@@ -194,6 +194,10 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
         } catch (Exception e) {
             setException(e);
             throw e;
+        } catch(AssertionError e) {
+            // downgrade a AssertionError to a runtimeException so that this error is not so catastrophic
+            setException(e);
+            throw new RuntimeException(e);
         } catch (Error e) {
             setException(e);
             throw e;
@@ -303,7 +307,7 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
 
     public Throwable getException() {
         Throwable exception = result.getException();
-        return exception == null ? null : exception;
+        return exception;
     }
 
     public void addFutureListener(FutureListener futureListener) {
