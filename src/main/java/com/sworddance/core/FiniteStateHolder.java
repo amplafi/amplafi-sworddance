@@ -137,6 +137,13 @@ public interface FiniteStateHolder<FS extends FiniteState<FS>> {
         }
 
         /**
+         * @see com.sworddance.core.FiniteStateHolder#initTransition(com.sworddance.core.FiniteState)
+         */
+        protected void setFiniteState(FS finiteState) {
+            this.finiteState = finiteState;
+        }
+
+        /**
          * @see com.sworddance.core.FiniteStateHolder#getNextFiniteState()
          */
         public FS getNextFiniteState() {
@@ -180,5 +187,36 @@ public interface FiniteStateHolder<FS extends FiniteState<FS>> {
             return this.getNextFiniteState() != null;
         }
 
+        /**
+         * Subclasses can do their own check if this method returns true
+         * @return false if nextFiniteState == null or nextFiniteState == {@link #getCurrentFiniteState()} or ! {@link #isAllowedTransition(FiniteState)}
+         * @see com.sworddance.core.FiniteStateHolder#isNewFiniteStateHolderNeeded(com.sworddance.core.FiniteState)
+         */
+        public boolean isNewFiniteStateHolderNeeded(FS nextFiniteState) {
+            if ( this.getFiniteState() == null || nextFiniteState == null ) {
+                // initial State. or canceling prior transition
+                return false;
+            } else if ( this.getCurrentFiniteState() == nextFiniteState) {
+                // a NOP
+                return false;
+            } else if ( !this.isAllowedTransition(nextFiniteState)) {
+                // illegal transition
+                return false;
+            } else {
+                return true;
+            }
+
+        }
+        protected void doInitTransition(FS nextFiniteState) {
+            if ( this.getFiniteState() == null) {
+                this.setFiniteState(nextFiniteState);
+            } else {
+                this.setNextFiniteState(nextFiniteState);
+            }
+        }
+        @Override
+        public String toString() {
+            return "\"current\":\""+this.getFiniteState()+"\"; \"next\":\""+this.getNextFiniteState()+"\"";
+        }
     }
 }
