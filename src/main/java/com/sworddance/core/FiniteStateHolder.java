@@ -14,6 +14,8 @@
 package com.sworddance.core;
 
 import com.sworddance.core.FiniteState;
+import com.sworddance.util.ApplicationIllegalArgumentException;
+import com.sworddance.util.ApplicationIllegalStateException;
 
 /**
  * Holds a FiniteState for an object.
@@ -94,14 +96,14 @@ public interface FiniteStateHolder<FS extends FiniteState<FS>> {
      * @author patmoore
      *
      */
-    public abstract class TransitioningFiniteStateHolderContainer<FS extends FiniteState<FS>> implements FiniteStateHolder<FS> {
+    public class TransitioningFiniteStateHolderContainer<FS extends FiniteState<FS>> implements FiniteStateHolder<FS> {
 
         private FS finiteState;
         private FS currentNextFiniteState;
-        protected TransitioningFiniteStateHolderContainer() {
+        public TransitioningFiniteStateHolderContainer() {
 
         }
-        protected TransitioningFiniteStateHolderContainer(FS finiteState, FS currentNextFiniteState) {
+        public TransitioningFiniteStateHolderContainer(FS finiteState, FS currentNextFiniteState) {
             this.finiteState = finiteState;
             this.currentNextFiniteState = currentNextFiniteState;
         }
@@ -192,7 +194,7 @@ public interface FiniteStateHolder<FS extends FiniteState<FS>> {
          * @return false if nextFiniteState == null or nextFiniteState == {@link #getCurrentFiniteState()} or ! {@link #isAllowedTransition(FiniteState)}
          * @see com.sworddance.core.FiniteStateHolder#isNewFiniteStateHolderNeeded(com.sworddance.core.FiniteState)
          */
-        public boolean isNewFiniteStateHolderNeeded(FS nextFiniteState) {
+        protected boolean isIfDifferentThenNewFiniteStateHolderNeeded(FS nextFiniteState) {
             if ( this.getFiniteState() == null || nextFiniteState == null ) {
                 // initial State. or canceling prior transition
                 return false;
@@ -207,12 +209,34 @@ public interface FiniteStateHolder<FS extends FiniteState<FS>> {
             }
 
         }
-        protected void doInitTransition(FS nextFiniteState) {
+
+        @SuppressWarnings("unchecked")
+        protected <TR extends FiniteStateHolder<FS>> TR doInitTransition(FS nextFiniteState) {
+            ApplicationIllegalStateException.checkState(isAllowedTransition(nextFiniteState), getCurrentFiniteState()," to ",nextFiniteState, " not allowed.");
+
             if ( this.getFiniteState() == null) {
                 this.setFiniteState(nextFiniteState);
+            } else if ( this.getFiniteState() == nextFiniteState){
+                this.cancelTransition();
             } else {
                 this.setNextFiniteState(nextFiniteState);
             }
+            return (TR) this;
+        }
+        /**
+         * @see com.sworddance.core.FiniteStateHolder#initTransition(com.sworddance.core.FiniteState)
+         */
+        @SuppressWarnings("unchecked")
+        public <TR extends FiniteStateHolder<FS>> TR initTransition(FS nextFiniteState) {
+            ApplicationIllegalArgumentException.valid(!isNewFiniteStateHolderNeeded(nextFiniteState), "Default behavior cannot handle creating new FSH for ", this," transitioning to ", nextFiniteState);
+            return (TR) doInitTransition(nextFiniteState);
+        }
+        /**
+         * Always returns false;
+         * @see com.sworddance.core.FiniteStateHolder#isNewFiniteStateHolderNeeded(com.sworddance.core.FiniteState)
+         */
+        public boolean isNewFiniteStateHolderNeeded(FS nextFiniteState) {
+            return false;
         }
         @Override
         public String toString() {
