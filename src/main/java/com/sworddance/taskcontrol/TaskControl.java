@@ -158,7 +158,9 @@ public class TaskControl implements Runnable {
                 this.stateChangeNotificator.lock();
                 try {
                     if ( !this.isTaskReady() ) {
-                        this.newTasks.await(60, SECONDS);
+                        if ( !this.newTasks.await(60, SECONDS)) {
+                            continue;
+                        }
                     }
                 } finally {
                     this.stateChangeNotificator.unlock();
