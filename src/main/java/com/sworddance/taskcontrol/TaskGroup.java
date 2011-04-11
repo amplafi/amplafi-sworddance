@@ -30,6 +30,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.sworddance.core.Emptyable;
 import com.sworddance.util.perf.CSVThreadHistoryTrackerFormatter;
 import com.sworddance.util.perf.ThreadHistoryTracker;
 
@@ -44,7 +45,7 @@ import static java.util.concurrent.TimeUnit.*;
  * {@link java.util.Comparator} that is supplied to the constructor.
  * @param <T> the type of the results object.
  */
-public class TaskGroup<T> implements NotificationObject {
+public class TaskGroup<T> implements NotificationObject, Emptyable {
     /**
      *
      */
@@ -60,6 +61,9 @@ public class TaskGroup<T> implements NotificationObject {
 
     private final AtomicInteger taskSequence;
 
+    /**
+     * Cannot be immutable because running tasks may add to the list.
+     */
     private final List<PrioritizedTask> tasksToBeRun;
 
     /**
@@ -401,7 +405,7 @@ public class TaskGroup<T> implements NotificationObject {
         if ( complete ) {
             synchronized (tasksToBeRun) {
                 if (!isTaskReady()) {
-                    complete = tasksToBeRun.isEmpty();
+                    complete = isEmpty();
                 } else {
                     complete = false;
                 }
@@ -470,12 +474,19 @@ public class TaskGroup<T> implements NotificationObject {
      * @return true if the taskGroup can run, false if the TaskGroup should not be run.
      */
     public boolean prepareToRun() {
-        if ( this.tasksToBeRun.isEmpty()) {
+        if ( isEmpty()) {
             this.result.set(null);
             return false;
         } else {
             return true;
         }
+    }
+
+    /**
+     * @return
+     */
+    public boolean isEmpty() {
+        return this.tasksToBeRun.isEmpty();
     }
 
     /**
@@ -502,7 +513,7 @@ public class TaskGroup<T> implements NotificationObject {
                     this.result.setException(new IllegalStateException( tasksToBeRun.size() + " tasks were never run"));
                 }
             }
-            tasksToBeRun.clear();
+            clear();
         }
         if (isDebugEnabled()) {
             debug(this.tasksCompletedInfo.size() + " completed tasks. Statuses:");
@@ -513,6 +524,13 @@ public class TaskGroup<T> implements NotificationObject {
         if ( dumpStats ) {
             dumpStats();
         }
+    }
+
+    /**
+     *
+     */
+    public void clear() {
+        tasksToBeRun.clear();
     }
 
     /**
