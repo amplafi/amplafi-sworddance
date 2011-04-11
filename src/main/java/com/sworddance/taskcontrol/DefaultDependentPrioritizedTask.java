@@ -62,6 +62,7 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
             ((TaskAware) wrapped).setDependentPrioritizedTask(this);
         }
     }
+    @Override
     public void setTaskGroup(TaskGroup<?> taskGroup) {
         for (PrioritizedTask element : this.dependencyTasks) {
             // this avoids circular dependencies
@@ -116,7 +117,8 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
      * Once this method returns true, the method is not allowed to return false.
      * Because of this calling this method cause dependencies not to be able to
      * be added
-     */
+     */
+    @Override
     public boolean isReadyToRun() {
         // this task already has some result.
         if (super.isDone()) {
@@ -134,6 +136,7 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
         super.releaseToRun();
         return true;
     }
+    @Override
     public boolean isNeverEligibleToRun() {
         if (super.isDone()) {
             // it did run...
@@ -146,6 +149,7 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
         }
         return this.isDone();
     }
+    @Override
     public void releaseToRun() {
         // do nothing
     }
@@ -247,6 +251,7 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
             }
         }
     }
+    @Override
     public void setSuccessStatus() {
         StringBuilder sb = new StringBuilder();
         sb.append(this.completionMsg).append(" ").append(super.getTimingString()).append(" ");
