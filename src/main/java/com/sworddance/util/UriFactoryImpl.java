@@ -194,12 +194,6 @@ public class UriFactoryImpl {
      *
      *  This method creates the {@link URI} from the given argument.
      *
-     *  The default behaviour of this method is changed on (25-Feb-2010), now
-     *  create URI encodes the URI. No thorough testing has been done for existing
-     *  callers of this method. In case you face any issues with existing callers
-     *  of this method and you want to disable encoding,
-     *  please call {@link UriFactoryImpl#createUri(Object, boolean)}
-     *
      * TODO: need a createUri that checks result has {@link #isNonLocalUri(URI)} is true
      * @param uriStr {@link Object} from which {@link URI} has to be created
      * @return uri, percent encoded {@link URI}
@@ -211,6 +205,8 @@ public class UriFactoryImpl {
 
     /**
      * This method creates the {@link URI} from the given argument.
+     *
+     * TODO! Need to check for path information in the URI in particular use of ../ to try to game the urls on amplafi servers.
      *
      * @param uriStr {@link Object} from which {@link URI} has to be created. Allowed to be relative URI.
      * @param forceEncoding true if URI has to be encoded
