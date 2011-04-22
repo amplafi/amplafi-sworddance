@@ -30,6 +30,7 @@ import com.sworddance.util.ApplicationIllegalStateException;
  * Note that this "auditness" is defined in the transition note in the FiniteState itself. ( there can't be a FiniteState.isNewFiniteStateHolderNeeded() )
  *
  * @author patmoore
+ * @param <FS>
  */
 public interface FiniteStateHolder<FS extends FiniteState<FS>> {
 
@@ -75,8 +76,9 @@ public interface FiniteStateHolder<FS extends FiniteState<FS>> {
 
     /**
      * Move {@link #getNextFiniteState()} to the {@link #getFiniteState()} and clear {@link #getNextFiniteState()}
+     * @return true if a transition did need to be completed
      */
-    public void completeTransitionIfNeeded();
+    public boolean completeTransitionIfNeeded();
 
     /**
      * sets the nextFiniteState.
@@ -94,6 +96,7 @@ public interface FiniteStateHolder<FS extends FiniteState<FS>> {
 
     /**
      * @author patmoore
+     * @param <FS> FiniteState implementing Class
      *
      */
     public class TransitioningFiniteStateHolderContainer<FS extends FiniteState<FS>> implements FiniteStateHolder<FS> {
@@ -117,10 +120,13 @@ public interface FiniteStateHolder<FS extends FiniteState<FS>> {
         /**
          * @see com.sworddance.core.FiniteStateHolder#completeTransitionIfNeeded()
          */
-        public void completeTransitionIfNeeded() {
+        public boolean completeTransitionIfNeeded() {
             if ( this.currentNextFiniteState != null ) {
                 this.finiteState = this.currentNextFiniteState;
                 this.currentNextFiniteState = null;
+                return true;
+            } else {
+                return false;
             }
         }
 
