@@ -34,6 +34,11 @@ import java.util.concurrent.FutureTask;
 public interface FutureResult<T> extends Future<T>, FutureListenerNotifier {
 
     public Throwable getException();
+    /**
+     *
+     * @return {@link #get()} if {@link #isSuccessful()} is true
+     */
+    public T poll();
 
     /**
      * Note that ! isFailed() != {@link #isSuccessful()} because the request may not be done.
@@ -48,5 +53,16 @@ public interface FutureResult<T> extends Future<T>, FutureListenerNotifier {
      *  {@link FutureResult#getException()}!=null)
      */
     public boolean isFailed();
+
+    /**
+     * TODO: still working through how to chain in a meaningful way FutureResult -> Task -> TaskGroup -> TaskControl -> ? needs to be assigned to a thread.
+     * Would like the get to fail if this chain breaks.
+     * @return true if some object has claimed that it will set this FutureResult.
+     *
+     * false means {@link #get()} or {@link #get(long, java.util.concurrent.TimeUnit)}  IllegalStateException will be thrown
+     * if {@link #isOwned()} == false and !{@link #isDone()} then
+     *
+     */
+    public boolean isOwned();
 
 }

@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.sworddance.util.ApplicationIllegalStateException;
 import com.sworddance.util.perf.LapTimer;
 
 import static java.util.concurrent.TimeUnit.*;
@@ -52,7 +53,7 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
 
     private String status;
 
-    private FutureResultImplementor<R> result = new FutureResultImpl<R>();
+    private FutureResultImpl<R> result = new FutureResultImpl<R>();
 
     private String name;
 
@@ -148,10 +149,8 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
         return this.result.isSuccessful();
     }
     // 23 mar 2011 why was this needed. Just for tests?
-    protected void setSuccess() {
-        if ( !this.result.isDone()) {
-            this.result.set(null);
-        }
+    public void set(R value) {
+        this.result.set(value);
     }
 
     public boolean cancel(boolean mayInterruptIfRunning) {
@@ -187,15 +186,15 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
             if (getName() != null) {
                 Thread.currentThread().setName(getName());
             }
-            result.set(callBody());
-            // let exceptions escape so that is done flag is not set.
-            setSuccess();
+            R callBodyValue = callBody();
+            set(callBodyValue);
             return result.get();
         } catch (Exception e) {
             setException(e);
             throw e;
         } catch(AssertionError e) {
             // downgrade a AssertionError to a runtimeException so that this error is not so catastrophic
+            // most other errors are things like OOME
             setException(e);
             throw new RuntimeException(e);
         } catch (Error e) {
@@ -335,7 +334,8 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
         return this.result.isDone();
     }
 
-    public Object get() {
+    public R get() {
+        ApplicationIllegalStateException.checkState(result.isDone() || this.taskGroup !=null, "Cannot get value if not assigned to a taskGroup (no value will ever be available)");
         try {
             return result.get();
         } catch (InterruptedException e) {
@@ -344,9 +344,15 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
             return null;
         }
     }
-    public Object get(long timeout, TimeUnit timeUnit) throws TimeoutException, InterruptedException, ExecutionException {
+    public R get(long timeout, TimeUnit timeUnit) throws TimeoutException, InterruptedException, ExecutionException {
+        ApplicationIllegalStateException.checkState(result.isDone() || this.taskGroup !=null, "Cannot get value if not assigned to a taskGroup (no value will ever be available)");
         return result.get(timeout, timeUnit);
     }
+
+    public R poll() {
+        return result.poll();
+    }
+
     /**
      * @return either the wrapped Runnable or wrapped Callable
      */
@@ -384,6 +390,10 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
     }
     public boolean isNeverEligibleToRun() {
         return isDone() && !isReadyToRun();
+    }
+
+    public boolean isOwned() {
+        return this.result.isOwned();
     }
 
     /**

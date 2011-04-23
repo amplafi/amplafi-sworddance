@@ -14,14 +14,12 @@
 package com.sworddance.beans;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import com.sworddance.util.BaseIterableIterator;
 import com.sworddance.util.CurrentIterator;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * a list of methods that called in sequence will result in either setting or getting a value.
@@ -29,20 +27,17 @@ import org.apache.commons.lang.StringUtils;
  *
  */
 public class PropertyMethodChain implements Iterable<PropertyAdaptor>{
-    /**
-    *
-    */
-    static final String PROPERTY_SEP = ".";
-    private List<PropertyAdaptor> propertyMethodList;
 
-    /**
-     * @param clazz
-     * @param property
-     * @param readOnly readonly property
-     */
-    public PropertyMethodChain(Class<?> clazz, String property, boolean readOnly) {
-        String[] splitProps = property.split("\\" + PROPERTY_SEP);
-        this.propertyMethodList = getMethods(clazz, splitProps, readOnly);
+    private final List<PropertyAdaptor> propertyMethodList;
+    private final Class<?> clazz;
+    private final boolean readOnly;
+    private final String property;
+
+    public PropertyMethodChain(Class<?> clazz, String property, boolean readOnly, List<PropertyAdaptor> propertyMethodList) {
+        this.propertyMethodList = Collections.unmodifiableList(new ArrayList<PropertyAdaptor>(propertyMethodList));
+        this.property = property;
+        this.readOnly = readOnly;
+        this.clazz = clazz;
     }
 
     /**
@@ -121,33 +116,6 @@ public class PropertyMethodChain implements Iterable<PropertyAdaptor>{
     public int size() {
         return this.propertyMethodList.size();
     }
-    /**
-     * collects a chain of property methods that are called sequentially to get the final result.
-     * @param clazz
-     * @param propertyNamesList
-     * @return the chain of methods.
-     */
-    protected List<PropertyAdaptor> getMethods(Class<?> clazz, String[] propertyNamesList, boolean readOnly) {
-        Class<?>[] parameterTypes = new Class<?>[0];
-        List<PropertyAdaptor> propertyMethodChain = new ArrayList<PropertyAdaptor>();
-        for(Iterator<String> iter = Arrays.asList(propertyNamesList).iterator(); iter.hasNext();) {
-            String propertyName = iter.next();
-            PropertyAdaptor propertyAdaptor = new PropertyAdaptor(propertyName);
-            propertyAdaptor.setGetter(clazz, parameterTypes);
-            if ( !iter.hasNext() && !readOnly) {
-                // only get the setter on the last iteration because PropertyMethodChain is only allowed to set the property at the
-                // end of the chain. No other property along the way can be set.
-                propertyAdaptor.initSetter(clazz);
-            }
-            if ( propertyAdaptor.isExists()) {
-                clazz = propertyAdaptor.getReturnType();
-                propertyMethodChain.add(propertyAdaptor);
-            } else {
-                throw new IllegalArgumentException(StringUtils.join(propertyNamesList)+" has bad property " + propertyName);
-            }
-        }
-        return propertyMethodChain;
-    }
 
     /**
      * @return last type returned
@@ -166,6 +134,27 @@ public class PropertyMethodChain implements Iterable<PropertyAdaptor>{
      */
     public BaseIterableIterator<PropertyAdaptor> iterator() {
         return new BaseIterableIterator<PropertyAdaptor>(propertyMethodList.iterator());
+    }
+
+    /**
+     * @return the clazz
+     */
+    public Class<?> getClazz() {
+        return clazz;
+    }
+
+    /**
+     * @return the readOnly
+     */
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+
+    /**
+     * @return the property
+     */
+    public String getProperty() {
+        return property;
     }
 
 

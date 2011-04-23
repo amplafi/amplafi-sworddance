@@ -137,6 +137,9 @@ public abstract class TaskWrapper implements PrioritizedTask {
         return getWrappedTask().get();
     }
 
+    public Object poll() {
+        return getWrappedTask().poll();
+    }
     /**
      * @see TaskGroupAware#setTaskGroup(TaskGroup)
      */
@@ -181,6 +184,10 @@ public abstract class TaskWrapper implements PrioritizedTask {
 
     public boolean isFailed() {
         return this.wrappedTask.isFailed();
+    }
+
+    public boolean isOwned() {
+        return this.wrappedTask.isOwned();
     }
 
     public PrioritizedTask getWrappedTask() {

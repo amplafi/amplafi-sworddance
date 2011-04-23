@@ -13,13 +13,13 @@
  */
 
 package com.sworddance.beans;
-import static org.testng.Assert.*;
-
 import java.lang.reflect.Field;
 import java.util.Map;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+
+import static org.testng.Assert.*;
 
 /**
  * @author patmoore
@@ -48,6 +48,11 @@ public class TestBeanWorker {
         assertNull(f);
     }
 
+    @Test
+    public void testCanGetAccessToIntermediateProperties() {
+
+    }
+
     /**
      * Test to make sure that only the requested properties are mapped.
      * Also test to make sure that a restricted set of mappings does not screw up another (different set of mappings)
@@ -72,7 +77,7 @@ public class TestBeanWorker {
         assertEquals(list.get(1).getSetter(), TestClass.class.getMethod("setDelete", new Class[] {boolean.class}));
 
         // test different set of mappings
-        BeanWorker beanWorker1 = new BeanWorker("goo", "delete");
+        BeanWorker beanWorker1 = new BeanWorker(false, "goo", "delete");
         TestClass testClass1 = new TestClass();
         testClass1.setDelete(true);
         boolean delete = (Boolean) beanWorker1.getValue(testClass1, "delete");
@@ -101,7 +106,7 @@ public class TestBeanWorker {
     }
     @DataProvider(name="testClassInstances")
     public Object[][] getTestClassInstances() {
-        BeanWorker beanWorker = new BeanWorker("goo", "testClass.delete");
+        BeanWorker beanWorker = new BeanWorker(false, "goo", "testClass.delete");
         TestClass testClass = new TestClass();
         testClass.goo = "goo1";
         testClass.testClass = new TestClass();

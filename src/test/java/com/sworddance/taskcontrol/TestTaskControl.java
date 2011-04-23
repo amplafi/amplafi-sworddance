@@ -122,7 +122,7 @@ public class TestTaskControl {
         {
             TestTask task = new TestTask(testName, i, orderOut);
             list.add(task);
-            task.setSuccess();
+            task.set(null);
             try {
                 taskGroup.addTask(task);
                 fail("adding completedjobs should fail");
@@ -135,7 +135,7 @@ public class TestTaskControl {
             // task depending on itself
             TestTask task = new TestTask(testName, i, orderOut);
             list.add(task);
-            task.setSuccess();
+            task.set(null);
             try {
                 task.addDependency(task);
                 fail("tasks can't depend on themselves");
@@ -148,7 +148,7 @@ public class TestTaskControl {
             // task depending on itself
             TestTask task = new TestTask(testName, i, orderOut);
             list.add(task);
-            task.setSuccess();
+            task.set(null);
             try {
                 task.addAlwaysDependency(task);
                 fail("tasks can't depend on themselves");
@@ -162,7 +162,7 @@ public class TestTaskControl {
             list.add(task);
             taskGroup.addTask(task);
             // now make it bad...
-            task.setSuccess();
+            task.set(null);
         }
         startTaskControl(taskControl, taskGroup);
         orderOut.printErrorMessage();

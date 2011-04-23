@@ -61,7 +61,7 @@ public class WeakProxy {
                 clazz = actualReferent.getClass();
                 interfaces = clazz.getInterfaces();
             }
-            Reference <T>objectRef = getWeakReference(actualReferent);
+            Reference <T>objectRef = newWeakReference(actualReferent);
             ProxyInvocationHandler<T> invocationHandler = new ProxyInvocationHandler<T>(objectRef, restoreCallable, interfaces);
             T t = invocationHandler.newProxyInstance(clazz.getClassLoader());
             return t;
@@ -95,7 +95,7 @@ public class WeakProxy {
                     break;
                 }
             } else if ( actual instanceof Reference<?>) {
-                actual = getActual(((Reference<T>)proxy).get());
+                actual = getActual(getReferent((Reference<T>)actual));
             } else {
                 break;
             }
@@ -119,11 +119,19 @@ public class WeakProxy {
         }
     }
 
-    public static <T> WeakReference<T> getWeakReference(T referent) {
+    public static <T> WeakReference<T> newWeakReference(T referent) {
         if (referent == null) {
             return null;
         } else {
             return new WeakReference<T>(referent);
+        }
+    }
+
+    public static <T> T getReferent(Reference<T> reference) {
+        if ( reference == null) {
+            return null;
+        } else {
+            return reference.get();
         }
     }
     protected static class ProxyInvocationHandler<T> implements InvocationHandler {
@@ -170,10 +178,8 @@ public class WeakProxy {
          * @return the objectRef
          */
         public T getActual() {
-            T actual = null;
-            if (getObjectRef() != null) {
-                actual = getObjectRef().get();
-            }
+            T actual = getReferent(getObjectRef());
+
             if ( actual == null ) {
                 actual = invokeCallable(restoreCallable);
                 setActual(actual);
@@ -181,11 +187,7 @@ public class WeakProxy {
             return actual;
         }
         public void setActual(T actual) {
-            if ( actual != null ) {
-                setObjectRef(new WeakReference<T>(actual));
-            } else {
-                objectRef = null;
-            }
+            setObjectRef(newWeakReference(actual));
         }
         /**
          * @return the interfaces

@@ -18,6 +18,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,10 +27,12 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.sworddance.util.CUtilities.*;
+
 import com.sworddance.util.ApplicationIllegalArgumentException;
 import com.sworddance.util.NotNullIterator;
 
-import static com.sworddance.util.CUtilities.*;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Provides some general utility methods so that bean operations can be used more easily.
@@ -51,28 +55,51 @@ public class BeanWorker {
     // key = class, key = (each element in) propertyNames value = chain of methods to get to value.
     // TODO in future cache into a second map.
     private final MapByClass<ConcurrentMap<String,PropertyMethodChain>> methodsMap = new MapByClass<ConcurrentMap<String,PropertyMethodChain>>();
-    public BeanWorker() {
 
+    /**
+     * Allow intermediate Properties to be accessed.
+     *
+     * For example, if the property list is "child.grandchild" then "child" could be accessed directly. Useful for deep copying.
+     */
+    private final boolean allowIntermediateProperties;
+    public BeanWorker() {
+        this.allowIntermediateProperties = false;
     }
     public BeanWorker(String... propertyNames) {
-    	addPropertyNames(propertyNames);
+        this(false, propertyNames);
     }
     /**
      * @param propertyNames
      */
     public BeanWorker(Collection<String> propertyNames) {
-        if (isNotEmpty(propertyNames)) {
-            this.propertyNames.addAll(propertyNames);
-        }
+        this(false, propertyNames);
+    }
+    public BeanWorker(boolean allowIntermediateProperties, String... propertyNames) {
+        this.allowIntermediateProperties = allowIntermediateProperties;
+    	addPropertyNames(propertyNames);
+    }
+    public BeanWorker(boolean allowIntermediateProperties, Collection<String> propertyNames) {
+        this.allowIntermediateProperties = allowIntermediateProperties;
+        addPropertyNames(propertyNames);
     }
     /**
      * @param propertyNames the propertyNames to set
      */
     public void setPropertyNames(List<String> propertyNames) {
-        this.propertyNames = propertyNames;
+        this.propertyNames.clear();
+        this.addPropertyNames(propertyNames);
     }
     public void addPropertyNames(String... additionalPropertyNames) {
-    	this.propertyNames.addAll(Arrays.asList(additionalPropertyNames));
+        addPropertyNames(Arrays.asList(additionalPropertyNames));
+    }
+    public void addPropertyNames(Collection<String> additionalPropertyNames) {
+        if ( isNotEmpty(additionalPropertyNames)) {
+            this.propertyNames.addAll(additionalPropertyNames);
+            // sorted so that when creating intermediate propertyChains we can create them read-only because we know that all the
+            // explicit read/write properties have been created already.
+            // See getMethodMap()
+            Collections.sort(this.propertyNames);
+        }
     }
     /**
      * @return the propertyNames
@@ -95,6 +122,7 @@ public class BeanWorker {
     public <T> T getValue(Object base, String property) {
         T result = null;
         if ( base != null && property != null ) {
+            // TODO: ideally readOnly = true but this would screw up later code that did need to write value.
             PropertyMethodChain methodChain = getPropertyMethodChain(base.getClass(), property);
             if ( methodChain != null ) {
                 result = (T) methodChain.getValue(base);
@@ -104,11 +132,10 @@ public class BeanWorker {
     }
 
     public void setValue(Object base, String property, Object value) {
-        Object result = base;
         if ( base != null && property != null ) {
             PropertyMethodChain methodChain = getPropertyMethodChain(base.getClass(), property);
             if ( methodChain != null ) {
-                result = methodChain.setValue(result, value);
+                methodChain.setValue(base, value);
             }
         }
     }
@@ -135,7 +162,7 @@ public class BeanWorker {
     public Class<?> getPropertyType(Class<?> clazz, String property) {
         PropertyMethodChain chain = getPropertyMethodChain(clazz, property);
         if ( chain == null) {
-            chain = new PropertyMethodChain(clazz, property, true);
+            chain = getFirst(newPropertyMethodChain(clazz, property, true, false));
             // TODO should put in the methodChain
         }
         return chain.getReturnType();
@@ -149,13 +176,13 @@ public class BeanWorker {
         ConcurrentMap<String, PropertyMethodChain> propMap;
         if ( !methodsMap.containsKey(clazz)) {
             propMap = new ConcurrentHashMap<String, PropertyMethodChain>();
+            for(String property: NotNullIterator.<String>newNotNullIterator( getPropertyNames())) {
+                addPropertyMethodChainIfAbsent(clazz, propMap, property, false);
+            }
             methodsMap.putIfAbsent(clazz, propMap);
         }
         propMap = methodsMap.get(clazz);
 
-        for(String property: NotNullIterator.<String>newNotNullIterator( getPropertyNames())) {
-            addPropertyMethodChainIfAbsent(clazz, propMap, property, false);
-        }
         return propMap;
     }
     /**
@@ -169,11 +196,13 @@ public class BeanWorker {
     protected PropertyMethodChain addPropertyMethodChainIfAbsent(Class<?> clazz, ConcurrentMap<String, PropertyMethodChain> propMap, String propertyName, boolean readOnly)
         throws ApplicationIllegalArgumentException {
         if (!propMap.containsKey(propertyName)) {
-            PropertyMethodChain propertyMethodChain = newPropertyMethodChain(clazz, propertyName, readOnly);
-            if ( propertyMethodChain == null) {
-                throw new ApplicationIllegalArgumentException(clazz, " has no property named '",propertyName,"'");
+            List<PropertyMethodChain> propertyMethodChains = newPropertyMethodChain(clazz, propertyName, readOnly, allowIntermediateProperties);
+            ApplicationIllegalArgumentException.valid(isNotEmpty(propertyMethodChains), clazz, " has no property named '",propertyName,"'");
+            for(PropertyMethodChain propertyMethodChain: propertyMethodChains) {
+                propMap.putIfAbsent(propertyMethodChain.getProperty(), propertyMethodChain);
             }
-            propMap.putIfAbsent(propertyName, propertyMethodChain);
+        } else {
+            // TODO: check to see if readOnly is false
         }
         return propMap.get(propertyName);
     }
@@ -185,13 +214,60 @@ public class BeanWorker {
      * @param readOnly
      * @return the propertyMethodChain
      */
-    protected PropertyMethodChain newPropertyMethodChain(Class<?> clazz, String property, boolean readOnly) {
+    protected List<PropertyMethodChain> newPropertyMethodChain(Class<?> clazz, String property, boolean readOnly, boolean expanded) {
         try {
-            return new PropertyMethodChain(clazz, property, readOnly);
+            String[] splitProps = property.split("\\.");
+            List<PropertyAdaptor> completePropertyMethodList = getMethods(clazz, splitProps, readOnly);
+            List<PropertyMethodChain> propertyMethodChains;
+            if ( !expanded) {
+                propertyMethodChains = Arrays.asList(new PropertyMethodChain(clazz, property, readOnly, completePropertyMethodList));
+            } else {
+                propertyMethodChains = new ArrayList<PropertyMethodChain>();
+                List<PropertyAdaptor> propertyMethodList = new ArrayList<PropertyAdaptor>();
+                StringBuilder sb = new StringBuilder();
+                for(int i = 0; i < splitProps.length; i++ ) {
+                    sb.append(splitProps[i]);
+                    propertyMethodList.add(completePropertyMethodList.get(i));
+                    boolean notLast = i < splitProps.length-1;
+                    // make readOnly if readOnly parameter or if intermediate PropertyMethodChain.
+                    propertyMethodChains.add(new PropertyMethodChain(clazz, sb.toString(), readOnly||notLast, propertyMethodList));
+                    sb.append(".");
+                }
+            }
+            return propertyMethodChains;
         } catch (IllegalArgumentException e) {
             return null;
         }
     }
+    /**
+     * collects a chain of property methods that are called sequentially to get the final result.
+     * @param clazz
+     * @param propertyNamesList
+     * @param readOnly only look for a getter
+     * @return the chain of methods.
+     */
+    protected List<PropertyAdaptor> getMethods(Class<?> clazz, String[] propertyNamesList, boolean readOnly) {
+        Class<?>[] parameterTypes = new Class<?>[0];
+        List<PropertyAdaptor> propertyMethodChain = new ArrayList<PropertyAdaptor>();
+        for(Iterator<String> iter = Arrays.asList(propertyNamesList).iterator(); iter.hasNext();) {
+            String propertyName = iter.next();
+            PropertyAdaptor propertyAdaptor = new PropertyAdaptor(propertyName);
+            propertyAdaptor.setGetter(clazz, parameterTypes);
+            if ( !iter.hasNext() && !readOnly) {
+                // only get the setter on the last iteration because PropertyMethodChain is only allowed to set the property at the
+                // end of the chain. No other property along the way can be set.
+                propertyAdaptor.initSetter(clazz);
+            }
+            if ( propertyAdaptor.isExists()) {
+                clazz = propertyAdaptor.getReturnType();
+                propertyMethodChain.add(propertyAdaptor);
+            } else {
+                throw new IllegalArgumentException(StringUtils.join(propertyNamesList)+" has bad property " + propertyName);
+            }
+        }
+        return propertyMethodChain;
+    }
+
     protected String getPropertyName(Method method) {
         String methodName = method.getName();
         return this.getPropertyName(methodName);

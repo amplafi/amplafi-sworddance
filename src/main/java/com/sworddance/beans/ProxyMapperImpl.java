@@ -378,7 +378,7 @@ java.lang.AssertionError: isSubtype 15
     }
 
     public void setRealObject(O realObject) {
-        this.realObject = WeakProxy.getWeakReference(realObject);
+        this.realObject = WeakProxy.newWeakReference(realObject);
         this.realObjectSet = true;
     }
 

@@ -14,12 +14,13 @@
 
 package com.sworddance.beans;
 
+
 /**
  * This provides more detail than is available via reflection. Specifically, what is the exact class of the keys and values in {@link java.util.Map}s or the elements of a {@link java.util.List}.
  * @author patmoore
  *
  */
-public interface PropertyDefinition {
+public interface PropertyDefinition extends DefinedCloneable {
 
     /**
      * @param keyPropertyDefinition the keyPropertyDefinition to set
@@ -27,13 +28,19 @@ public interface PropertyDefinition {
     void setKeyPropertyDefinition(PropertyDefinition keyPropertyDefinition);
 
     /**
+     * For Map-like properties, the PropertyDefinition for the map "key"
      * @return the keyPropertyDefinition
      */
     PropertyDefinition getKeyPropertyDefinition();
 
+    /**
+     *
+     * @return true if the {@link #getKeyPropertyDefinition()} was explicitly created. false if {@link #getKeyPropertyDefinition()} is an default definition
+     */
     boolean isKeyPropertyDefinitionSet();
 
     /**
+     * For Map-like properties the "value" PropertyDefinition. For collections, the element PropertyDefinition
      * @param elementPropertyDefinition the elementPropertyDefinition to set
      */
     void setElementPropertyDefinition(PropertyDefinition elementPropertyDefinition);
@@ -43,6 +50,10 @@ public interface PropertyDefinition {
      */
     PropertyDefinition getElementPropertyDefinition();
 
+    /**
+     *
+     * @return true if the {@link #getElementPropertyDefinition()} was explicitly created. false if {@link #getElementPropertyDefinition()} is an default definition
+     */
     boolean isElementPropertyDefinitionSet();
 
     /**
@@ -60,5 +71,4 @@ public interface PropertyDefinition {
     boolean isSameDataClass(PropertyDefinition propertyDefinition);
 
     boolean isAssignableFrom(PropertyDefinition propertyDefinition);
-
 }

@@ -17,6 +17,8 @@ package com.sworddance.beans;
 import java.util.List;
 import java.util.Map;
 
+import com.sworddance.util.ApplicationIllegalArgumentException;
+
 /**
  * This provides more detail than is available via reflection. Specifically, what is the exact class of the keys and values in {@link Map}s or the elements of a {@link List}.
  * @author patmoore
@@ -30,6 +32,7 @@ public class PropertyDefinitionImpl implements PropertyDefinition {
     public PropertyDefinitionImpl() {
 
     }
+
     public PropertyDefinitionImpl(Class<?> propertyClass, PropertyDefinition keyPropertyDefinition, PropertyDefinition elementPropertyDefinition) {
         this.propertyClass = propertyClass;
         this.keyPropertyDefinition = keyPropertyDefinition;
@@ -102,6 +105,23 @@ public class PropertyDefinitionImpl implements PropertyDefinition {
      */
     public boolean isAssignableFrom(PropertyDefinition propertyDefinition) {
         return propertyClass.isAssignableFrom(propertyDefinition.getPropertyClass());
+    }
+
+    @Override
+    public Object clone() {
+        PropertyDefinitionImpl clone;
+        try {
+            clone = (PropertyDefinitionImpl)super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new ApplicationIllegalArgumentException(e);
+        }
+        if ( this.isKeyPropertyDefinitionSet()) {
+            clone.setKeyPropertyDefinition((PropertyDefinition) this.keyPropertyDefinition.clone());
+        }
+        if ( this.isElementPropertyDefinitionSet()) {
+            clone.setElementPropertyDefinition((PropertyDefinition) this.elementPropertyDefinition.clone());
+        }
+        return clone;
     }
 
 }

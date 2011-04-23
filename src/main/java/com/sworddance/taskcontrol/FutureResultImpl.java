@@ -14,6 +14,7 @@
 
 package com.sworddance.taskcontrol;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -24,6 +25,8 @@ import java.util.concurrent.TimeoutException;
 import com.sworddance.util.ApplicationGeneralException;
 import com.sworddance.util.ApplicationInterruptedException;
 import com.sworddance.util.ApplicationTimeoutException;
+import com.sworddance.util.StaticCallable;
+import com.sworddance.util.WeakProxy;
 
 /**
  * add some convenience to the {@link FutureTask} class.
@@ -43,8 +46,11 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
 
     private final FutureListenerProcessor<T, ?> processor;
 
+    // TODO Should really be weak reference to the object that will do the settin
+    private WeakReference<Object> owner;
+
     public FutureResultImpl() {
-        this(new NullCallable<T>(), new FutureListenerProcessor<T,T>());
+        this(new StaticCallable<T>(null), new FutureListenerProcessor<T,T>());
     }
     public FutureResultImpl(Callable<T> callable) {
         this(callable, new FutureListenerProcessor<T,T>());
@@ -92,8 +98,18 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
         try {
             return super.get(timeout, unit);
         } catch (TimeoutException exception) {
-            throw new TimeoutException("waited "+timeout+unit.toString());
+            throw new TimeoutException("waited "+timeout+unit);
         }
+    }
+
+    public T poll() {
+        T value;
+        if ( isSuccessful()) {
+            value = getUnchecked(1, TimeUnit.NANOSECONDS, false);
+        } else {
+            value = null;
+        }
+        return value;
     }
 
     @SuppressWarnings("unchecked")
@@ -144,9 +160,17 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
         return isDone() && (isCancelled() || getException() != null);
     }
 
-    public static class NullCallable<T> implements Callable<T> {
-        @SuppressWarnings("unused")
-        public T call() throws Exception {
-            return null;
-        }};
+    public void setOwner(Object owner) {
+        this.owner = new WeakReference<Object>(owner);
+    }
+    public Object getOwner() {
+        return WeakProxy.getReferent(this.owner);
+    }
+    /**
+     * @return the owned
+     */
+    public boolean isOwned() {
+        // HACK : until can figure out proper chaining
+        return true; //getOwner() != null;
+    }
 }

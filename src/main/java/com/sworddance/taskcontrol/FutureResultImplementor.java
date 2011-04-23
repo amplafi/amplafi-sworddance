@@ -25,4 +25,10 @@ public interface FutureResultImplementor<V> extends FutureResult<V> {
      * @see java.util.concurrent.FutureTask#setException(java.lang.Throwable)
      */
     public void setException(Throwable e);
+
+    /**
+     * TODO:
+     * @param owner responsible object that will set the result.
+     */
+    public void setOwner(Object owner);
 }
