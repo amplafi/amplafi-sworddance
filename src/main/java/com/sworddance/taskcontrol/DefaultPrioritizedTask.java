@@ -14,10 +14,10 @@
 package com.sworddance.taskcontrol;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -53,44 +53,39 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
 
     private String status;
 
-    private FutureResultImpl<R> result = new FutureResultImpl<R>();
+    private final FutureResultImplementor<R> result;
 
     private String name;
 
     // should not create until in thread that will be running the task. (cannot create on construction)
     private LapTimer lapTimer;
 
-    private Set<ResourceLock> resourceLocksNeeded = new CopyOnWriteArraySet<ResourceLock>();
+    private final Set<ResourceLock> resourceLocksNeeded = new CopyOnWriteArraySet<ResourceLock>();
 
     /**
      * This is used to signal which resourceLocks where actually used. This is
-     * used to signal that the task was overly greeding in asking for locks. So
+     * used to signal that the task was overly greed in asking for locks. So
      * tasks that follow later that perhaps run only if a resource is actually
      * modified.
      *
      * do not access directly some subclasses delegate to wrapped task.
      */
-    private Map<String, Integer> resourceLocksUsed = new HashMap<String, Integer>();
+    private final Map<String, Integer> resourceLocksUsed = new ConcurrentHashMap<String, Integer>();
 
     private boolean lockDowngradeEnabled;
 
     public DefaultPrioritizedTask() {
-        this((Runnable) null);
+        this((Runnable) null, Thread.NORM_PRIORITY);
     }
 
     public DefaultPrioritizedTask(Runnable wrapped) {
-        super();
-        wrappedRunnable = wrapped;
-        wrappedCallable = null;
-        priority = Integer.valueOf(Thread.NORM_PRIORITY);
-        initResourceLocker(wrapped);
+        this(wrapped, Thread.NORM_PRIORITY);
     }
 
     public DefaultPrioritizedTask(Callable<? extends R> callable) {
         this(callable.getClass().getName(), callable);
     }
     public DefaultPrioritizedTask(String name, Callable<? extends R> callable) {
-        super();
         wrappedCallable = callable;
         wrappedRunnable = null;
         priority = Integer.valueOf(Thread.NORM_PRIORITY);
@@ -100,7 +95,6 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
 
 
     public DefaultPrioritizedTask(Runnable wrapped, int priority) {
-        super();
         wrappedRunnable = wrapped;
         wrappedCallable = null;
         this.priority = Integer.valueOf(priority);
@@ -116,7 +110,21 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
         this(runnable, priority);
         setName(name);
     }
-
+    private void initResourceLocker(Object wrapped) {
+        if (wrapped instanceof ResourceLocker) {
+            setResourceLocksNeeded(((ResourceLocker) wrapped)
+                    .getResourceLocksNeeded());
+        }
+    }
+    {
+        if (this.wrappedCallable instanceof FutureResultImplementor) {
+            this.result = (FutureResultImplementor<R>) this.wrappedCallable;
+        } else if ( this.wrappedRunnable instanceof FutureResultImplementor) {
+            this.result = (FutureResultImplementor<R>) this.wrappedRunnable;
+        } else {
+            this.result = new FutureResultImpl<R>();
+        }
+    }
     public synchronized void setNotification(NotificationObject notification) {
         if (this.notification == null) {
             this.notification = notification;
@@ -126,12 +134,7 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
         }
     }
 
-    private void initResourceLocker(Object wrapped) {
-        if (wrapped instanceof ResourceLocker) {
-            setResourceLocksNeeded(((ResourceLocker) wrapped)
-                    .getResourceLocksNeeded());
-        }
-    }
+
 
     public boolean isReadyToRun() {
         try {
