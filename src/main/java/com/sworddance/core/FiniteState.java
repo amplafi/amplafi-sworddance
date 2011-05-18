@@ -82,9 +82,13 @@ public interface FiniteState<T extends FiniteState<T>> {
 
         /**
          * Only intended to be called by {@link FiniteState#isAllowedTransition(FiniteState)}
+         * true is intended to be definitive for subclasses. false could be changed to true by subclasses. So this default
+         * method is intentionally conservative.
+         *
          * @param oldFiniteState
          * @param newFiniteState
-         * @return
+         * @return true if oldFiniteState == (null | newFiniteState ) or newFiniteState in ( alwaysAllowed | old.allowed set )
+         * false the subclasses can do additional checks.
          */
         public boolean isAllowedTransition(T oldFiniteState, T newFiniteState) {
             if ( oldFiniteState == null || oldFiniteState == newFiniteState) {

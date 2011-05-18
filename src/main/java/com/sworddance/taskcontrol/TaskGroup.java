@@ -482,9 +482,6 @@ public class TaskGroup<T> implements NotificationObject, Emptyable {
         }
     }
 
-    /**
-     * @return
-     */
     public boolean isEmpty() {
         return this.tasksToBeRun.isEmpty();
     }
