@@ -22,43 +22,43 @@ import java.util.Collection;
 public interface DependentPrioritizedTask extends PrioritizedTask {
     /**
      *
-     * @param task
+     * @param dependency
      * @return may be dependent on task
      */
-    public boolean isDependentOn(PrioritizedTask task);
+    public boolean isDependentOn(FutureResult dependency);
 
     /**
-     * @param task
+     * @param dependency
      * @return if this determination of success is dependent on
      */
-    public boolean isSuccessDependentOn(PrioritizedTask task);
+    public boolean isSuccessDependentOn(FutureResult dependency);
 
     /**
-     * @param task
+     * @param dependency
      * @return true if this is dependent on task.
      */
-    public boolean isAlwaysDependentOn(PrioritizedTask task);
+    public boolean isAlwaysDependentOn(FutureResult dependency);
 
     /**
-     * @param task
+     * @param dependency
      */
-    public void addAlwaysDependency(PrioritizedTask task);
+    public void addAlwaysDependency(FutureResult dependency);
 
     /**
      *
      * @param dependencies
      */
-    public void addAlwaysDependencies(Collection<? extends PrioritizedTask> dependencies);
+    public void addAlwaysDependencies(Collection<? extends FutureResult> dependencies);
 
     /**
-     * @param task
+     * @param dependency
      */
-    public void addDependency(PrioritizedTask task);
+    public void addDependency(FutureResult dependency);
 
     /**
      * @param dependencies
      */
-    public void addDependencies(Collection<? extends PrioritizedTask> dependencies);
+    public void addDependencies(Collection<? extends FutureResult> dependencies);
 
     /**
      * @return parent task.

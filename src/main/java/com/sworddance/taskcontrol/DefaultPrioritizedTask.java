@@ -151,9 +151,11 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
     public boolean isSuccessful() {
         return this.result.isSuccessful();
     }
-    // 23 mar 2011 why was this needed. Just for tests?
     public void set(R value) {
-        this.result.set(value);
+        // make sure for Runnables that the things waiting on the FutureResult are triggered
+        if ( !this.result.isDone()) {
+            this.result.set(value);
+        }
     }
 
     public boolean cancel(boolean mayInterruptIfRunning) {
@@ -190,6 +192,7 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
                 Thread.currentThread().setName(getName());
             }
             R callBodyValue = callBody();
+            // for Runnables need to mke sure the FutureResult is marked as completed.
             set(callBodyValue);
             return result.get();
         } catch (Exception e) {

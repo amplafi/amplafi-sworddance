@@ -22,9 +22,9 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import static com.sworddance.util.CUtilities.*;
 
 public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R> implements DependentPrioritizedTask {
-    protected final Set<PrioritizedTask> dependencyTasks = new CopyOnWriteArraySet<PrioritizedTask>();
+    protected final Set<FutureResult> dependencyTasks = new CopyOnWriteArraySet<FutureResult>();
 
-    protected final Set<PrioritizedTask> cleanUpAfterTasks = new CopyOnWriteArraySet<PrioritizedTask>();
+    protected final Set<FutureResult> cleanUpAfterTasks = new CopyOnWriteArraySet<FutureResult>();
 
     protected String completionMsg = "Successful.";
 
@@ -61,31 +61,32 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
         if (wrapped instanceof TaskAware) {
             ((TaskAware) wrapped).setDependentPrioritizedTask(this);
         }
-    }
+    }
+
     @Override
     public void setTaskGroup(TaskGroup<?> taskGroup) {
-        for (PrioritizedTask element : this.dependencyTasks) {
+        for (FutureResult element : this.dependencyTasks) {
             // this avoids circular dependencies
-            if (element.getTaskGroup() == null) {
-                throw new IllegalStateException( this.getName() + ": has dependent task ("+element.getName()+") that has not been assigned to a task group");
+            if (element instanceof PrioritizedTask && ((PrioritizedTask)element).getTaskGroup() == null) {
+                throw new IllegalStateException( this.getName() + ": has dependent task ("+getDependencyName(element)+") that has not been assigned to a task group");
             }
         }
         super.setTaskGroup(taskGroup);
     }
 
-    public boolean isDependentOn(PrioritizedTask task) {
-        if (this.isSuccessDependentOn(task)) {
+    public boolean isDependentOn(FutureResult dependency) {
+        if (this.isSuccessDependentOn(dependency)) {
             return true;
         }
-        return this.isAlwaysDependentOn(task);
+        return this.isAlwaysDependentOn(dependency);
     }
 
-    public boolean isSuccessDependentOn(PrioritizedTask task) {
-        return this.dependencyTasks.contains(task);
+    public boolean isSuccessDependentOn(FutureResult dependency) {
+        return this.dependencyTasks.contains(dependency);
     }
 
-    public boolean isAlwaysDependentOn(PrioritizedTask task) {
-        return this.cleanUpAfterTasks.contains(task);
+    public boolean isAlwaysDependentOn(FutureResult dependency) {
+        return this.cleanUpAfterTasks.contains(dependency);
     }
 
     private boolean doDependencyCheck() {
@@ -94,18 +95,18 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
             this.getTaskGroup().debug(this.getName() + ": TaskGroup in error " + this.getTaskGroup().getException().getClass());
             return false;
         }
-        for (PrioritizedTask dependency : this.dependencyTasks) {
+        for (FutureResult dependency : this.dependencyTasks) {
             if (!dependency.isSuccessful()) {
                 if (dependency.isDone()) {
                     // dependency failed ... this task will never be run
                     Throwable error = dependency.getException();
-                    this.setException(new RuntimeException("Dependency "+ dependency.getName() + " failed.", error));
-                    this.getTaskGroup().warning( this.getName() + "Dependency " + dependency.getName() + " failed. "+ error);
+                    this.setException(new RuntimeException("Dependency "+ getDependencyName(dependency) + " failed.", error));
+                    this.getTaskGroup().warning( this.getName() + "Dependency " + getDependencyName(dependency) + " failed. "+ error);
                 }
                 return false;
             }
         }
-        for (PrioritizedTask dependency : this.cleanUpAfterTasks) {
+        for (FutureResult dependency : this.cleanUpAfterTasks) {
             if (!dependency.isDone()) {
                 return false;
             }
@@ -169,7 +170,7 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
      *            The task that must be successfully completed before this task
      *            can execute.
      */
-    public void addDependency(PrioritizedTask dependency) {
+    public void addDependency(FutureResult dependency) {
         this.checkCanAddDependency(dependency);
         add(this.dependencyTasks, dependency);
     }
@@ -177,19 +178,15 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
     /**
      * @param dependentTasks
      */
-    public void addDependencies(Collection<? extends PrioritizedTask> dependentTasks) {
+    public void addDependencies(Collection<? extends FutureResult> dependentTasks) {
         if (dependentTasks != null) {
-            for (PrioritizedTask task : dependentTasks) {
+            for (FutureResult task : dependentTasks) {
                 this.addDependency(task);
             }
         }
     }
 
-    public void addDependencies(DefaultDependentPrioritizedTask task) {
-        this.addDependencies(task.dependencyTasks);
-    }
-
-    private void checkCanAddDependency(PrioritizedTask dependency) {
+    private void checkCanAddDependency(FutureResult dependency) {
         if ( dependency == null) {
             return;
         }
@@ -197,10 +194,10 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
             throw new IllegalStateException(this.getName() + ": Cannot depend on itself.");
         }
         if (!this.isDependencyAddable()) {
-            throw new IllegalStateException(this.getName() + ":Already released to run. Dependency to " + dependency.getName() + " cannot be added.");
+            throw new IllegalStateException(this.getName() + ":Already released to run. Dependency to " + getDependencyName(dependency) + " cannot be added.");
         }
         if (dependency instanceof DefaultDependentPrioritizedTask<?> && ((DefaultDependentPrioritizedTask<?>) dependency).isDependentOn(this)) {
-            throw new IllegalStateException(this.getName() + ":Circular Dependency. " + dependency.getName() + " depends on " + this.getName());
+            throw new IllegalStateException(this.getName() + ":Circular Dependency. " + getDependencyName(dependency) + " depends on " + this.getName());
         }
     }
 
@@ -218,39 +215,47 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
      *            The task that must be successfully completed before this task
      *            can execute.
      */
-    public void addAlwaysDependency(PrioritizedTask dependency) {
+    public void addAlwaysDependency(FutureResult dependency) {
         this.checkCanAddDependency(dependency);
         add(this.cleanUpAfterTasks, dependency);
     }
 
-    public void addAlwaysDependencies(Collection<? extends PrioritizedTask> dependencies) {
+    public void addAlwaysDependencies(Collection<? extends FutureResult> dependencies) {
         if (dependencies != null) {
-            for (PrioritizedTask element : dependencies) {
-                DependentPrioritizedTask task = (DependentPrioritizedTask) element;
+            for (FutureResult task : dependencies) {
                 this.addAlwaysDependency(task);
             }
         }
-    }
-
-    public void addAlwaysDependencies(DefaultDependentPrioritizedTask task) {
-        this.addAlwaysDependencies(task.cleanUpAfterTasks);
     }
 
     /**
      * @param sb
      */
     public void showUnsatisfiedDependencies(StringBuilder sb) {
-        for (PrioritizedTask dependency : this.dependencyTasks) {
+        for (FutureResult dependency : this.dependencyTasks) {
             if (!dependency.isSuccessful()) {
-                sb.append('"').append(dependency.getName()).append('"').append(' ');
+                sb.append('"').append(getDependencyName(dependency)).append('"').append(' ');
             }
         }
-        for (PrioritizedTask dependency : this.cleanUpAfterTasks) {
+        for (FutureResult dependency : this.cleanUpAfterTasks) {
             if (!dependency.isDone()) {
-                sb.append('"').append(dependency.getName()).append('"').append(' ');
+                sb.append('"').append(getDependencyName(dependency)).append('"').append(' ');
             }
         }
-    }
+    }
+
+    /**
+     * @param dependency
+     * @return
+     */
+    private String getDependencyName(FutureResult dependency) {
+        if ( dependency instanceof PrioritizedTask) {
+            return ((PrioritizedTask)dependency).getName();
+        } else {
+            return dependency.toString();
+        }
+    }
+
     @Override
     public void setSuccessStatus() {
         StringBuilder sb = new StringBuilder();
@@ -263,14 +268,14 @@ public class DefaultDependentPrioritizedTask<R> extends DefaultPrioritizedTask<R
         StringBuilder sb = new StringBuilder();
         if (!this.dependencyTasks.isEmpty()) {
             sb.append("Dependent Tasks: ");
-            for (PrioritizedTask dependency : this.dependencyTasks) {
-                sb.append('"').append(dependency.getName()).append('"').append(' ');
+            for (FutureResult dependency : this.dependencyTasks) {
+                sb.append('"').append(getDependencyName(dependency)).append('"').append(' ');
             }
         }
         if (!this.cleanUpAfterTasks.isEmpty()) {
             sb.append(" CleanUp after Tasks: ");
-            for (PrioritizedTask dependency : this.cleanUpAfterTasks) {
-                sb.append('"').append(dependency.getName()).append('"').append(' ');
+            for (FutureResult dependency : this.cleanUpAfterTasks) {
+                sb.append('"').append(getDependencyName(dependency)).append('"').append(' ');
             }
         }
         return sb.toString();
