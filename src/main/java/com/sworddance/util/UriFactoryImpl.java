@@ -601,8 +601,9 @@ public class UriFactoryImpl {
      */
     public static String sanitizePath(Object filePath) {
         if ( filePath != null ) {
-            String path = filePath.toString();
-
+        	//Let's make sure that filePath is really just path and nothing more.
+        	URI create = URI.create(filePath.toString());
+            String path = create.getPath();
             // chop up path based on \ or / characters.
             String[] pathParts = path.split("[/\\\\]");
             // and look for '..' and '.' and resolve the final path,
