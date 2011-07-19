@@ -10,9 +10,12 @@ import org.apache.commons.lang.StringUtils;
 import static com.sworddance.util.CUtilities.*;
 
 /**
+ * PATM: I found these patterns here:
  * borrowed from http://snipplr.com/view.php?codeview&id=6889
  *
- * TODO: Hook these patterns up and use more
+ * We should use these patterns to validate uri's rather than the not-so-clean way in UriFactoryImpl.
+ *
+ * TODO: Hook these patterns up and use.
  */
 public class UriParser {
     /**

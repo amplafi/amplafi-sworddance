@@ -134,7 +134,7 @@ public interface FiniteState<T extends FiniteState<T>> {
          * Also checks to make sure the transition is allowed.
          * @param finiteStateHolder
          * @param nextFiniteState
-         * @return
+         * @return true if currentFiniteState != nextFiniteState and currentFiniteState-to-nextFiniteState is allowed.
          */
         @Deprecated
         public boolean isTransitionNeeded(FiniteStateHolder<T> finiteStateHolder, T nextFiniteState) {

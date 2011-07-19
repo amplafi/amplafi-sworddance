@@ -602,6 +602,13 @@ public class UriFactoryImpl {
     public static String sanitizePath(Object filePath) {
         if ( filePath != null ) {
         	//Let's make sure that filePath is really just path and nothing more.
+            // TO_KOSTYA PATM 19 July 2011 --
+                // Please create comment as to why this necessary ( showing input )
+
+            // HACK we can't do this - because if we have any problems with uri path then we get an exception.
+            // and then look at UriParser.
+            // It looks like we should hook up UriParser soon rather than later.
+            // Also Google guava has some uri validation code as well.
         	URI create = URI.create(filePath.toString());
             String path = create.getPath();
             // chop up path based on \ or / characters.
