@@ -14,6 +14,7 @@
 
 package com.sworddance.util;
 
+import static com.sworddance.util.CUtilities.combine;
 import static org.apache.commons.lang.StringUtils.*;
 
 /**
@@ -44,7 +45,7 @@ public class ApplicationIllegalArgumentException extends
     }
 
     public ApplicationIllegalArgumentException(Object... failMessage) {
-        super(join(failMessage));
+        super(join(combine(failMessage)));
     }
     /**
      * @param failMessageParts any number of objects that are concatenated and converted to strings only if message is thrown.
@@ -64,5 +65,42 @@ public class ApplicationIllegalArgumentException extends
 	}
     public static ApplicationIllegalArgumentException notNull(Object notNullArgument, Object... failMessageParts) {
         return valid(notNullArgument != null, failMessageParts);
+    }
+    /**
+     *
+     * @param originalValue
+     * @param changedValue
+     * @param field
+     * @param failMessageParts
+     * @throws ApplicationIllegalArgumentException - originalValue != null
+     * @return true - if changedValue != null and not equal to originalValue, false if no change
+     */
+    public static boolean testSetOnce(Object originalValue, Object changedValue, String field, Object... failMessageParts) {
+        if ( originalValue == changedValue || changedValue == null) {
+            // both null or identical
+            return false;
+        } else if ( originalValue != null) {
+            valid(originalValue.equals(changedValue), field,
+                ": Only allowed to set this field once. Current value='", originalValue, "' != (new)=", changedValue, " ",
+                failMessageParts);
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * If {@link #testSetOnce(Object, Object, String, Object...)} false then originalValue is return, otherwise changedValue
+     *
+     * @param <T>
+     * @param originalValue
+     * @param changedValue
+     * @param field
+     * @param failMessageParts
+     * @return If {@link #testSetOnce(Object, Object, String, Object...)} false then originalValue is return, otherwise changedValue.
+     */
+    public static <T> T testSetOnceAndReturn(Object originalValue, Object changedValue, String field, Object... failMessageParts) {
+        return testSetOnce(originalValue, changedValue, field, failMessageParts)?
+            (T)changedValue : (T)originalValue;
     }
 }

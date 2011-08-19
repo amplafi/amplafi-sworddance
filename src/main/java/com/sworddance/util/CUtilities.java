@@ -98,6 +98,7 @@ public class CUtilities {
             return false;
         }
     }
+
     /**
      * @param <T>
      * @param collection
@@ -478,7 +479,7 @@ public class CUtilities {
 
     /**
      * Same as {@link #createMap(Object...)} but also skips pairs with null values.
-     * 
+     *
      * @param <K>
      * @param <V>
      * @param keysAndValues
