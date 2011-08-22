@@ -605,13 +605,16 @@ public class UriFactoryImpl {
         	//Let's make sure that filePath is really just path and nothing more.
             // TO_KOSTYA PATM 19 July 2011 --
                 // Please create comment as to why this necessary ( showing input )
+        			//This was to prevent generation of links like following:
+        				//http://amplafi.net/http:/amplafi.net/rss/ampbp_2/ampmep_6.xml
+        			//Input.. I guess: http://amplafi.net/rss/ampbp_2/ampmep_6.xml
 
             // HACK we can't do this - because if we have any problems with uri path then we get an exception.
             // and then look at UriParser.
             // It looks like we should hook up UriParser soon rather than later.
             // Also Google guava has some uri validation code as well.
-        	URI create = URI.create(filePath.toString());
-            String path = create.getPath();
+        		//        	URI create = URI.create(filePath.toString());
+            String path = filePath.toString();//create.getRawPath();
             // chop up path based on \ or / characters.
             String[] pathParts = path.split("[/\\\\]");
             // and look for '..' and '.' and resolve the final path,
