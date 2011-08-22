@@ -14,8 +14,11 @@
 
 package com.sworddance.taskcontrol;
 
+import java.io.Serializable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+
+import com.sworddance.util.map.MapKeyed;
 
 /**
  * add some convenience to the {@link FutureTask} class.
@@ -31,7 +34,7 @@ import java.util.concurrent.FutureTask;
  * @param <T> type of value returned by this {@link Future}.
  * @author Patrick Moore
  */
-public interface FutureResult<T> extends Future<T>, FutureListenerNotifier {
+public interface FutureResult<T> extends Future<T>, MapKeyed<Serializable>, FutureListenerNotifier {
 
     public Throwable getException();
     /**
@@ -63,6 +66,6 @@ public interface FutureResult<T> extends Future<T>, FutureListenerNotifier {
      * if {@link #isOwned()} == false and !{@link #isDone()} then
      *
      */
-    public boolean isOwned();
+//    public boolean isOwned();
 
 }
