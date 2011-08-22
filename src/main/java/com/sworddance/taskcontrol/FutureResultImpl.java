@@ -25,6 +25,7 @@ import java.util.concurrent.TimeoutException;
 import com.sworddance.util.ApplicationGeneralException;
 import com.sworddance.util.ApplicationIllegalArgumentException;
 import com.sworddance.util.ApplicationInterruptedException;
+import com.sworddance.util.ApplicationNullPointerException;
 import com.sworddance.util.ApplicationTimeoutException;
 import com.sworddance.util.StaticCallable;
 
@@ -42,7 +43,7 @@ import com.sworddance.util.StaticCallable;
  * @param <T> type of value returned by this {@link Future}.
  * @author Patrick Moore
  */
-public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultImplementor<T> {
+public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultImplementor<T>, FutureListenerProcessorHolder {
     private Serializable mapKey;
 
     /**
@@ -63,9 +64,23 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
     public void setMapKey(Serializable mapKey) {
         this.mapKey= ApplicationIllegalArgumentException.testSetOnceAndReturn(this.mapKey, mapKey, "mapKey");
     }
-    public void addFutureListener(FutureListener futureListener) {
-        if ( this.futureListenerProcessor != null ) {
-            this.futureListenerProcessor.addFutureListener(futureListener);
+    /**
+     * Intentionally not threadsafe. Expectation is that external code will coordinate how this is set.
+     */
+    public void setFutureListenerProcessor(FutureListenerProcessor futureListenerProcessor) {
+        this.futureListenerProcessor = futureListenerProcessor;
+    }
+    public FutureListenerProcessor getFutureListenerProcessor() {
+        return futureListenerProcessor;
+    }
+    /**
+     * @throws ApplicationNullPointerException if futureListener is null
+     * @throws UnsupportedOperationException if {@link #getFutureListenerProcessor()} == null
+     */
+    public void addFutureListener(FutureListener futureListener) throws ApplicationNullPointerException {
+        ApplicationNullPointerException.notNull(futureListener, "futureListener must not be null");
+        if ( this.getFutureListenerProcessor() != null ) {
+            this.getFutureListenerProcessor().addFutureListener(futureListener);
         } else if ( this.isSuccessful()) {
             futureListener.futureSet(this, this.getUnchecked(1L, TimeUnit.NANOSECONDS, false));
         } else if ( this.isDone()) {
@@ -77,8 +92,8 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
     @Override
 	public void set(T value) {
         super.set(value);
-        if ( this.futureListenerProcessor != null) {
-            futureListenerProcessor.futureSet(this, value);
+        if ( this.getFutureListenerProcessor() != null) {
+            getFutureListenerProcessor().futureSet(this, value);
         }
     }
     public Throwable getException() {
@@ -105,8 +120,8 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
     @Override
 	public void setException(Throwable throwable) {
         super.setException(throwable);
-        if ( futureListenerProcessor != null ) {
-            futureListenerProcessor.futureSetException(this, throwable);
+        if ( getFutureListenerProcessor() != null ) {
+            getFutureListenerProcessor().futureSetException(this, throwable);
         }
     }
     @Override

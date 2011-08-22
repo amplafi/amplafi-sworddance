@@ -13,6 +13,7 @@
  */
 package com.sworddance.taskcontrol;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -355,6 +356,10 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
         return result.get(timeout, timeUnit);
     }
 
+    public Serializable getMapKey() {
+        return this.result.getMapKey();
+    }
+
     public R poll() {
         return result.poll();
     }
@@ -396,10 +401,6 @@ public class DefaultPrioritizedTask<R> implements PrioritizedTask, Callable<R> {
     }
     public boolean isNeverEligibleToRun() {
         return isDone() && !isReadyToRun();
-    }
-
-    public boolean isOwned() {
-        return this.result.isOwned();
     }
 
     /**

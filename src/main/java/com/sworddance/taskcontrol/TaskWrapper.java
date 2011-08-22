@@ -14,6 +14,7 @@
 
 package com.sworddance.taskcontrol;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -179,15 +180,11 @@ public abstract class TaskWrapper implements PrioritizedTask {
     }
 
     public void addFutureListener(FutureListener futureListener) {
-        this.wrappedTask.addFutureListener(futureListener);
+        this.getWrappedTask().addFutureListener(futureListener);
     }
 
     public boolean isFailed() {
-        return this.wrappedTask.isFailed();
-    }
-
-    public boolean isOwned() {
-        return this.wrappedTask.isOwned();
+        return this.getWrappedTask().isFailed();
     }
 
     public PrioritizedTask getWrappedTask() {
@@ -200,6 +197,9 @@ public abstract class TaskWrapper implements PrioritizedTask {
                 : wrappedTask;
     }
 
+    public Serializable getMapKey() {
+        return (Serializable) this.getWrappedTask().getMapKey();
+    }
     @Override
     public String toString() {
         return "TaskWrapper around:"+this.getBaseWrappedTask();
