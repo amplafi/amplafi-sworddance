@@ -23,6 +23,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.sworddance.util.ApplicationIllegalStateException;
 import com.sworddance.util.NotNullIterator;
 
@@ -38,17 +41,22 @@ import com.sworddance.util.NotNullIterator;
  *
  */
 public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, N> {
+    private Log log = LogFactory.getLog(FutureListenerProcessor.class);
 	private final ReentrantReadWriteLock rwListenersLock = new ReentrantReadWriteLock();
 	private final Lock readListenersLock = rwListenersLock.readLock();
 	private final Lock writeListenersLock = rwListenersLock.writeLock();
     private CountDownLatch done = new CountDownLatch(1);
     private WeakReference<? extends Future<N>> returnedFuture;
+    /**
+     * Used in chained situation where the {@link #returnedFuture} is dependent on the {@link #monitoredFuture}
+     * TODO: Need to clarify actual use case.
+     */
     private WeakReference<? extends Future<L>> monitoredFuture;
     private N returnedValue;
     private Throwable throwable;
     private Exception doneStack;
     // Seems like there might be and advantage to processing in order. But maybe used LinkedHashSet? and do concurrency some other way?
-    private List<WeakReference<FutureListener<N>>> listeners = new CopyOnWriteArrayList<WeakReference<FutureListener<N>>>();
+    private transient List<WeakReference<FutureListener<N>>> listeners = new CopyOnWriteArrayList<WeakReference<FutureListener<N>>>();
 
     public FutureListenerProcessor() {
 
@@ -61,19 +69,11 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
      * @param <P>
      * @param returnedFuture
      */
+    @Deprecated // serialization issue.
     public <P extends Future<N>> FutureListenerProcessor(P returnedFuture) {
         this.setReturnedFuture(returnedFuture);
     }
 
-    /**
-     * Used when this {@link FutureListenerProcessor} should return returnedValue
-     * when {@link #futureSet(Future, Object)} or
-     * {@link #futureSetException(Future, Throwable)} is called.
-     * @param returnedValue
-     */
-    public FutureListenerProcessor(N returnedValue) {
-        this.setReturnedValue(returnedValue);
-    }
     /**
      * @see com.sworddance.taskcontrol.FutureListener#futureSet(java.util.concurrent.Future, Object)
      */
@@ -84,6 +84,7 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
     	try {
 	        this.setMonitoredFuture(future);
 	        if ( this.returnedFuture == null ) {
+	            // if monitored future already set then the returnedFuture != future.
 	            this.setReturnedFuture( (Future<N>)this.monitoredFuture.get());
 	        }
 	        if ( this.returnedFuture == null || this.returnedFuture.get() == null ) {
@@ -141,8 +142,8 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
     		if ( this.listeners != null) {
 		        this.listeners.clear();
 		        this.listeners = null;
-		        this.monitoredFuture = null;
     		}
+    		this.monitoredFuture = null;
 	    } finally {
 	    	this.writeListenersLock.unlock();
 	    }
@@ -157,7 +158,10 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
     	} else {
     		this.writeListenersLock.lock();
     		try {
-	            this.listeners.add(new WeakReference<FutureListener<N>>(futureListener));
+    		    WeakReference<FutureListener<N>> listener = new WeakReference<FutureListener<N>>(futureListener);
+    		    if( !this.listeners.contains(listener)) {
+    		        this.listeners.add(listener);
+    		    }
     		} finally {
     			this.writeListenersLock.unlock();
     		}
@@ -189,6 +193,7 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
             futureListener.futureSet(getReturnedFuture(), value);
         } catch (Exception e) {
             // HACK need to handle exceptions.
+            getLog().warn("while doing futureSet", e);
         }
     }
 
@@ -233,5 +238,8 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
         } else {
             // throw exception? except that for some cases the returned value has been set in the constructor.
         }
+    }
+    public Log getLog() {
+        return log;
     }
 }

@@ -14,7 +14,7 @@
 
 package com.sworddance.taskcontrol;
 
-import java.lang.ref.WeakReference;
+import java.io.Serializable;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -23,10 +23,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.sworddance.util.ApplicationGeneralException;
+import com.sworddance.util.ApplicationIllegalArgumentException;
 import com.sworddance.util.ApplicationInterruptedException;
 import com.sworddance.util.ApplicationTimeoutException;
 import com.sworddance.util.StaticCallable;
-import com.sworddance.util.WeakProxy;
 
 /**
  * add some convenience to the {@link FutureTask} class.
@@ -43,29 +43,43 @@ import com.sworddance.util.WeakProxy;
  * @author Patrick Moore
  */
 public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultImplementor<T> {
+    private Serializable mapKey;
 
-    private final FutureListenerProcessor<T, ?> processor;
-
-    // TODO Should really be weak reference to the object that will do the settin
-    private WeakReference<Object> owner;
-
+    /**
+     * The FutureListenerProcessor is not serialized and thus serialization would break the notification mechanism.
+     * However, the futureListenerProcessor is still useful for cases where serialization is not performed.
+     */
+    private transient FutureListenerProcessor futureListenerProcessor;
     public FutureResultImpl() {
-        this(new StaticCallable<T>(null), new FutureListenerProcessor<T,T>());
+        this(new StaticCallable<T>(null));
     }
     public FutureResultImpl(Callable<T> callable) {
-        this(callable, new FutureListenerProcessor<T,T>());
-    }
-    public FutureResultImpl(Callable<T> callable, FutureListenerProcessor<T, ?> processor) {
         super(callable);
-        this.processor = processor;
+    }
+
+    public Serializable getMapKey() {
+        return this.mapKey;
+    }
+    public void setMapKey(Serializable mapKey) {
+        this.mapKey= ApplicationIllegalArgumentException.testSetOnceAndReturn(this.mapKey, mapKey, "mapKey");
     }
     public void addFutureListener(FutureListener futureListener) {
-        processor.addFutureListener(futureListener);
+        if ( this.futureListenerProcessor != null ) {
+            this.futureListenerProcessor.addFutureListener(futureListener);
+        } else if ( this.isSuccessful()) {
+            futureListener.futureSet(this, this.getUnchecked(1L, TimeUnit.NANOSECONDS, false));
+        } else if ( this.isDone()) {
+            futureListener.futureSetException(this, this.getException());
+        } else {
+            throw new UnsupportedOperationException("Use FutureListenerProcessorMap - when the Future has not yet been set ( this enables serialization of Futures )");
+        }
     }
     @Override
 	public void set(T value) {
         super.set(value);
-        processor.futureSet(this, value);
+        if ( this.futureListenerProcessor != null) {
+            futureListenerProcessor.futureSet(this, value);
+        }
     }
     public Throwable getException() {
         if ( super.isDone()) {
@@ -89,9 +103,11 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
      * @see java.util.concurrent.FutureTask#setException(java.lang.Throwable)
      */
     @Override
-	public void setException(Throwable e) {
-        super.setException(e);
-        processor.futureSetException(this, e);
+	public void setException(Throwable throwable) {
+        super.setException(throwable);
+        if ( futureListenerProcessor != null ) {
+            futureListenerProcessor.futureSetException(this, throwable);
+        }
     }
     @Override
 	public T get(long timeout, TimeUnit unit) throws TimeoutException, InterruptedException, ExecutionException {
@@ -139,7 +155,7 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
                 throw new ApplicationTimeoutException(e);
             }
         } else {
-            throw new ApplicationGeneralException(e); //            throw rethrow(e);
+            throw new ApplicationGeneralException(e);
         }
     }
     /**
@@ -158,19 +174,5 @@ public class FutureResultImpl<T> extends FutureTask<T> implements FutureResultIm
      */
     public boolean isFailed() {
         return isDone() && (isCancelled() || getException() != null);
-    }
-
-    public void setOwner(Object owner) {
-        this.owner = new WeakReference<Object>(owner);
-    }
-    public Object getOwner() {
-        return WeakProxy.getReferent(this.owner);
-    }
-    /**
-     * @return the owned
-     */
-    public boolean isOwned() {
-        // HACK : until can figure out proper chaining
-        return true; //getOwner() != null;
     }
 }
