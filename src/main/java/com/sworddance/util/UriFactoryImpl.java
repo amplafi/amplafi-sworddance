@@ -230,6 +230,7 @@ public class UriFactoryImpl {
             }
             if (isNotBlank(uriString)) {
                 try {
+                    // TODO: (see UriParser - normalize to
                     uri = new URI(uriString);
                 } catch (URISyntaxException e) {
                     // just ignore, uri may be coming from user input.
