@@ -33,30 +33,35 @@ import com.sworddance.util.NotNullIterator;
  * manages list of {@link FutureListener}.
  *
  * Can handle monitor another {@link Future} as a {@link FutureListener}<T> with a different expected type, and when notified this
- * object will notify its own {@link FutureListener}<V>s.
+ * object will notify its own {@link FutureListener}<V>s. See use of {@link #monitoredFuture}.
  *
  * @author patmoore
- * @param <L> The type that the monitored Future returns.
- * @param <N> The type that {@link FutureListener}s registered with this instance are expecting to receive.
+ * @param <MV> The type that the monitored Future returns.
+ * @param <RV> The type that {@link FutureListener}s registered with this instance are expecting to receive.
  *
  */
-public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, N> {
+public class FutureListenerProcessor<MV,RV> implements FutureListeningNotifier<MV, RV> {
     private Log log = LogFactory.getLog(FutureListenerProcessor.class);
 	private final ReentrantReadWriteLock rwListenersLock = new ReentrantReadWriteLock();
 	private final Lock readListenersLock = rwListenersLock.readLock();
 	private final Lock writeListenersLock = rwListenersLock.writeLock();
     private CountDownLatch done = new CountDownLatch(1);
-    private WeakReference<? extends Future<N>> returnedFuture;
+    /**
+     * Weak reference because Future may be serialized and the "forgotten"
+     */
+    private WeakReference<? extends Future<RV>> returnedFuture;
     /**
      * Used in chained situation where the {@link #returnedFuture} is dependent on the {@link #monitoredFuture}
-     * TODO: Need to clarify actual use case.
+     * For example, 'F1' is a future that depends on future 'F2', F1 has {@link FutureListener}s that are expecting F1 to be passed
+     * in the F1 futureSet/futureSetException() methods.
+     * If
      */
-    private WeakReference<? extends Future<L>> monitoredFuture;
-    private N returnedValue;
+    private WeakReference<? extends Future<MV>> monitoredFuture;
+    private RV returnedValue;
     private Throwable throwable;
     private Exception doneStack;
     // Seems like there might be and advantage to processing in order. But maybe used LinkedHashSet? and do concurrency some other way?
-    private transient List<WeakReference<FutureListener<N>>> listeners = new CopyOnWriteArrayList<WeakReference<FutureListener<N>>>();
+    private transient List<WeakReference<FutureListener<RV>>> listeners = new CopyOnWriteArrayList<WeakReference<FutureListener<RV>>>();
 
     public FutureListenerProcessor() {
 
@@ -66,34 +71,49 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
      * Used when this {@link FutureListenerProcessor} should return the value contained in returnedFuture
      * when {@link #futureSet(Future, Object)} or
      * {@link #futureSetException(Future, Throwable)} is called.
-     * @param <P>
+     * quickie refactoring.
+     * @param <MV>
+     * @param <RV>
+     * @param <RF>
+     * @param <MF>
      * @param returnedFuture
+     * @param monitoredFuture
+     * @return
      */
-    @Deprecated // serialization issue.
-    public <P extends Future<N>> FutureListenerProcessor(P returnedFuture) {
-        this.setReturnedFuture(returnedFuture);
+    public static <MV, RV, RF extends Future<RV>, MF extends FutureListenerProcessorHolder> FutureListenerProcessor<MV, RV> createChainedFutureListenerProcessor(RF returnedFuture, MF monitoredFuture) {
+        FutureListenerProcessor<MV,RV> futureListenerProcessor = new FutureListenerProcessor<MV, RV>();
+        futureListenerProcessor.setReturnedFuture(returnedFuture);
+        return chainFutureListenerProcessor(futureListenerProcessor, monitoredFuture);
+    }
+    public static <MV, RV, MF extends FutureListenerProcessorHolder> FutureListenerProcessor<MV, RV> chainFutureListenerProcessor(FutureListenerProcessor<MV, RV> futureListenerProcessor, MF monitoredFuture) {
+        if ( monitoredFuture.getFutureListenerProcessor() == null) {
+            // quickie HACK - assuming that monitoredFuture itself is not chained.
+            monitoredFuture.setFutureListenerProcessor(new FutureListenerProcessor());
+        }
+        monitoredFuture.getFutureListenerProcessor().addFutureListener(futureListenerProcessor);
+        return futureListenerProcessor;
     }
 
     /**
      * @see com.sworddance.taskcontrol.FutureListener#futureSet(java.util.concurrent.Future, Object)
      */
     @SuppressWarnings({ "hiding", "unchecked" })
-    public <P extends Future<L>> void futureSet(P future, L returnedValue) {
+    public <P extends Future<MV>> void futureSet(P future, MV returnedValue) {
     	checkDoneStateAndSaveStack();
     	this.readListenersLock.lock();
     	try {
 	        this.setMonitoredFuture(future);
 	        if ( this.returnedFuture == null ) {
 	            // if monitored future already set then the returnedFuture != future.
-	            this.setReturnedFuture( (Future<N>)this.monitoredFuture.get());
+	            this.setReturnedFuture( (Future<RV>)this.monitoredFuture.get());
 	        }
 	        if ( this.returnedFuture == null || this.returnedFuture.get() == null ) {
 	            // TODO maybe should catch ClassCastExceptions?
-	            this.setReturnedValue((N)returnedValue);
+	            this.setReturnedValue((RV)returnedValue);
 	        }
 	        // all following threads should have the notify happen immediately
 	        this.done.countDown();
-	        for(FutureListener<N> futureListener: NotNullIterator.<FutureListener<N>>newNotNullIterator(listeners)) {
+	        for(FutureListener<RV> futureListener: NotNullIterator.<FutureListener<RV>>newNotNullIterator(listeners)) {
 	            notifyListener(futureListener);
 	        }
     	} finally {
@@ -107,7 +127,7 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
      * @see com.sworddance.taskcontrol.FutureListener#futureSetException(java.util.concurrent.Future, Throwable)
      */
     @SuppressWarnings("hiding")
-    public <P extends Future<L>> void futureSetException(P future, Throwable throwable) {
+    public <P extends Future<MV>> void futureSetException(P future, Throwable throwable) {
     	checkDoneStateAndSaveStack();
     	this.readListenersLock.lock();
     	try {
@@ -115,7 +135,7 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
 	        this.throwable = throwable;
 	        // all following threads should have the notify happen immediately
 	        this.done.countDown();
-	        for(FutureListener<N> futureListener: NotNullIterator.<FutureListener<N>>newNotNullIterator( listeners)) {
+	        for(FutureListener<RV> futureListener: NotNullIterator.<FutureListener<RV>>newNotNullIterator( listeners)) {
 	            notifyListenerException(futureListener);
 	        }
     	} finally {
@@ -135,6 +155,8 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
     /**
      * once the call to {@link #futureSet(Future, Object)} or {@link #futureSetException(Future, Throwable)} has occurred,
      * there is no need to hang on to the listeners nor the monitoredFuture. They are released so they can be  gc'ed.
+     *
+     * We hold on only to the returnedFuture ( maybe only the returned result ? )
      */
     private void clearReferences() {
     	this.writeListenersLock.lock();
@@ -148,7 +170,7 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
 	    	this.writeListenersLock.unlock();
 	    }
     }
-    public void addFutureListener(FutureListener<N> futureListener) {
+    public void addFutureListener(FutureListener<RV> futureListener) {
     	if ( isDone()) {
     		if ( this.throwable == null) {
     			notifyListener(futureListener);
@@ -158,7 +180,7 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
     	} else {
     		this.writeListenersLock.lock();
     		try {
-    		    WeakReference<FutureListener<N>> listener = new WeakReference<FutureListener<N>>(futureListener);
+    		    WeakReference<FutureListener<RV>> listener = new WeakReference<FutureListener<RV>>(futureListener);
     		    if( !this.listeners.contains(listener)) {
     		        this.listeners.add(listener);
     		    }
@@ -177,8 +199,8 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
     /**
      * @param futureListener
      */
-    private void notifyListener(FutureListener<N> futureListener) {
-        N value = null;
+    private void notifyListener(FutureListener<RV> futureListener) {
+        RV value = null;
         try {
             if ( this.returnedValue != null ) {
                 value = this.returnedValue;
@@ -192,7 +214,7 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
         try {
             futureListener.futureSet(getReturnedFuture(), value);
         } catch (Exception e) {
-            // HACK need to handle exceptions.
+            // HACK need to handle exceptions. but don't want to interfere with other listeners
             getLog().warn("while doing futureSet", e);
         }
     }
@@ -200,25 +222,31 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
     /**
      * @param futureListener
      */
-    private void notifyListenerException(FutureListener<N> futureListener) {
+    private void notifyListenerException(FutureListener<RV> futureListener) {
         try {
             futureListener.futureSetException(getReturnedFuture(), throwable);
         } catch (Exception e) {
-            // HACK need to handle exceptions.
+            // HACK need to handle exceptions. but don't want to interfere with other listeners
+            getLog().warn("while doing futureSetException", e);
         }
     }
+    /**
+     * If {@link #returnedFuture} is set then return the {@link #returnedFuture}.get() ( which maybe a null future if the future was gc'ed)
+     * @return the future that is passed to the {@link FutureListener#futureSet(Future, Object)} and {@link FutureListener#futureSetException(Future, Throwable)}
+     */
     @SuppressWarnings("unchecked")
-    private Future<N> getReturnedFuture() {
+    private Future<RV> getReturnedFuture() {
         if ( this.returnedFuture == null ) {
-            return (Future<N>) this.monitoredFuture.get();
+            return (Future<RV>) this.monitoredFuture.get();
         } else {
             return this.returnedFuture.get();
         }
     }
     /**
-     * @param returnedFuture
+     * Sets the future being monitor for being set to #future
+     * @param future
      */
-    private <P extends Future<L>> void setMonitoredFuture(P future) {
+    private <P extends Future<MV>> void setMonitoredFuture(P future) {
         if ( this.monitoredFuture == null ) {
             this.monitoredFuture = new WeakReference<P>(future);
         }
@@ -226,13 +254,13 @@ public class FutureListenerProcessor<L,N> implements FutureListeningNotifier<L, 
     /**
      * @param returnedFuture
      */
-    private <P extends Future<N>> void setReturnedFuture(P returnedFuture) {
+    public <P extends Future<RV>> void setReturnedFuture(P returnedFuture) {
         if ( this.returnedFuture == null ) {
             this.returnedFuture = new WeakReference<P>(returnedFuture);
         }
     }
 
-    private void setReturnedValue(N returnedValue) {
+    private void setReturnedValue(RV returnedValue) {
         if ( this.returnedValue == null ) {
             this.returnedValue =returnedValue;
         } else {

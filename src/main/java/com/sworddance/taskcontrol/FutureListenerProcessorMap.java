@@ -14,7 +14,12 @@ import com.sworddance.util.map.MapKeyed;
  * future is set.
  * Because they are not serializable, the {@link FutureListenerProcessor}s are held external to the {@link FutureResult}s.
  *
+ * This allows FutureResults to be serialized and the deserialized with the listeners restored.
+ *
  * This allows Futures to be serialized to disk and later restored without breaking the notification mechanism.
+ *
+ * This is a temporary solution because it does not handle case where there is a chain of {@link FutureListenerProcessor}s.
+ * (Would really like there to be a library that handles serializing, listening on Futures.)
  *
  * @author patmoore
  *
