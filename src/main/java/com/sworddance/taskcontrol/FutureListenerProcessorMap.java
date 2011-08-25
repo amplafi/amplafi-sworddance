@@ -76,7 +76,9 @@ public class FutureListenerProcessorMap {
                         FutureListenerProcessor knownFutureListenerProcessor = this.getFutureListenerProcessor(key);
                         if ( knownFutureListenerProcessor != futureListenerProcessor ) {
                             // merge issue
-                            ApplicationIllegalStateException.notNull(null, knownFutureListenerProcessor, " ", futureListenerProcessor);
+                        	//Kostya: what's the problem at this point? Why raise an exception?
+//                            ApplicationIllegalStateException.notNull(null, knownFutureListenerProcessor, " ", futureListenerProcessor);
+                        	futureListenerProcessorMap.put(key, futureListenerProcessor);
                         }
                     }
                 } else if ( this.futureListenerProcessorMap.containsKey(key)){
