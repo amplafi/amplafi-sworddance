@@ -5,6 +5,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.sworddance.util.ApplicationIllegalStateException;
 import com.sworddance.util.map.ConcurrentInitializedMap;
 import com.sworddance.util.map.MapKeyed;
 
@@ -69,17 +70,21 @@ public class FutureListenerProcessorMap {
             FutureListenerProcessor futureListenerProcessor = futureListenerProcessorHolder.getFutureListenerProcessor();
             for (K key : keys) {
                 if ( futureListenerProcessor != null) {
-                    if ( !this.futureListenerProcessorMap.containsKey(key)) {
+                    if ( !this.futureListenerProcessorMap.containsKey(key) ) {
                         this.futureListenerProcessorMap.put(key, futureListenerProcessor);
                     } else {
                         FutureListenerProcessor knownFutureListenerProcessor = this.getFutureListenerProcessor(key);
+
                         if ( knownFutureListenerProcessor != futureListenerProcessor ) {
-                            // merge issue
-                        	//Kostya: what's the problem at this point? Why raise an exception?
-                            // PAT : because we are going to lose listeners. FutureListeners in the old knownFutureListenerProcessor will be discarded and never notified.
-                            // HACK : please revert! and fix the lost FutureListener problem.
-//                            ApplicationIllegalStateException.notNull(null, knownFutureListenerProcessor, " ", futureListenerProcessor);
-                        	futureListenerProcessorMap.put(key, futureListenerProcessor);
+                            if ( !knownFutureListenerProcessor.isEmpty()) {
+                                // merge issue
+                            	//Kostya: what's the problem at this point? Why raise an exception?
+                                // PAT : because we are going to lose listeners. FutureListeners in the old knownFutureListenerProcessor will be discarded and never notified.
+                                // HACK : revert! and fix the lost FutureListener problem.
+                                ApplicationIllegalStateException.checkState(false, knownFutureListenerProcessor, " ", futureListenerProcessor);
+                            } else {
+                                futureListenerProcessorMap.put(key, futureListenerProcessor);
+                            }
                         }
                     }
                 } else if ( this.futureListenerProcessorMap.containsKey(key)){

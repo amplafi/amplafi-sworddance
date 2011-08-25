@@ -26,7 +26,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.sworddance.core.Emptyable;
 import com.sworddance.util.ApplicationIllegalStateException;
+import com.sworddance.util.CUtilities;
 import com.sworddance.util.NotNullIterator;
 
 /**
@@ -40,7 +42,7 @@ import com.sworddance.util.NotNullIterator;
  * @param <RV> The type that {@link FutureListener}s registered with this instance are expecting to receive.
  *
  */
-public class FutureListenerProcessor<MV,RV> implements FutureListeningNotifier<MV, RV> {
+public class FutureListenerProcessor<MV,RV> implements FutureListeningNotifier<MV, RV>, Emptyable {
     private Log log = LogFactory.getLog(FutureListenerProcessor.class);
 	private final ReentrantReadWriteLock rwListenersLock = new ReentrantReadWriteLock();
 	private final Lock readListenersLock = rwListenersLock.readLock();
@@ -119,7 +121,7 @@ public class FutureListenerProcessor<MV,RV> implements FutureListeningNotifier<M
     	} finally {
     		this.readListenersLock.unlock();
     	}
-    	clearReferences();
+    	clear();
     }
 
     /**
@@ -141,7 +143,7 @@ public class FutureListenerProcessor<MV,RV> implements FutureListeningNotifier<M
     	} finally {
     		this.readListenersLock.unlock();
     	}
-    	clearReferences();
+    	clear();
     }
 
     /**
@@ -158,7 +160,7 @@ public class FutureListenerProcessor<MV,RV> implements FutureListeningNotifier<M
      *
      * We hold on only to the returnedFuture ( maybe only the returned result ? )
      */
-    private void clearReferences() {
+    public void clear() {
     	this.writeListenersLock.lock();
     	try {
     		if ( this.listeners != null) {
@@ -169,6 +171,10 @@ public class FutureListenerProcessor<MV,RV> implements FutureListeningNotifier<M
 	    } finally {
 	    	this.writeListenersLock.unlock();
 	    }
+    }
+
+    public boolean isEmpty() {
+        return CUtilities.isEmpty(this.listeners);
     }
     public void addFutureListener(FutureListener<RV> futureListener) {
     	if ( isDone()) {
