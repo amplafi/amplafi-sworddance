@@ -5,7 +5,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.sworddance.util.ApplicationIllegalStateException;
 import com.sworddance.util.map.ConcurrentInitializedMap;
 import com.sworddance.util.map.MapKeyed;
 
@@ -77,6 +76,8 @@ public class FutureListenerProcessorMap {
                         if ( knownFutureListenerProcessor != futureListenerProcessor ) {
                             // merge issue
                         	//Kostya: what's the problem at this point? Why raise an exception?
+                            // PAT : because we are going to lose listeners. FutureListeners in the old knownFutureListenerProcessor will be discarded and never notified.
+                            // HACK : please revert! and fix the lost FutureListener problem.
 //                            ApplicationIllegalStateException.notNull(null, knownFutureListenerProcessor, " ", futureListenerProcessor);
                         	futureListenerProcessorMap.put(key, futureListenerProcessor);
                         }
