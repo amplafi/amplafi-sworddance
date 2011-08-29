@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 
 import com.sworddance.util.map.MapKeyed;
 
+import static com.sworddance.util.NotNullIterator.newNotNullIterator;
 import static org.apache.commons.lang.StringUtils.*;
 
 /**
@@ -277,19 +278,17 @@ public class CUtilities {
 
 	private static <T> Class<T> guessComponentType(Object... objects) {
 		Class<T> type = null;
-		for (Object object : objects) {
+		for (Object object : newNotNullIterator(objects)) {
 			Class<T> prevType = type;
-			if (object != null){
-		    	if (object.getClass().isArray()) {
-		            type = (Class<T>) object.getClass().getComponentType();
-		    	} else {
-		    		type = (Class<T>) object.getClass();
-		    	}
-		    	if (prevType != null && !type.isAssignableFrom(prevType)) {
-		    		type = (Class<T>) Object.class;
-		    		break;
-		    	}
-			}
+	    	if (object.getClass().isArray()) {
+	            type = (Class<T>) object.getClass().getComponentType();
+	    	} else {
+	    		type = (Class<T>) object.getClass();
+	    	}
+	    	if (prevType != null && !type.isAssignableFrom(prevType)) {
+	    		type = (Class<T>) Object.class;
+	    		break;
+	    	}
 		}
 		return type;
 	}
