@@ -250,19 +250,18 @@ public class CUtilities {
             if ( componentType == null && objects.getClass().getComponentType() != Object.class) {
                 componentType = (Class<T>) objects.getClass().getComponentType();
             }
+            
+            if (componentType == null) {
+            	componentType = guessComponentType(objects);
+            }
+            
             for(Object object:objects) {
                 if (object != null && object.getClass().isArray()) {
-                    if ( componentType == null) {
-                        componentType = (Class<T>) object.getClass().getComponentType();
-                    }
                     T[] array = combineToSpecifiedClass(componentType, (Object[])object);
                     if ( array != null) {
                         list.addAll(Arrays.asList(array));
                     }
                 } else {
-                    if (object != null && componentType == null) {
-                        componentType = (Class<T>) object.getClass();
-                    }
                     list.add((T)object);
                 }
             }
@@ -275,6 +274,25 @@ public class CUtilities {
             return list.toArray(newArray);
         }
     }
+
+	private static <T> Class<T> guessComponentType(Object... objects) {
+		Class<T> type = null;
+		for (Object object : objects) {
+			Class<T> prevType = type;
+			if (object != null){
+		    	if (object.getClass().isArray()) {
+		            type = (Class<T>) object.getClass().getComponentType();
+		    	} else {
+		    		type = (Class<T>) object.getClass();
+		    	}
+		    	if (prevType != null && !type.isAssignableFrom(prevType)) {
+		    		type = (Class<T>) Object.class;
+		    		break;
+		    	}
+			}
+		}
+		return type;
+	}
 
     /**
      * This is a safe put when using {@link java.util.concurrent.ConcurrentMap} which throw exceptions if key or value is null
