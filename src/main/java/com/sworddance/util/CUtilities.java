@@ -14,6 +14,7 @@
 
 package com.sworddance.util;
 
+import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -251,11 +252,11 @@ public class CUtilities {
             if ( componentType == null && objects.getClass().getComponentType() != Object.class) {
                 componentType = (Class<T>) objects.getClass().getComponentType();
             }
-            
+
             if (componentType == null) {
             	componentType = guessComponentType(objects);
             }
-            
+
             for(Object object:objects) {
                 if (object != null && object.getClass().isArray()) {
                     T[] array = combineToSpecifiedClass(componentType, (Object[])object);
@@ -628,5 +629,74 @@ public class CUtilities {
         String requireAtLeast1WsBetweenWords = escapeAllPunctuationChars.replaceAll("(\\p{Alnum})\\s+(\\p{Alnum})", "$1\\\\s+$2");
         String simplifyWsMatching = requireAtLeast1WsBetweenWords.replaceAll("(?:\\Q\\s*\\E)+", "\\\\s*");
         return simplifyWsMatching;
+    }
+
+    /**
+     * Create a search path list containing:
+     * [ fileName, /fileName, /<eachdir>/fileName, /META-INF/fileName, /META-INF/<eachdir>/fileName ]
+     * @return a list of locations to look for the file supplied.
+     */
+    public static List<String> createSearchPath(String fileName, String...alternateDirectories) {
+        List<String> searchPath = new ArrayList<String>();
+        searchPath.add(fileName);
+        String adjustedFilename;
+        if (!fileName.startsWith("/")) {
+            searchPath.add("/"+fileName);
+            adjustedFilename = fileName;
+        } else {
+            adjustedFilename = fileName.substring(1);
+        }
+        List<String> workingDirectories = new ArrayList<String>();
+        if ( isNotEmpty(alternateDirectories)) {
+            workingDirectories.addAll(Arrays.asList(alternateDirectories));
+        }
+        List<String> alternates = new ArrayList<String>();
+        for(String alternateRoot : new String[]{"", "META-INF/" }) {
+            alternates.add(alternateRoot);
+            for(String a: workingDirectories) {
+                String full;
+                if ( a.endsWith("/")) {
+                    full = alternateRoot+a;
+                } else {
+                    full = alternateRoot+a+"/";
+                }
+                alternates.add(full);
+            }
+        }
+        for(String alternateDirectory: alternates) {
+            if (!adjustedFilename.startsWith(alternateDirectory)) {
+                searchPath.add("/"+alternateDirectory+adjustedFilename);
+            }
+        }
+        return searchPath;
+    }
+    public static InputStream getResourceAsStream(Object searchRoot, String fileName, String...alternateDirectories) {
+        List<String> searchPaths = createSearchPath(fileName, alternateDirectories);
+        for(String searchPath: searchPaths) {
+            InputStream resource;
+            if ( searchRoot == null ) {
+                resource = ClassLoader.getSystemResourceAsStream(searchPath);
+            } else {
+                resource = searchRoot.getClass().getResourceAsStream(searchPath);
+            }
+            if ( resource != null) {
+                return resource;
+            }
+        }
+        return null;
+    }
+    public static InputStream getResourceAsStream(Object searchRoot, List<String> searchPaths) {
+        for(String searchPath: searchPaths) {
+            InputStream resource;
+            if ( searchRoot == null ) {
+                resource = ClassLoader.getSystemResourceAsStream(searchPath);
+            } else {
+                resource = searchRoot.getClass().getResourceAsStream(searchPath);
+            }
+            if ( resource != null) {
+                return resource;
+            }
+        }
+        return null;
     }
 }

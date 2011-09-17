@@ -33,6 +33,15 @@ public class TestUtilities {
     }
 
     @Test
+    public void testCreateSearchPath() {
+        List<String> expected = new ArrayList<String>(Arrays.asList("test.txt", "/test.txt",
+            "/sub/test.txt", "/sub1/test.txt",
+            "/META-INF/test.txt",
+            "/META-INF/sub/test.txt", "/META-INF/sub1/test.txt"));
+        List<String> result = createSearchPath("test.txt", "sub", "sub1");
+        assertTrue(expected.equals(result));
+    }
+    @Test
     public void testCloneArrayList() {
         List<String> list = new ArrayList<String>();
         list.add("a");
