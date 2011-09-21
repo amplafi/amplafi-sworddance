@@ -57,7 +57,7 @@ public abstract class AbstractXmlParser {
             if ( file.exists()) {
                 this.xmlDocument = newDocumentBuilder.parse(file);
             } else {
-                List<String> searchPaths = CUtilities.createSearchPath(this.fileName, "flows");
+            	List<String> searchPaths = CUtilities.createSearchPath(this.fileName, getAlternateDirectories());
                 resource = CUtilities.getResourceAsStream(this, searchPaths);
                 ApplicationIllegalArgumentException.notNull(resource, "Cannot locate xml definitions file. File '",
                     file,"' does not exist and cannot find a resource in the classpath=", join(searchPaths, ","));
@@ -75,6 +75,12 @@ public abstract class AbstractXmlParser {
             }
         }
     }
+    
+	protected String[] getAlternateDirectories() {
+		//TODO why it refers to "flows", it's a general purpose class? 
+		return new String[] {"flows"};
+	}
+	
     /**
      * @return the fileName
      */
