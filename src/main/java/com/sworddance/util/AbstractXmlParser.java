@@ -75,6 +75,7 @@ public abstract class AbstractXmlParser {
             }
         }
     }
+
     /**
      * @return the fileName
      */
