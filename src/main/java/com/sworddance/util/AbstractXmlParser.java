@@ -23,9 +23,9 @@ public abstract class AbstractXmlParser {
     protected AbstractXmlParser() {
 
     }
-    protected AbstractXmlParser(String fileName) {
+    protected AbstractXmlParser(String fileName, String...alternateDirectories) {
         this.fileName = fileName;
-        this.createXmlDocument();
+        this.createXmlDocument(alternateDirectories);
     }
 
     public AbstractXmlParser(InputStream inputStream) {
@@ -49,7 +49,7 @@ public abstract class AbstractXmlParser {
         }
     }
 
-    private void createXmlDocument() {
+    private void createXmlDocument(String...alternateDirectories) {
         DocumentBuilder newDocumentBuilder = createDocumentBuilder();
         File file = new File(fileName);
         InputStream resource = null;
@@ -57,7 +57,7 @@ public abstract class AbstractXmlParser {
             if ( file.exists()) {
                 this.xmlDocument = newDocumentBuilder.parse(file);
             } else {
-                List<String> searchPaths = CUtilities.createSearchPath(this.fileName, "flows");
+                List<String> searchPaths = CUtilities.createSearchPath(this.fileName, alternateDirectories);
                 resource = CUtilities.getResourceAsStream(this, searchPaths);
                 ApplicationIllegalArgumentException.notNull(resource, "Cannot locate xml definitions file. File '",
                     file,"' does not exist and cannot find a resource in the classpath=", join(searchPaths, ","));
