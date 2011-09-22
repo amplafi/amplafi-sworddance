@@ -223,6 +223,15 @@ public class CUtilities {
         }
     }
 
+    public static boolean isAllEmpty(Object... objects) {
+        for(Object object: NotNullIterator.newNotNullIterator(objects)) {
+            boolean result = isEmpty(object);
+            if (!result ) {
+                return result;
+            }
+        }
+        return true;
+    }
     public static boolean isNotEmpty(Object object) {
         return !isEmpty(object);
     }
