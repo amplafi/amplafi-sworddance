@@ -683,7 +683,7 @@ public class CUtilities {
                 return resource;
             }
         }
-        return null;
+        throw new ApplicationNullPointerException(fileName, " not found in ", join(searchPaths, ","));
     }
     public static InputStream getResourceAsStream(Object searchRoot, List<String> searchPaths) {
         for(String searchPath: searchPaths) {

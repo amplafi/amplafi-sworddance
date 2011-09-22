@@ -67,10 +67,7 @@ public abstract class AbstractXmlParser {
             if ( file.exists()) {
                 this.xmlDocument = newDocumentBuilder.parse(file);
             } else {
-                List<String> searchPaths = CUtilities.createSearchPath(this.fileName, alternateDirectories);
-                resource = CUtilities.getResourceAsStream(this, searchPaths);
-                ApplicationIllegalArgumentException.notNull(resource, "Cannot locate xml definitions file. File '",
-                    file,"' does not exist and cannot find a resource in the classpath=", join(searchPaths, ","));
+                resource = CUtilities.getResourceAsStream(this, this.fileName, alternateDirectories);
                 this.xmlDocument = newDocumentBuilder.parse(resource);
             }
         } catch (SAXException e) {
