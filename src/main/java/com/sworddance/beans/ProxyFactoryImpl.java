@@ -128,7 +128,7 @@ public class ProxyFactoryImpl implements ProxyFactory {
      * @param <O>
      * @param proxyMapper
      */
-    private <I, O extends I> void initProxyMapper(RootProxyMapper<I, O> proxyMapper) {
+    protected <I, O extends I> void initProxyMapper(RootProxyMapper<I, O> proxyMapper) {
         if ( proxyMapper.getProxyLoader() == null) {
             proxyMapper.setProxyLoader(defaultProxyLoader);
         }

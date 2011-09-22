@@ -16,7 +16,7 @@ package com.sworddance.beans;
 
 /**
  *
- * Creates ProxyMapper objects.
+ * Creates {@link ProxyMapper} objects.
  * @author patmoore
  *
  */
@@ -51,6 +51,11 @@ public interface ProxyFactory {
      */
     <I, R extends ProxyMapper<I, ? extends I>> R initProxyMapper(I proxy);
 
+    /**
+     *
+     * @param proxy an object that is possibly really
+     * @return
+     */
     <I, R extends ProxyMapper<I, ? extends I>> R getProxyMapper(I proxy);
     <I> I getRealObject(I proxy);
 }

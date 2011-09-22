@@ -16,7 +16,6 @@ package com.sworddance.beans;
 
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -68,7 +67,7 @@ import static org.apache.commons.lang.StringUtils.*;
  * @param <O> extends <I> the class (not interface) that is the concrete class that is wrapped by the ProxyWrapper.
  *
  */
-public abstract class ProxyMapperImpl<I,O extends I> extends BeanWorker implements InvocationHandler, Serializable, ProxyMapperImplementor<I, O> {
+public abstract class ProxyMapperImpl<I,O extends I> extends BeanWorker implements Serializable, ProxyMapperImplementor<I, O> {
     private I externalFacingProxy;
     /**
      * the real value may be null. This can arise if a ProxyMapper was created for a non-null object and then the object was

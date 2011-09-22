@@ -9,17 +9,28 @@
 
 package com.sworddance.beans;
 
+import java.lang.reflect.InvocationHandler;
 import java.util.Map;
 
 import com.sworddance.beans.ProxyLoader.ChildObjectNotLoadableException;
 
 /**
+ *
+ * ProxyMappers are useful when
+ * <ul>
+ * <li>there are objects that only a certain set of methods should be available. For example, an object that has getter/setter methods where
+ * only the getters should be allowed to be called.</li>
+ * <li>the objects may map to database objects and the changes to the database object need to be delayed until the conversation is completed (think several requests
+ * back and forth to the user before they confirm the changes)</li>
+ * </ul>
+ *
+ *
  * @author patmoore
  *
  * @param <I>
  * @param <O>
  */
-public interface ProxyMapper<I, O extends I> {
+public interface ProxyMapper<I, O extends I> extends InvocationHandler {
 
     Object getCachedValue(String propertyName);
 

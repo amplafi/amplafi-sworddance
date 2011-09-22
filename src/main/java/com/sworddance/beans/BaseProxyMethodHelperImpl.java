@@ -14,11 +14,12 @@
 
 package com.sworddance.beans;
 
+import static com.sworddance.util.CUtilities.size;
+
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 import com.sworddance.util.ApplicationIllegalArgumentException;
-
-import static com.sworddance.util.CUtilities.*;
 
 /**
  * @author patmoore
@@ -62,4 +63,10 @@ public class BaseProxyMethodHelperImpl implements ProxyMethodHelper {
             return false;
         }
     }
+
+    public <I, O extends I> InvocationHandler newProxyInvocationHandler(ProxyMapper<I, O> proxyMapper) {
+        return new CurriedProxyMethodHelperImpl<I, O>(proxyMapper, this);
+    }
+
+
 }
