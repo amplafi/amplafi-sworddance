@@ -83,6 +83,13 @@ public abstract class AbstractXmlParser {
         }
     }
 
+    protected String getNodeValue(Node node) {
+        if ( node != null) {
+            return node.getNodeValue();
+        } else {
+            return null;
+        }
+    }
     /**
      * For what ever reason this function is not available via the javax.xml api
      * @param parent
