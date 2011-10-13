@@ -589,10 +589,10 @@ public class CUtilities {
         return list;
     }
 
-    public static Class<?> getClassIfPossible(String className) {
-        Class<?> clazz = null;
+    public static <T> Class<? extends T> getClassIfPossible(String className) {
+        Class<? extends T> clazz = null;
         try {
-            clazz = Class.forName(className);
+            clazz = (Class<? extends T>) Class.forName(className);
         } catch (ClassNotFoundException e) {
             // we are quiet on purpose - may be should log
         }
