@@ -692,7 +692,9 @@ public class CUtilities {
                 return resource;
             }
         }
-        throw new ApplicationNullPointerException(fileName, " not found in ", join(searchPaths, ","));
+        throw new ApplicationNullPointerException(fileName, " not found in ", join(searchPaths, ","),
+            " java.class.path=",System.getProperty("java.class.path"),
+            " java.library.path=",System.getProperty("java.library.path"));
     }
     public static InputStream getResourceAsStream(Object searchRoot, List<String> searchPaths) {
         for(String searchPath: searchPaths) {
