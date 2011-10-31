@@ -118,7 +118,7 @@ public abstract class AbstractXmlParser {
         StringBuilder builder = new StringBuilder();
         for (int index=0; index<children.getLength(); index++) {
             Node childNode = children.item(index);
-            builder.append(childNode.getNodeValue());
+            builder.append(childNode.getTextContent());
         }
         return builder.toString();
     }
