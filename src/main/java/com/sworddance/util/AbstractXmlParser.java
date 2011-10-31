@@ -112,6 +112,16 @@ public abstract class AbstractXmlParser {
         }
         return nodeList;
     }
+
+    protected String getChildElementsContentByTagName(Node parent, boolean onlyAllowed, String...tagnames) {
+        NodeListImpl children = this.getChildElementsByTagName(parent, onlyAllowed, tagnames);
+        StringBuilder builder = new StringBuilder();
+        for (int index=0; index<children.getLength(); index++) {
+            Node childNode = children.item(index);
+            builder.append(childNode.getNodeValue());
+        }
+        return builder.toString();
+    }
     /**
      * @return the fileName
      */
