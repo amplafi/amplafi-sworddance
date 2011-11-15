@@ -16,6 +16,7 @@ package com.sworddance.util;
 
 import java.lang.ref.Reference;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -67,6 +68,10 @@ public class NotNullIterator<T> extends BaseIterableIterator<T> {
      */
     public <K> NotNullIterator(Reference<K> ref) {
         super(ref);
+    }
+    
+    public NotNullIterator(Enumeration<?> enumeration) {
+        super(enumeration);
     }
     /**
      * @param first
