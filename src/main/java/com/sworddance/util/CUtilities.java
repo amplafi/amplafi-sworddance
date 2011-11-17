@@ -681,6 +681,9 @@ public class CUtilities {
         return searchPath;
     }
     public static InputStream getResourceAsStream(Object searchRoot, String fileName, String...alternateDirectories) {
+        return getResourceAsStream(searchRoot, fileName, false, alternateDirectories);
+    }
+    public static InputStream getResourceAsStream(Object searchRoot, String fileName, boolean optional, String...alternateDirectories) {
         List<String> searchPaths = createSearchPath(fileName, alternateDirectories);
         for(String searchPath: searchPaths) {
             InputStream resource;
@@ -693,11 +696,15 @@ public class CUtilities {
                 return resource;
             }
         }
-        throw new ApplicationNullPointerException(fileName, " not found in ", join(searchPaths, ","),
-            " java.class.path=",System.getProperty("java.class.path"),
-            " java.library.path=",System.getProperty("java.library.path"), " searchRoot =", getClassSafely(searchRoot));
+        if ( !optional) {
+            throw new ApplicationNullPointerException(fileName, " not found in ", join(searchPaths, ","),
+                " java.class.path=",System.getProperty("java.class.path"),
+                " java.library.path=",System.getProperty("java.library.path"), " searchRoot =", getClassSafely(searchRoot));
+        } else {
+            return null;
+        }
     }
-    public static InputStream getResourceAsStream(Object searchRoot, List<String> searchPaths) {
+    public static InputStream getResourceAsStream(Object searchRoot, boolean optional, List<String> searchPaths) {
         for(String searchPath: searchPaths) {
             InputStream resource;
             if ( searchRoot == null ) {
@@ -709,6 +716,12 @@ public class CUtilities {
                 return resource;
             }
         }
-        return null;
+        if ( !optional) {
+            throw new ApplicationNullPointerException("No listed file found ", join(searchPaths, ","),
+                " java.class.path=",System.getProperty("java.class.path"),
+                " java.library.path=",System.getProperty("java.library.path"), " searchRoot =", getClassSafely(searchRoot));
+        } else {
+            return null;
+        }
     }
 }
