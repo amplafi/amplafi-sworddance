@@ -14,6 +14,8 @@
 
 package com.sworddance.util;
 
+import java.util.Map;
+
 /**
  * @author patmoore
  * @param <V>
@@ -28,4 +30,14 @@ public abstract class AbstractParameterizedCallableImpl<V> implements Parameteri
         return this.executeCall();
     }
 
+    protected <K> Map<K, V>getMapFromParameters(Object...parameters) {
+        Map<K, V>map = CUtilities.get(parameters, 0);
+        ApplicationNullPointerException.notNull(map, "no map supplied");
+        return map;
+    }
+    protected <K> K getKeyFromParameters(Object...parameters) {
+        K key = CUtilities.get(parameters, 1);
+        ApplicationNullPointerException.notNull(key, "no key supplied");
+        return key;
+    }
 }

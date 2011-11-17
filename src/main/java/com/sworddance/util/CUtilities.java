@@ -376,6 +376,7 @@ public class CUtilities {
      * @param map if null then null is returned
      * @param key if null then null is returned
      * @param defaultValue if a {@link ParameterizedCallable} then map and key are passed to {@link ParameterizedCallable#executeCall(Object...)}(map,key)
+     * see also {@link com.sworddance.util.AbstractParameterizedCallableImpl}
      * @return the value in the map.
      */
     @SuppressWarnings("unchecked")

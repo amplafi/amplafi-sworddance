@@ -31,6 +31,8 @@ import com.sworddance.util.NewInstanceCallable;
 /**
  * A ConcurrentMap with a {@link Callable} initializer that will be used if key used in {@link #get(Object)}
  * has no entry or the entry is null.
+ *
+ * Use {@link com.sworddance.util.ParameterizedCallable} implementors if the key is needed to initialize.
  * @author patmoore
  * @param <K>
  * @param <V>
@@ -41,10 +43,20 @@ public class ConcurrentInitializedMap<K, V> implements ConcurrentMap<K, V>, Seri
     private ConcurrentMap<K, V> map;
     private Callable<V> initializer;
 
+    /**
+     * Use {@link com.sworddance.util.ParameterizedCallable} implementors if the key is needed to initialize.
+     *
+     * @param map
+     * @param initializer if a {@link com.sworddance.util.ParameterizedCallable} then map and key are passed to {@link com.sworddance.util.ParameterizedCallable#executeCall(Object...)}(map,key)
+     */
     public ConcurrentInitializedMap(ConcurrentMap<K, V> map, Callable<V> initializer) {
         this.map = map;
         this.initializer = initializer;
     }
+    /**
+     * Use {@link com.sworddance.util.ParameterizedCallable} implementors if the key is needed to initialize.
+     * @param initializer if a {@link com.sworddance.util.ParameterizedCallable} then map and key are passed to {@link com.sworddance.util.ParameterizedCallable#executeCall(Object...)}(map,key)
+     */
     public ConcurrentInitializedMap(Callable<V> initializer) {
         this(new ConcurrentHashMap<K, V>(), initializer);
     }
@@ -85,6 +97,7 @@ public class ConcurrentInitializedMap<K, V> implements ConcurrentMap<K, V>, Seri
     /**
      * @see java.util.Map#equals(java.lang.Object)
      */
+    @Override
     public boolean equals(Object o) {
         return map.equals(o);
     }
@@ -109,6 +122,7 @@ public class ConcurrentInitializedMap<K, V> implements ConcurrentMap<K, V>, Seri
     /**
      * @see java.util.Map#hashCode()
      */
+    @Override
     public int hashCode() {
         return map.hashCode();
     }
@@ -189,6 +203,7 @@ public class ConcurrentInitializedMap<K, V> implements ConcurrentMap<K, V>, Seri
     public Collection<V> values() {
         return map.values();
     }
+    @Override
     public String toString() {
         return this.map.toString();
     }
