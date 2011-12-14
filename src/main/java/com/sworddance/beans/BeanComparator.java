@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -75,13 +76,33 @@ public class BeanComparator<T> extends BeanWorker {
         for (String property:getPropertyNames()) {
         	Object oneValue = this.getValue(base, property);
         	Object twoValue = this.getValue(derived, property);
-			if (this.subComparators.containsKey(property)) {
-        		for(String subPropertyName: this.subComparators.get(property).compareTo(oneValue, twoValue)) {
-        			differences.add(property+"."+subPropertyName);
-        		}
-        	} else if (!compareMore(oneValue, twoValue)) {
-                differences.add(property);
-        	}
+        	if ( oneValue != twoValue) {
+            	if( oneValue == null || twoValue == null) {
+            	    differences.add(property);
+            	} else if (this.subComparators.containsKey(property)) {
+            		for(String subPropertyName: this.subComparators.get(property).compareTo(oneValue, twoValue)) {
+            			differences.add(property+"."+subPropertyName);
+            		}
+    			} else if ( ! oneValue.equals(twoValue) ) {
+    			    if ( oneValue instanceof Iterable && twoValue instanceof Iterable) {
+                        Iterator<Object> iter1 = ((Iterable<Object>)oneValue).iterator();
+                        Iterator<Object> iter2 = ((Iterable<Object>)twoValue).iterator();
+    			        for(;iter1.hasNext()&&iter2.hasNext();) {
+    			            Object sub1 = iter1.next();
+    			            Object sub2 = iter2.next();
+    			            if (!compareMore(sub1, sub2)) {
+    			                differences.add(property);
+    			                break;
+    			            }
+    			        }
+    			        if ( iter1.hasNext() != iter2.hasNext()) {
+                            differences.add(property);
+    			        }
+    			    } else {
+    			        differences.add(property);
+    			    }
+            	}
+            }
         }
         return differences;
     }
