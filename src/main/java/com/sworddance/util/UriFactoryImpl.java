@@ -268,9 +268,10 @@ public class UriFactoryImpl {
      * @param uri
      * @return the domain
      */
-    public static String getDomain(URI uri) {
+    public static String getSecondLevelDomain(URI uri) {
         String domain = null;
         if (uri != null) {
+        	uri = createUriWithSchema(uri);
             domain = uri.getHost();
             if (isNotBlank(domain)) {
                 String[] parts = domain.split("\\.");
@@ -671,4 +672,11 @@ public class UriFactoryImpl {
             return false;
         }
     }
+	public static URI createUriWithQuery(URI uri, Map<String, String> parameters) {
+		Map<String, String> queryMap = getQueryMap(uri);
+		queryMap.putAll(parameters);
+		URI noQueryUri = createUriWithSchemaAndPath(uri);
+		String queryString = createQueryString(queryMap);
+		return URI.create(noQueryUri + "?" + queryString);
+	}
 }
