@@ -14,6 +14,7 @@
 
 package com.sworddance.util;
 
+import java.awt.print.Book;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -675,6 +676,11 @@ public class UriFactoryImpl {
 	public static URI createUriWithQuery(URI uri, Map<String, String> parameters) {
 		Map<String, String> queryMap = getQueryMap(uri);
 		queryMap.putAll(parameters);
+		String noQueryUriString = uri.toString();
+		int queryDelimiterIndex = noQueryUriString.indexOf('?');
+		if (queryDelimiterIndex > -1) {
+			noQueryUriString = noQueryUriString.substring(0, queryDelimiterIndex);
+		}
 		URI noQueryUri = createUriWithSchemaAndPath(uri);
 		String queryString = createQueryString(queryMap);
 		return URI.create(noQueryUri + "?" + queryString);
