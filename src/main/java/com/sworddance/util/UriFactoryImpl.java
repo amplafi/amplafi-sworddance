@@ -681,7 +681,7 @@ public class UriFactoryImpl {
 		if (queryDelimiterIndex > -1) {
 			noQueryUriString = noQueryUriString.substring(0, queryDelimiterIndex);
 		}
-		URI noQueryUri = createUriWithSchemaAndPath(uri);
+		URI noQueryUri = createUriWithSchemaAndPath(noQueryUriString);
 		String queryString = createQueryString(queryMap);
 		return URI.create(noQueryUri + "?" + queryString);
 	}
