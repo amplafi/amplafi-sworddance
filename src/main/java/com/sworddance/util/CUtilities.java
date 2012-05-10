@@ -14,14 +14,18 @@
 
 package com.sworddance.util;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -685,43 +689,111 @@ public class CUtilities {
     }
     public static InputStream getResourceAsStream(Object searchRoot, String fileName, boolean optional, String...alternateDirectories) {
         List<String> searchPaths = createSearchPath(fileName, alternateDirectories);
+        return getResourceAsStream(searchRoot, fileName, optional, searchPaths);
+    }
+
+    public static InputStream getResourceAsStream(Object searchRoot, boolean optional, List<String> searchPaths) {
+        return getResourceAsStream(searchRoot, null, optional, searchPaths);
+    }
+    private static InputStream getResourceAsStream(Object searchRoot, String fileName, boolean optional, List<String> searchPaths) {
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         for(String searchPath: searchPaths) {
-            InputStream resource;
-            if ( searchRoot == null ) {
-                resource = ClassLoader.getSystemResourceAsStream(searchPath);
-            } else {
+            InputStream resource = null;
+            if ( searchRoot != null ) {
                 resource = searchRoot.getClass().getResourceAsStream(searchPath);
+            }
+
+            if (resource == null && contextClassLoader!=null) {
+                resource = contextClassLoader.getResourceAsStream( searchPath );
+            }
+            if (resource == null ) {
+                resource = ClassLoader.getSystemResourceAsStream(searchPath);
             }
             if ( resource != null) {
                 return resource;
             }
         }
         if ( !optional) {
-            throw new ApplicationNullPointerException(fileName, " not found in ", join(searchPaths, ","),
-                " java.class.path=",System.getProperty("java.class.path"),
-                " java.library.path=",System.getProperty("java.library.path"), " searchRoot =", getClassSafely(searchRoot));
+            if ( fileName != null) {
+                throw new ApplicationNullPointerException(fileName, " not found in ", join(searchPaths, ","),
+                    " java.class.path=",System.getProperty("java.class.path"),
+                    " java.library.path=",System.getProperty("java.library.path"), " searchRoot =", getClassSafely(searchRoot));
+            } else {
+                throw new ApplicationNullPointerException("No listed file found ", join(searchPaths, ","),
+                    " java.class.path=",System.getProperty("java.class.path"),
+                    " java.library.path=",System.getProperty("java.library.path"), " searchRoot =", getClassSafely(searchRoot));
+            }
         } else {
             return null;
         }
     }
-    public static InputStream getResourceAsStream(Object searchRoot, boolean optional, List<String> searchPaths) {
+    public static Collection<URL> getResources(Object searchRoot, String fileName, String...alternateDirectories) {
+        return getResources(searchRoot, fileName, false, alternateDirectories);
+    }
+    public static Collection<URL> getResources(Object searchRoot, String fileName, boolean optional, String...alternateDirectories) {
+        List<String> searchPaths = createSearchPath(fileName, alternateDirectories);
+        return getResources(searchRoot, fileName, optional, searchPaths);
+    }
+
+    public static Collection<URL> getResources(Object searchRoot, boolean optional, List<String> searchPaths) {
+        return getResources(searchRoot, null, optional, searchPaths);
+    }
+    /**
+     * @param searchRoot
+     * @param fileName
+     * @param optional
+     * @param searchPaths
+     * @return a de-duped Enumeration<URL> never returns null.
+     */
+    private static Collection<URL> getResources(Object searchRoot, String fileName, boolean optional, List<String> searchPaths) {
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        ClassLoader searchRootClassLoader = searchRoot != null?searchRoot.getClass().getClassLoader():null;
+        HashMap<String, URL> results = new HashMap<String, URL>();
         for(String searchPath: searchPaths) {
-            InputStream resource;
-            if ( searchRoot == null ) {
-                resource = ClassLoader.getSystemResourceAsStream(searchPath);
-            } else {
-                resource = searchRoot.getClass().getResourceAsStream(searchPath);
+            Enumeration<URL> resource = null;
+            if ( searchRootClassLoader != null ) {
+                try {
+                    resource = searchRootClassLoader.getResources(searchPath);
+                    for(URL url : NotNullIterator.<URL>newNotNullIterator(resource)) {
+                        results.put(url.toString(), url);
+                    }
+                } catch (IOException e) {
+                    // TODO what?
+                }
             }
-            if ( resource != null) {
-                return resource;
+            if (contextClassLoader!=null) {
+                try {
+                    resource = contextClassLoader.getResources( searchPath );
+                    for(URL url : NotNullIterator.<URL>newNotNullIterator(resource)) {
+                        results.put(url.toString(), url);
+                    }
+                } catch (IOException e) {
+                    // TODO what?
+                }
+            }
+            if (resource == null ) {
+                try {
+                    resource = ClassLoader.getSystemResources(searchPath);
+                    for(URL url : NotNullIterator.<URL>newNotNullIterator(resource)) {
+                        results.put(url.toString(), url);
+                    }
+                } catch (IOException e) {
+                    // TODO what?
+                }
             }
         }
-        if ( !optional) {
-            throw new ApplicationNullPointerException("No listed file found ", join(searchPaths, ","),
-                " java.class.path=",System.getProperty("java.class.path"),
-                " java.library.path=",System.getProperty("java.library.path"), " searchRoot =", getClassSafely(searchRoot));
+        if ( isEmpty(results) && !optional) {
+            if ( fileName != null) {
+                throw new ApplicationNullPointerException(fileName, " not found in ", join(searchPaths, ","),
+                    " java.class.path=",System.getProperty("java.class.path"),
+                    " java.library.path=",System.getProperty("java.library.path"), " searchRoot =", getClassSafely(searchRoot));
+            } else {
+                throw new ApplicationNullPointerException("No listed file found ", join(searchPaths, ","),
+                    " java.class.path=",System.getProperty("java.class.path"),
+                    " java.library.path=",System.getProperty("java.library.path"), " searchRoot =", getClassSafely(searchRoot));
+            }
         } else {
-            return null;
+            return results.values();
         }
     }
 }
