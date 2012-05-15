@@ -31,6 +31,8 @@ import static java.util.concurrent.TimeUnit.*;
 
 import org.apache.commons.logging.Log;
 
+import com.sworddance.util.ApplicationIllegalArgumentException;
+
 /**
  * manages a collection of {@link TaskGroup}s that contain tasks that need to
  * be executed. Currently only 1 TaskGroup can be assigned. this will change in
@@ -78,6 +80,7 @@ public class TaskControl implements Runnable {
     @SuppressWarnings("unchecked")
     public TaskControl(Comparator<PrioritizedTask> activeComparator, int maxThreads, ThreadFactory threadFactory, Log log) {
         this.log = log;
+        ApplicationIllegalArgumentException.notNull(activeComparator, "activeComparator");
         this.eligibleTasks = new PriorityBlockingQueue<PrioritizedTask>(20, activeComparator);
         this.stateChangeNotificator = new ReentrantLock();
         this.newTasks = this.stateChangeNotificator.newCondition();
@@ -96,8 +99,11 @@ public class TaskControl implements Runnable {
         this.privateThreadFactory = true;
     }
 
+    public TaskControl(int maxThreads, Log log) {
+        this(new PriorityEligibleWorkItemComparator(), maxThreads, log);
+    }
     public TaskControl(Log log) {
-        this(new PriorityEligibleWorkItemComparator(), 5, log);
+        this(5, log);
     }
 
 
