@@ -150,6 +150,17 @@ public class TestUtilities {
         clazz = getClassSafely(null);
         assertEquals(clazz, null);
     }
+    @Test
+    public void testFirstNonNull() {
+        String actual = getFirstNonNull(null, "first", "second");
+        assertEquals(actual, "first");
+        actual = getFirstNonNull("first");
+        assertEquals(actual, "first");
+        actual = getFirstNonNull(Arrays.asList(null, "first", "second"));
+        assertEquals(actual, "first");
+        actual = getFirstNonNull(new String[]{null, "first", "second"});
+        assertEquals(actual, "first");
+    }
     @Test(dataProvider="jsQuoteTesting")
     public void testJsQuoting(String inputBasePattern, List<String> expectedMatches, List<String> expectedNotMatches) {
         String s = jsQuoteForPattern(inputBasePattern);

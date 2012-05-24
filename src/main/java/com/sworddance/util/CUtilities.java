@@ -178,11 +178,23 @@ public class CUtilities {
     public static <T> T getFirst(Object collection) {
         return (T) get(collection, 0);
     }
-    public static <T> T getFirstNonNull(Object collection) {
-        T result = (T)getFirst(collection);
+    public static <T> T getFirstNonNull(Object... collection) {
+        Object collections;
+        switch(collection.length) {
+        case 0:
+            return null;
+        case 1:
+            collections = collection[0];
+            break;
+        default:
+            collections = collection;
+            break;
+        }
+        T result = (T)getFirst(collections);
         if ( result == null) {
-            for(int i = 1; i < size(collection); i++) {
-                result = (T)get(collection, i);
+            int size = size(collections);
+            for(int i = 1; i < size; i++) {
+                result = (T)get(collections, i);
                 if ( result != null) {
                     break;
                 }
