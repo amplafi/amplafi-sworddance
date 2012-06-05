@@ -14,7 +14,6 @@
 
 package com.sworddance.util;
 
-import java.awt.print.Book;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -668,10 +667,11 @@ public class UriFactoryImpl {
     public static boolean isHttpProtocol(URI uri) {
         if ( uri != null) {
             String scheme = uri.getScheme();
-            return HTTP_SCHEMES.matcher(scheme).find();
-        } else {
-            return false;
+            if ( scheme != null) {
+                return HTTP_SCHEMES.matcher(scheme).find();
+            }
         }
+        return false;
     }
 	public static URI createUriWithQuery(URI uri, Map<String, String> parameters) {
 		Map<String, String> queryMap = getQueryMap(uri);
