@@ -36,7 +36,7 @@ public class RandomKeyGenerator {
 
     /**
      *
-     * @return next key with length of 7 symbols.
+     * @return next key with default length symbols.
      */
     public String nextKey() {
         return nextKey(this.defaultLength);
