@@ -42,12 +42,12 @@ public interface FiniteStateHolder<FS extends FiniteState<FS>> {
     public boolean isTransitioning();
 
     /**
-     * @return the messagePointAction that has most recently been completed.
+     * @return the FiniteState that has most recently been completed.
      */
     public FS getFiniteState();
 
     /**
-     * @return the messagePointAction being transitioned to (if any).
+     * @return the FiniteState being transitioned to (if any).
      */
     public FS getNextFiniteState();
 

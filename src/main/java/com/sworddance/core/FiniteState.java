@@ -31,6 +31,11 @@ import static com.sworddance.util.CUtilities.*;
         private List<ManagerState> allowedTransitions;
 
         public static final FiniteStateChecker<ManagerState> STATE_CHECKER = new FiniteStateChecker<ManagerState>();
+
+        private void setValidNextStatus(ManagerState...validNextStatus) {
+            this.allowedTransitions = Arrays.asList(validNextStatus);
+        }
+
         public ManagerState checkToChange(ManagerState newFiniteState) {
             return STATE_CHECKER.checkToChange(this, newFiniteState);
         }
