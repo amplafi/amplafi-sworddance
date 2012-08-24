@@ -91,14 +91,14 @@ public interface FiniteState<T extends FiniteState<T>> {
          * method is intentionally conservative.
          *
          * @param oldFiniteState
-         * @param newFiniteState
+         * @param newFiniteState maybe null. Null is checked for like any other state.
          * @return true if oldFiniteState == (null | newFiniteState ) or newFiniteState in ( alwaysAllowed | old.allowed set )
          * false the subclasses can do additional checks.
          */
         public boolean isAllowedTransition(T oldFiniteState, T newFiniteState) {
             if ( oldFiniteState == null || oldFiniteState == newFiniteState) {
                 return true;
-            } else if ( newFiniteState == null || isTerminalState(oldFiniteState)) {
+            } else if ( isTerminalState(oldFiniteState)) {
                 return false;
             } else if ( this.alwaysAllowedTransitions.contains(newFiniteState)) {
                 return true;
