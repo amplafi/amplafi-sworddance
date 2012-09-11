@@ -2,6 +2,7 @@ package com.sworddance.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -207,5 +208,17 @@ public class TestUtilities {
                     "    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);\n" +
                     "    })();\n")}
         };
+    }
+    
+    @Test
+    public void testUpdateCollectionAsNeeded(){
+        Collection<String> a = CUtilities.asSet("1");
+        Collection<String> b = CUtilities.asSet("1", "2");
+        assertTrue(CUtilities.updateCollectionAsNeeded(a, b));
+        assertFalse(CUtilities.updateCollectionAsNeeded(a, b));
+        a = CUtilities.asSet("1");
+        b = CUtilities.asSet("1", "2");
+        assertTrue(CUtilities.updateCollectionAsNeeded(b, a));
+        assertFalse(CUtilities.updateCollectionAsNeeded(b, a));
     }
 }

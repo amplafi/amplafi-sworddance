@@ -586,6 +586,7 @@ public class CUtilities {
                 }
                 // add any remaining objects that are actually new.
                 masterCollection.addAll(remainingValues);
+                changed = changed || remainingValues.size() > 0;
             }
         }
         return changed;
