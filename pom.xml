@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.amplafi</groupId>
     <artifactId>amplafi-sworddance</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     
     <packaging>jar</packaging>
     <name>Amplafi Sworddance</name>
@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.amplafi</groupId>
         <artifactId>amplafi-opensource-parent</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
         <relativePath>../amplafi-opensource-parent/pom.xml</relativePath>
     </parent>
     <organization>
