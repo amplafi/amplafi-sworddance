@@ -121,6 +121,22 @@ public class UriFactoryImpl {
     }
 
     /**
+     * suitable for namespacing
+     * @return the uri with relative schema ( ex. //facebook.com/path/to/stuff?query )
+     */
+    public static URI createNamespaceUri(Object uriStr) {
+        URI temp = createUriWithOptions(uriStr, true, true);
+        try {
+            URI namesUri = new URI(null,
+                temp.getUserInfo(), temp.getHost(), -1,
+                temp.getPath(), temp.getQuery(), temp.getFragment());
+            return namesUri;
+        } catch (URISyntaxException e) {
+            return null;
+        }
+    }
+
+    /**
      * Creates uri and ensures path is not empty. 'www.amplafi.com' -> 'www.amplafi.com/'
      *
      * @param uriStr input uri string
