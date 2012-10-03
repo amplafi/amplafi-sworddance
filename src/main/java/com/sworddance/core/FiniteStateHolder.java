@@ -90,6 +90,14 @@ public interface FiniteStateHolder<FS extends FiniteState<FS>> {
     public <TR extends FiniteStateHolder<FS>> TR initTransition(FS nextFiniteState);
 
     /**
+     * sets the next finite state if allowed, returns this object silently otherwise.
+     * 
+     * @param nextFiniteState
+     * @return this or possibly new FiniteStateHolder.
+     */
+    public <TR extends FiniteStateHolder<FS>> TR initTransitionIfAllowed(FS nextFiniteState);
+    
+    /**
      * Cancels current transition.
      */
     public void cancelTransition();
@@ -160,6 +168,14 @@ public interface FiniteStateHolder<FS extends FiniteState<FS>> {
             ApplicationIllegalArgumentException.valid(!isNewFiniteStateHolderNeeded(nextFiniteState), "Default behavior cannot handle creating new FSH for ", this," transitioning to ", nextFiniteState);
             return (TR) doInitTransition(nextFiniteState);
         }
+        
+        public <TR extends FiniteStateHolder<FS>> TR initTransitionIfAllowed(FS nextFiniteState) {
+            if (isAllowedTransition(nextFiniteState)) {
+                return initTransition(nextFiniteState);
+            }
+            return (TR) this;
+        }
+        
         /**
          * Note that null nextFiniteState is treated like a state that must be transitioned to.
          * @param nextFiniteState
