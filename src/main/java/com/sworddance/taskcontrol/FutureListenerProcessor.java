@@ -80,7 +80,7 @@ public class FutureListenerProcessor<MV,RV> implements FutureListeningNotifier<M
      * @param <MF>
      * @param returnedFuture
      * @param monitoredFuture
-     * @return
+     * @return the chained FutureListenerProcessor
      */
     public static <MV, RV, RF extends Future<RV>, MF extends FutureListenerProcessorHolder> FutureListenerProcessor<MV, RV> createChainedFutureListenerProcessor(RF returnedFuture, MF monitoredFuture) {
         FutureListenerProcessor<MV,RV> futureListenerProcessor = new FutureListenerProcessor<MV, RV>();

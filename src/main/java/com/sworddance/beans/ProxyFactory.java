@@ -53,8 +53,8 @@ public interface ProxyFactory {
 
     /**
      *
-     * @param proxy an object that is possibly really
-     * @return
+     * @param proxy an object that is possibly already a proxymapper (if so then proxy is returned)
+     * @return the proxyMapper
      */
     <I, R extends ProxyMapper<I, ? extends I>> R getProxyMapper(I proxy);
     <I> I getRealObject(I proxy);

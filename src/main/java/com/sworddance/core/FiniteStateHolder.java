@@ -168,7 +168,7 @@ public interface FiniteStateHolder<FS extends FiniteState<FS>> {
             ApplicationIllegalArgumentException.valid(!isNewFiniteStateHolderNeeded(nextFiniteState), "Default behavior cannot handle creating new FSH for ", this," transitioning to ", nextFiniteState);
             return (TR) doInitTransition(nextFiniteState);
         }
-
+        @SuppressWarnings("unchecked")
         public <TR extends FiniteStateHolder<FS>> TR initTransitionIfAllowed(FS nextFiniteState) {
             if (isAllowedTransition(nextFiniteState)) {
                 return initTransition(nextFiniteState);
@@ -178,7 +178,7 @@ public interface FiniteStateHolder<FS extends FiniteState<FS>> {
         /**
          * Note that null nextFiniteState is treated like a state that must be transitioned to.
          * @param nextFiniteState
-         * @return
+         * @return this
          */
         @SuppressWarnings("unchecked")
         protected <TR extends FiniteStateHolder<FS>> TR doInitTransition(FS nextFiniteState) {

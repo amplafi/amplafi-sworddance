@@ -30,7 +30,7 @@ public class FutureListenerProcessorMap {
     /**
      * Used when it is o.k. to wrap the FutureResult
      * @param futureResultImplementor
-     * @return
+     * @return the futureResultImplementor if it is done otherwise FutureResultWrapper wrapping it.
      */
     public FutureResultImplementor wrap(FutureResultImplementor futureResultImplementor) {
         if ( !futureResultImplementor.isDone() ) {
@@ -39,7 +39,7 @@ public class FutureListenerProcessorMap {
             if (this.futureListenerProcessorMap.containsKey(futureResultImplementor)) {
                 // existing FutureListenerProcessor: need to notify existing FutureListeners
                 FutureListenerProcessor futureListenerProcessor = this.futureListenerProcessorMap.get(futureResultImplementor);
-
+                // TODO : HACK : investigate what is to happen here.
             }
             return futureResultImplementor;
         }

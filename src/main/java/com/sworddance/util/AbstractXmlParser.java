@@ -48,9 +48,7 @@ public abstract class AbstractXmlParser {
     public AbstractXmlParser(Document xmlDocument) {
         this.xmlDocument = xmlDocument;
     }
-    /**
-     * @return
-     */
+
     protected DocumentBuilder createDocumentBuilder() {
         try {
             return DOCUMENT_BUILDER_FACTORY.newDocumentBuilder();
@@ -91,10 +89,11 @@ public abstract class AbstractXmlParser {
         }
     }
     /**
-     * For what ever reason this function is not available via the javax.xml api
+     * For whatever reason this function is not available via the javax.xml api
      * @param parent
+     * @param onlyAllowed throw ApplicationIllegalArgumentException if an unknown element is encountered.
      * @param tagnames
-     * @return
+     * @return the NodeListImpl containing just the child nodes with the supplied tagnames
      */
     protected NodeListImpl getChildElementsByTagName(Node parent, boolean onlyAllowed, String...tagnames) {
         NodeListImpl nodeList = new NodeListImpl();

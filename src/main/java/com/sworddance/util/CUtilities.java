@@ -527,7 +527,7 @@ public class CUtilities {
      * @param <K>
      * @param <V>
      * @param keysAndValues
-     * @return
+     * @return map with no null keys or values.
      */
     public static <K, V> Map<K, V> createMapSkipNullValues(Object... keysAndValues) {
         return createMap(true, keysAndValues);
