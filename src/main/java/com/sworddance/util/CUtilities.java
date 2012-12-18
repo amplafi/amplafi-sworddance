@@ -104,12 +104,36 @@ public class CUtilities {
             return false;
         }
     }
+    /**
+     * filters out null values
+     * @param collection if null then return false
+     * @param values
+     * @return true collection changed
+     */
+    public static <T> boolean addAllIfNotContains(Collection<T> collection, T... values) {
+        boolean collectionChanged = false;
+        if ( collection != null && values != null) {
+            collectionChanged = addAllIfNotContains(collection, Arrays.asList(values));
+        }
+        return collectionChanged;
+    }
+    public static <T> boolean addAllIfNotContains(Collection<T> collection, Collection<T> values) {
+        boolean collectionChanged = false;
+        if ( collection != null) {
+            for(T value : NotNullIterator.<T>newNotNullIterator(values)) {
+                if ( !collection.contains(value)) {
+                    collectionChanged |= collection.add(value);
+                }
+            }
+        }
+        return collectionChanged;
+    }
 
     /**
      * @param <T>
      * @param collection
      * @param newValues
-     * @return collection
+     * @return true collection changed
      */
     public static <T> boolean addAllNotNull(Collection<T> collection, T... newValues) {
         if ( collection != null && newValues != null) {
@@ -119,13 +143,13 @@ public class CUtilities {
         }
     }
     public static <T> boolean addAllNotNull(Collection<T> collection, Collection<T> newValues) {
-        boolean result = false;
+        boolean collectionChanged = false;
         if ( collection != null ) {
             for(T newValue: NotNullIterator.<T>newNotNullIterator(newValues)) {
-                result |= collection.add(newValue);
+                collectionChanged |= collection.add(newValue);
             }
         }
-        return result;
+        return collectionChanged;
     }
 
     /**
