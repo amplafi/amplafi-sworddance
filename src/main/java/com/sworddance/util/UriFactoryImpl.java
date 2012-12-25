@@ -350,24 +350,23 @@ public class UriFactoryImpl {
         }
     }
     /**
-     *
+     * NOT checking for !uri.{@link java.net.URI#isAbsolute()} because protocol-less uri ( '//example.com' ) is not absolute.
      * @param uri
-     * @return false if uri == null or !uri.{@link java.net.URI#isAbsolute()} or the uri.getHost() has no top-level-domain (no '.' in the last 5 characters )
+     * @return false if uri == null or the uri.getHost() has no top-level-domain (no '.' in the last 8 characters )
      */
     public static boolean isNonLocalUri(URI uri) {
         if ( uri == null ) {
             return false;
         } else {
             String host = uri.getHost();
-            if ( isBlank(host) || !uri.isAbsolute() ) {
-                return false;
-            } else {
+            if ( isNotBlank(host) ) {
                 // top-level domains ( .info, .com, .org, etc )  are at most 4 characters long + 1 for the dot.
-                // so checking for a '.' in the last 5 characters is a reasonable quick test to make sure the domain is
+                // so checking for a '.' in the last 8 characters is a reasonable quick test to make sure the domain is
                 // a real domain.
-                int dotPos = host.substring(Math.max(host.length()-5, 0)).indexOf('.');
+                int dotPos = host.substring(Math.max(host.length()-8, 0)).indexOf('.');
                 return dotPos >=0;
             }
+            return false;
         }
     }
     /**
