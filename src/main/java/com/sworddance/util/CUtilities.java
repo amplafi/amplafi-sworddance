@@ -290,6 +290,9 @@ public class CUtilities {
     }
 
     /**
+     * TODO: really should return a List<> but need to know the component type for the toArray to be proper.
+     * Example:
+     * [ x, [y, x], m] combines to [x,y,x,m]
      * @param <T>
      * @param componentType if null then the component type is attempted to be determined.
      * @param objects objects of <T> or arrays of <T> objects.

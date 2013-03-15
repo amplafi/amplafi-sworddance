@@ -51,6 +51,9 @@ public class ApplicationIllegalStateException extends IllegalStateException {
         }
         return null;
     }
+    public static ApplicationIllegalStateException sameAs(Object object1, Object object2, Object... failMessageParts) {
+        return checkState(object1 == object2, failMessageParts);
+    }
     public static ApplicationIllegalStateException notNull(Object mustBeNotNull,Object... failMessageParts) {
         return checkState(mustBeNotNull != null, failMessageParts);
     }

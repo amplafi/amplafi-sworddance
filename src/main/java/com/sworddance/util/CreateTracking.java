@@ -90,12 +90,15 @@ public class CreateTracking implements Serializable {
         }
         return this.createStr;
     }
+
     public static void initialize(String propertySetting) {
         CREATE_TRACK_ALL = Boolean.parseBoolean(propertySetting);
         classNames.clear();
         createTracking.clear();
         classNameMatching = null;
         if ( !CREATE_TRACK_ALL && isNotBlank(propertySetting)) {
+            // if we are not tracking all classes then go through list of classes we are tracking.
+            // stored in the system property CREATE_TRACKING_SYSTEM_PROPERTY (create-tracking)
             StringBuilder patternBuilder = new StringBuilder();
             String[] classNamesArr = propertySetting.split(",");
             for(String className: NotNullIterator.<String>newNotNullIterator(classNamesArr)) {
