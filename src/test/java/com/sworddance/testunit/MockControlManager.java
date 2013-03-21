@@ -13,14 +13,14 @@
  */
 package com.sworddance.testunit;
 
-import static org.easymock.classextension.EasyMock.createControl;
-import static org.easymock.classextension.EasyMock.createNiceControl;
-import static org.easymock.classextension.EasyMock.createStrictControl;
+import static org.easymock.EasyMock.createControl;
+import static org.easymock.EasyMock.createNiceControl;
+import static org.easymock.EasyMock.createStrictControl;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.easymock.classextension.IMocksControl;
+import org.easymock.IMocksControl;
 
 /**
  * This provides a central point that can be used to retrieve the current mock control objects

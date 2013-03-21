@@ -1,18 +1,23 @@
 package com.sworddance.testunit;
 
-import java.lang.reflect.Method;
+import static com.sworddance.testunit.MockControlManager.assignThreadControlSource;
+import static com.sworddance.testunit.MockControlManager.newControlSource;
+import static com.sworddance.testunit.MockControlManager.newStrictControlSource;
+import static com.sworddance.testunit.MockControlManager.unassignThreadControlSource;
 
-import static com.sworddance.testunit.MockControlManager.*;
+import java.lang.reflect.Method;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.easymock.classextension.EasyMock;
-import org.easymock.classextension.IMocksControl;
+import org.easymock.EasyMock;
+import org.easymock.IMocksControl;
 import org.easymock.internal.MocksControl.MockType;
 import org.easymock.matchers.Capturer;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+
+import com.sworddance.testunit.MockControlManager.ControlSource;
 
 /**
  * Utility methods required for using Mocks.
