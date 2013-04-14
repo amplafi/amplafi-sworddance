@@ -31,6 +31,8 @@ import static org.apache.commons.lang.StringUtils.*;
 
 
 /**
+ * NOTE: Excessive use of this class can be very expensive. Use only in a development/debug situation.
+ *
  * Simple class to track where an object was created.
  * @author Patrick Moore
  */
