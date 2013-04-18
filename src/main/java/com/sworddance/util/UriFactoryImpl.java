@@ -298,6 +298,15 @@ public class UriFactoryImpl {
         }
         return domain;
     }
+    
+    public static String getDomain(URI uri) {
+        String domain = null;
+        if (uri != null) {
+            uri = createUriWithSchema(uri);
+            domain = uri.getHost();
+        }
+        return domain;
+    }
 
     /**
      * TODO need to figure out what parts of WebLocationImpl belong here.
@@ -700,4 +709,5 @@ public class UriFactoryImpl {
 		String queryString = createQueryString(queryMap);
 		return URI.create(noQueryUri + "?" + queryString);
 	}
+
 }
