@@ -258,4 +258,16 @@ public class TestUriFactoryImpl {
             }
         }
     }
+
+    /**
+     * Ensure that domains that are 3-deep like the uk domains are handled correctly
+     * Ensure that 'www.' is properly stripped
+     */
+    @Test
+    public void testDomainHandling() {
+        assertEquals(getDomain(URI.create("http://bbc.co.uk")),"bbc.co.uk");
+        assertEquals(getDomain(URI.create("http://www.farreach.es")),"farreach.es");
+        assertEquals(getDomain(URI.create("wwwbbc.co.uk")),"wwwbbc.co.uk");
+        assertEquals(getDomain(URI.create("www.bbc.co.uk")),"bbc.co.uk");
+    }
 }

@@ -284,26 +284,15 @@ public class UriFactoryImpl {
      * @param uri
      * @return the domain
      */
-    public static String getSecondLevelDomain(URI uri) {
-        String domain = null;
-        if (uri != null) {
-        	uri = createUriWithSchema(uri);
-            domain = uri.getHost();
-            if (isNotBlank(domain)) {
-                String[] parts = domain.split("\\.");
-                if (parts.length > 2) {
-                    return parts[parts.length - 2] + "." + parts[parts.length - 1];
-                }
-            }
-        }
-        return domain;
-    }
-    
     public static String getDomain(URI uri) {
         String domain = null;
         if (uri != null) {
             uri = createUriWithSchema(uri);
             domain = uri.getHost();
+            if(domain.startsWith("www.")) {
+                // exclude the 'www.' part
+                domain = domain.substring(4);
+            }
         }
         return domain;
     }
