@@ -269,5 +269,7 @@ public class TestUriFactoryImpl {
         assertEquals(getDomain(URI.create("http://www.farreach.es")),"farreach.es");
         assertEquals(getDomain(URI.create("wwwbbc.co.uk")),"wwwbbc.co.uk");
         assertEquals(getDomain(URI.create("www.bbc.co.uk")),"bbc.co.uk");
+        assertEquals(getDomain(URI.create("wWw.bbc.co.uk")),"bbc.co.uk");
+        assertEquals(getDomain(URI.create("wWw.BBc.Co.uk")),"bbc.co.uk");
     }
 }

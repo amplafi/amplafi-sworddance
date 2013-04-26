@@ -288,11 +288,13 @@ public class UriFactoryImpl {
         String domain = null;
         if (uri != null) {
             uri = createUriWithSchema(uri);
-            domain = uri.getHost();
+            // TODO: possible internationalization problem (Turkey's I and i )
+            domain = uri.getHost().toLowerCase();
             if(domain.startsWith("www.")) {
                 // exclude the 'www.' part
                 domain = domain.substring(4);
             }
+            // SECURITY : make sure that the domain name has a '.' in it.
         }
         return domain;
     }
