@@ -271,5 +271,6 @@ public class TestUriFactoryImpl {
         assertEquals(getDomain(URI.create("www.bbc.co.uk")),"bbc.co.uk");
         assertEquals(getDomain(URI.create("wWw.bbc.co.uk")),"bbc.co.uk");
         assertEquals(getDomain(URI.create("wWw.BBc.Co.uk")),"bbc.co.uk");
+        assertEquals(getDomain(URI.create("www.uk")),"www.uk");
     }
 }

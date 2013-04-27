@@ -290,11 +290,12 @@ public class UriFactoryImpl {
             uri = createUriWithSchema(uri);
             // TODO: possible internationalization problem (Turkey's I and i )
             domain = uri.getHost().toLowerCase();
-            if(domain.startsWith("www.")) {
+            // the domain splitting is to look out for some domain like "www.es" where the domain itself is 'www'
+            String[] domainComponents = domain.split("\\.");
+            if(domainComponents.length > 2 && domainComponents[0].equalsIgnoreCase("www")) {
                 // exclude the 'www.' part
                 domain = domain.substring(4);
             }
-            // SECURITY : make sure that the domain name has a '.' in it.
         }
         return domain;
     }
