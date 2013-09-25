@@ -106,7 +106,7 @@ public interface FiniteState<T extends FiniteState<T>> {
                 return oldFiniteState.getAllowedTransitions().contains(newFiniteState);
             }
         }
-        @Deprecated
+
         public boolean isAllowedTransition(FiniteStateHolder<T> finiteStateHolder, T nextFiniteState) {
             // do not call isAllowedTransition(FiniteState,FiniteState) directly. want to allow the FiniteState to
             // have its own coding.
@@ -130,7 +130,6 @@ public interface FiniteState<T extends FiniteState<T>> {
             return finiteState != null && (isEmpty(finiteState.getAllowedTransitions()));
         }
 
-        @Deprecated
         public T getCurrentFiniteState(FiniteStateHolder<T> finiteStateHolder) {
             return finiteStateHolder.getNextFiniteState() != null? finiteStateHolder.getNextFiniteState(): finiteStateHolder.getFiniteState();
         }
@@ -141,7 +140,6 @@ public interface FiniteState<T extends FiniteState<T>> {
          * @param nextFiniteState
          * @return true if currentFiniteState != nextFiniteState and currentFiniteState-to-nextFiniteState is allowed.
          */
-        @Deprecated
         public boolean isTransitionNeeded(FiniteStateHolder<T> finiteStateHolder, T nextFiniteState) {
             T currentFiniteState = finiteStateHolder.getCurrentFiniteState();
             return currentFiniteState != nextFiniteState && currentFiniteState.isAllowedTransition(nextFiniteState);
