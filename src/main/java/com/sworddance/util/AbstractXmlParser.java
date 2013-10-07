@@ -136,6 +136,12 @@ public abstract class AbstractXmlParser {
         return this.xmlDocument.getDocumentElement();
     }
 
+    /**
+     *
+     * @param attributes ( see {@link Node#getAttributes()} method )
+     * @param attributeName
+     * @return
+     */
     protected String getAttributeString(NamedNodeMap attributes, String attributeName) {
         String attributeValue = null;
         if ( attributes != null ) {
@@ -144,6 +150,17 @@ public abstract class AbstractXmlParser {
         }
         return attributeValue;
     }
+    /**
+     * example:
+     * if childNode corresponds to:
+     * &lt;node name="my name"/>
+     *
+     * getAttributeString(childNode, "name") returns "my name"
+     *
+     * @param childNode
+     * @param attributeName xml attribute name on childNode
+     * @return the string found
+     */
     protected String getAttributeString(Node childNode, String attributeName) {
         NamedNodeMap attributes = childNode.getAttributes();
         return this.getAttributeString(attributes, attributeName);
