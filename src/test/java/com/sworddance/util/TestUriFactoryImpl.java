@@ -183,7 +183,7 @@ public class TestUriFactoryImpl {
     @Test
     public void testCreateUriScheme() {
         URI uri = createUriWithSchema("foo.com/path/index.html");
-        assertEquals(uri.toString(), "http://foo.com/path/index.html");
+        assertEquals(uri.toString(), "//foo.com/path/index.html");
         uri = createUriWithSchema("/path/index.html");
         assertEquals(uri.toString(), "/path/index.html");
     }

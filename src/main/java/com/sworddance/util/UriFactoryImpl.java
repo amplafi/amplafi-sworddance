@@ -110,7 +110,7 @@ public class UriFactoryImpl {
             }
             if (schemaRequired && !uri.isAbsolute() && !newUriStr.startsWith(PATH_SEPARATOR)) {
                 // TODO: check for a relative uri! will produce something like http:/httpdocs/demo if newUriStr does not have host information.
-                newUriStr = HTTP_SCHEME+"://" + newUriStr;
+                newUriStr = "//" + newUriStr;
             }
             //noinspection StringEquality
             if (uriStr != newUriStr) {
