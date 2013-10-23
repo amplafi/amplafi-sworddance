@@ -350,25 +350,104 @@ public class UriFactoryImpl {
             return false;
         }
     }
+
+    /**
+     */
+    private static final Pattern IPV4_ADDRESSES = Pattern.compile("(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})");
     /**
      * NOT checking for !uri.{@link java.net.URI#isAbsolute()} because protocol-less uri ( '//example.com' ) is not absolute.
      * @param uri
      * @return false if uri == null or the uri.getHost() has no top-level-domain (no '.' in the last 8 characters )
      */
     public static boolean isNonLocalUri(URI uri) {
-        if ( uri == null ) {
-            return false;
-        } else {
+        if ( uri != null ) {
             String host = uri.getHost();
             if ( isNotBlank(host) ) {
                 // top-level domains ( .info, .com, .org, etc )  are at most 4 characters long + 1 for the dot.
                 // so checking for a '.' in the last 8 characters is a reasonable quick test to make sure the domain is
                 // a real domain.
-                int dotPos = host.substring(Math.max(host.length()-8, 0)).indexOf('.');
-                return dotPos >=0;
+                // Above is not true: internationalized domain names (e.g. xn--80ahbyhddgf2au1c.xn--p1ai )
+                int dotPos = host.lastIndexOf('.');
+                if (dotPos >=0) {
+                    // now look for ip address ranges that are declared local
+                    Matcher matcher = IPV4_ADDRESSES.matcher(host);
+                    if ( matcher.matches()) {
+                        // ipv4 address
+                        //  http://en.wikipedia.org/wiki/Reserved_IP_addresses
+                        int first = Integer.parseInt(matcher.group(1));
+                        int second = Integer.parseInt(matcher.group(2));
+                        int third = Integer.parseInt(matcher.group(3));
+                        int fourth =  Integer.parseInt(matcher.group(4));
+                        if ( first >= 224 ) {
+                            // 224.0.0.0 - 255.255.255.255 : various multicast and reserved blocks
+                            return false;
+                        } else if ( first < 0 || first > 255 || second < 0 || second > 255 || third < 0 || third > 255 || fourth < 0 || fourth > 255) {
+                            // some out of bounds number for ip address : lets just declare it bad.
+                            return false;
+                        } else {
+                            switch(first) {
+                            case 0: // 0.0.0.0 – 0.255.255.255 : all reserved
+                                return false;
+                            case 10: // 10.0.0.0 – 10.255.255.255 : all reserved
+                                return false;
+                            case 100:
+                                // 100.64.0.0 – 100.127.255.255
+                                // communication between service providers
+                                return second < 64 || second > 127;
+                            case 127:// 127.0.0.0 – 127.255.255.255 : all reserved
+                                return false;
+                            case 169:
+                                // 169.254.0.0 – 169.254.255.255
+                                return second != 254;
+                            case 172:
+                                // 172.16.0.0 – 172.31.255.255
+                                return second < 16 || second > 31;
+                            case 192:
+                                switch(second) {
+                                case 0:
+                                    if ( third == 0 ) {
+                                        // 192.0.0.0 – 192.0.0.7
+                                        return fourth > 7;
+                                    } else {
+                                        // 192.0.2.0 – 192.0.2.255
+                                        return third != 2;
+                                    }
+                                case 88:
+                                    // 192.88.99.0 – 192.88.99.255
+                                    return third != 99;
+                                case 168:
+                                    // 192.168.0.0 – 192.168.255.255
+                                    return false;
+                                default:
+                                    return true;
+                                }
+                            case 198:
+                                switch(second) {
+                                case 18:
+                                case 19:
+                                    // 198.18.0.0 – 198.19.255.255
+                                    return false;
+                                case 51:
+                                    // 198.51.100.0 – 198.51.100.255
+                                    return third != 100;
+                                default:
+                                    return true;
+                                }
+                            case 203:
+                                // 203.0.113.0 – 203.0.113.255
+                                return second !=0 || third != 113;
+                            }
+                            return true;
+                        }
+                    } else if (false/*test for ipv6 */) {
+
+                    } else {
+                        return true;
+                    }
+                }
             }
-            return false;
         }
+        return false;
     }
     /**
      * Chops uri to the max length supplied if it is longer.

@@ -265,12 +265,97 @@ public class TestUriFactoryImpl {
      */
     @Test
     public void testDomainHandling() {
-        assertEquals(getDomain(URI.create("http://bbc.co.uk")),"bbc.co.uk");
-        assertEquals(getDomain(URI.create("http://www.farreach.es")),"farreach.es");
-        assertEquals(getDomain(URI.create("wwwbbc.co.uk")),"wwwbbc.co.uk");
-        assertEquals(getDomain(URI.create("www.bbc.co.uk")),"bbc.co.uk");
-        assertEquals(getDomain(URI.create("wWw.bbc.co.uk")),"bbc.co.uk");
-        assertEquals(getDomain(URI.create("wWw.BBc.Co.uk")),"bbc.co.uk");
-        assertEquals(getDomain(URI.create("www.uk")),"www.uk");
+        assertEquals(getDomain(createUri("http://bbc.co.uk")),"bbc.co.uk");
+        assertEquals(getDomain(createUri("http://www.farreach.es")),"farreach.es");
+        assertEquals(getDomain(createUri("wwwbbc.co.uk")),"wwwbbc.co.uk");
+        assertEquals(getDomain(createUri("www.bbc.co.uk")),"bbc.co.uk");
+        assertEquals(getDomain(createUri("wWw.bbc.co.uk")),"bbc.co.uk");
+        assertEquals(getDomain(createUri("wWw.BBc.Co.uk")),"bbc.co.uk");
+        assertEquals(getDomain(createUri("www.uk")),"www.uk");
+    }
+
+    @Test(dataProvider="hostAddresses")
+    public void testLocalUri(String uriStr, boolean remote) {
+        assertEquals(isNonLocalUri(createUriWithOptions(uriStr, true, false)), remote);
+    }
+
+    @DataProvider(name="hostAddresses")
+    public Object[][] getHostAddresses() {
+        return new Object[][] {
+            new Object[] { "//localhost", false },
+            // internationalized domain names: http://en.wikipedia.org/wiki/Internationalized_country_code_top-level_domain
+            new Object[] { "//xn--80ahbyhddgf2au1c.xn--p1ai/", true },
+            new Object[] { "xn--80ahbyhddgf2au1c.xn--p1ai", true },
+            new Object[] { "10.0.0.com", true },
+
+            new Object[] { "0.0.0.0", false },
+            new Object[] { "0.255.255.255", false },
+            new Object[] { "1.0.0.0", true },
+
+            new Object[] { "9.255.255.255", true },
+            new Object[] { "10.0.0.0", false },
+            new Object[] { "10.255.255.255", false },
+            new Object[] { "11.0.0.0", true },
+
+            new Object[] { "100.63.255.255", true },
+            new Object[] { "100.64.0.0", false },
+            new Object[] { "100.127.255.255", false },
+            new Object[] { "100.128.0.0", true },
+
+            new Object[] { "126.255.255.255", true },
+            new Object[] { "127.0.0.1", false },
+            new Object[] { "127.0.0.0", false },
+            new Object[] { "127.255.255.255", false },
+            new Object[] { "128.0.0.0", true },
+
+            new Object[] { "169.253.255.255", true },
+            new Object[] { "169.254.0.0", false },
+            new Object[] { "169.254.255.255", false },
+            new Object[] { "169.255.0.0", true },
+
+            new Object[] { "172.15.255.255", true },
+            new Object[] { "172.16.0.0", false },
+            new Object[] { "172.31.255.255", false },
+            new Object[] { "172.32.0.0", true },
+
+            new Object[] { "191.255.255.255", true },
+            new Object[] { "192.0.0.0", false },
+            new Object[] { "192.0.0.7", false },
+            new Object[] { "192.0.0.8", true },
+
+            new Object[] { "191.0.1.255", true },
+            new Object[] { "192.0.2.0", false },
+            new Object[] { "192.0.2.255", false },
+            new Object[] { "192.0.3.0", true },
+
+            new Object[] { "192.88.98.255", true },
+            new Object[] { "192.88.99.0", false },
+            new Object[] { "192.88.99.255", false },
+            new Object[] { "192.88.100.0", true },
+
+            new Object[] { "192.167.255.255", true },
+            new Object[] { "192.168.0.0", false },
+            new Object[] { "192.168.255.255", false },
+            new Object[] { "192.169.0.0", true },
+
+            new Object[] { "198.17.255.255", true },
+            new Object[] { "198.18.0.0", false },
+            new Object[] { "198.19.255.255", false },
+            new Object[] { "198.20.0.0", true },
+
+            new Object[] { "198.51.99.255", true },
+            new Object[] { "198.51.100.0", false },
+            new Object[] { "198.51.100.255", false },
+            new Object[] { "198.51.101.0", true },
+
+            new Object[] { "203.0.112.255", true },
+            new Object[] { "203.0.113.0", false },
+            new Object[] { "203.0.113.255", false },
+            new Object[] { "203.0.114.0", true },
+
+            new Object[] { "223.0.255.255", true },
+            new Object[] { "224.0.0.0", false },
+            new Object[] { "255.255.255.255", false },
+        };
     }
 }
