@@ -55,7 +55,7 @@ public class ApplicationIllegalArgumentException extends
      */
     public static ApplicationIllegalArgumentException valid(boolean validResult, Object... failMessageParts) {
         if (!validResult) {
-            fail(failMessageParts);
+            throw new ApplicationIllegalArgumentException(failMessageParts);
         }
         return null;
     }
