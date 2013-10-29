@@ -94,6 +94,7 @@ public class BeanWorker {
     }
     public void addPropertyNames(Collection<String> additionalPropertyNames) {
         if ( isNotEmpty(additionalPropertyNames)) {
+            // TODO: validate that there are no trailing/leading '.'
             this.propertyNames.addAll(additionalPropertyNames);
             // sorted so that when creating intermediate propertyChains we can create them read-only because we know that all the
             // explicit read/write properties have been created already.
@@ -130,7 +131,15 @@ public class BeanWorker {
         }
         return result;
     }
-
+    /**
+     * Ask for the first property specified. Useful for BeanWorkers with only 1 specified property.
+     * @param base
+     * @return null or the property
+     */
+    public <T> T getValue(Object base) {
+        T result = this.getValue(base, this.getPropertyName(0));
+        return result;
+    }
     public void setValue(Object base, String property, Object value) {
         if ( base != null && property != null ) {
             PropertyMethodChain methodChain = getPropertyMethodChain(base.getClass(), property);
