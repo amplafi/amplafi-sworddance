@@ -84,6 +84,16 @@ public class TestBeanWorker {
         assertTrue(delete);
     }
 
+    @Test
+    public void testPropertyType() {
+        BeanWorker beanWorker = new BeanWorker("goo", "testClass.delete");
+        Class<?> gooClass = beanWorker.getPropertyType(TestClass.class, "goo");
+        assertEquals(gooClass, String.class);
+        Class<?> deleteClass = beanWorker.getPropertyType(TestClass.class, "testClass.delete");
+        assertEquals(deleteClass, boolean.class);
+        Class<?> testClass = beanWorker.getPropertyType(TestClass.class, "testClass");
+        assertEquals(testClass, TestClass.class);
+    }
     /**
      * tests get/set using the same BeanWorker ( this tests duck-typing ) on 2 different classes that are not related to each other.
      * @param beanWorker

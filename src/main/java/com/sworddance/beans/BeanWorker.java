@@ -168,6 +168,9 @@ public class BeanWorker {
         return methodChain;
     }
 
+    public Class<?> getPropertyType(Class<?> clazz) {
+        return this.getPropertyType(clazz, this.getPropertyName(0));
+    }
     public Class<?> getPropertyType(Class<?> clazz, String property) {
         PropertyMethodChain chain = getPropertyMethodChain(clazz, property);
         if ( chain == null) {
