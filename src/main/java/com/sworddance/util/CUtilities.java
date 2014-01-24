@@ -14,6 +14,9 @@
 
 package com.sworddance.util;
 
+import static com.sworddance.util.NotNullIterator.newNotNullIterator;
+import static org.apache.commons.lang.StringUtils.join;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
@@ -37,9 +40,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 import com.sworddance.util.map.MapKeyed;
-
-import static com.sworddance.util.NotNullIterator.newNotNullIterator;
-import static org.apache.commons.lang.StringUtils.*;
 
 /**
  * @author patmoore
@@ -835,5 +835,29 @@ public class CUtilities {
         } else {
             return results.values();
         }
+    }
+    
+    public static <K, V extends Collection<W>, W> Map<K, V> merge(Map<K, V> first, Map<K, V> second) {
+        Map<K, V> result = new HashMap<K, V>();
+        if ( isNotEmpty(first) || isNotEmpty(second)) {
+            if ( isEmpty(first)) {
+                result.putAll(second);
+            } else if(isEmpty(second)) {
+                result.putAll(first);
+            } else {
+                result.putAll(first);
+                Set<Map.Entry<K, V>> secondMapEntrySet = second.entrySet();
+                for (Map.Entry<K, V> entry : secondMapEntrySet) {
+                    K key = entry.getKey();
+                    if (result.containsKey(key)) {
+                        V resultValue = result.get(key);
+                        resultValue.addAll(entry.getValue());
+                    } else {
+                        result.put(key, entry.getValue());
+                    }
+                }
+            }
+        }
+        return result;
     }
 }
