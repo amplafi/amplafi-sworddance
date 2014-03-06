@@ -80,7 +80,13 @@ public interface FiniteState<T extends FiniteState<T>> {
      * @param <T>
      */
     public class FiniteStateChecker<T extends FiniteState<T>> {
+        /**
+         * States that are always allowed to transition to any other state.
+         */
         private final List<T> alwaysAllowedTransitions;
+        /**
+         * @param alwaysAllowedTransitions states that can transition to any other state.
+         */
         public FiniteStateChecker(T... alwaysAllowedTransitions) {
             this.alwaysAllowedTransitions = Arrays.asList(alwaysAllowedTransitions);
         }
