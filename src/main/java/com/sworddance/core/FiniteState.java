@@ -104,10 +104,11 @@ public interface FiniteState<T extends FiniteState<T>> {
         public boolean isAllowedTransition(T oldFiniteState, T newFiniteState) {
             if ( oldFiniteState == null || oldFiniteState == newFiniteState) {
                 return true;
+            } else if ( this.alwaysAllowedTransitions.contains(oldFiniteState)) {
+                // the old state is always allowed to transition from...
+                return true;
             } else if ( isTerminalState(oldFiniteState)) {
                 return false;
-            } else if ( this.alwaysAllowedTransitions.contains(newFiniteState)) {
-                return true;
             } else {
                 return oldFiniteState.getAllowedTransitions().contains(newFiniteState);
             }
