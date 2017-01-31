@@ -206,7 +206,7 @@ public class UriFactoryImpl {
     }
 
     /**
-     *  Odd comment : can't resolve because this is also used for "mailto:" </br>
+     *  Odd comment : can't resolve because this is also used for "mailto:"
      *
      *  This method creates the {@link URI} from the given argument.
      *
@@ -530,9 +530,9 @@ public class UriFactoryImpl {
      * or part of it is already percent encoded, that part of URI string is skipped.
      * This method is implemented as per specifications in RFC 1738 (section 2).
      *
-     * I also had a look at <br/>
-     * {@link java.net.URLEncoder} does not meet out requirements <br/>
-     * {@link java.net.URI} also does not meet our requirements <br/>
+     * I also had a look at
+     * {@link java.net.URLEncoder} does not meet out requirements
+     * {@link java.net.URI} also does not meet our requirements
      *
      *
      *  TODO There is one issue in this implementation, RFC 1738 section 2.2,
@@ -542,7 +542,7 @@ public class UriFactoryImpl {
      *  character must be encoded). As of now in the current implementation we are
      *  not encoding any reserved characters. For us it is difficult to determine
      *  whether a reserved character is used for its reserved purpose of some other
-     *  purpose. </br>
+     *  purpose.
      *
      *  One possible (but costly) solution to above limitation could be,
      *  to start encoding all the possible combinations of reserved characters
@@ -550,12 +550,12 @@ public class UriFactoryImpl {
      *
      * @param input URI string which needs to be percent encoded
      * @return percent encoded string
-     * {@linkplain "http://java.sun.com/javaee/6/docs/api/javax/ws/rs/core/UriBuilder.html"},
+     * {@linkplain http://java.sun.com/javaee/6/docs/api/javax/ws/rs/core/UriBuilder.html},
      * probably URIBuilder does the same work we want to do below. But no of
      * dependencies(maven) on URI are huge. So it does not look worth the effort
      * to use URIBuilder
-     * {@linkplain "http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars"}
-     * {@linkplain "http://www.ietf.org/rfc/rfc1738.txt"} (section 2.2)
+     * {@linkplain http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars}
+     * {@linkplain http://www.ietf.org/rfc/rfc1738.txt} (section 2.2)
      */
     public static String percentEncoding(String input){
         StringBuilder sb = new StringBuilder();

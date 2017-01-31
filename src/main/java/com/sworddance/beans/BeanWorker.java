@@ -221,9 +221,9 @@ public class BeanWorker {
 
 
     /**
-     * @param clazz
-     * @param property
-     * @param readOnly
+     * @param clazz property's class
+     * @param property property name
+     * @param readOnly readonly property
      * @return the propertyMethodChain
      */
     protected List<PropertyMethodChain> newPropertyMethodChain(Class<?> clazz, String property, boolean readOnly, boolean expanded) {
