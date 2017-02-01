@@ -306,7 +306,7 @@ public class CUtilities {
             }
 
             if (componentType == null) {
-            	componentType = guessComponentType(objects);
+                componentType = guessComponentType(objects);
             }
 
             for(Object object:objects) {
@@ -329,22 +329,22 @@ public class CUtilities {
         }
     }
 
-	private static <T> Class<T> guessComponentType(Object... objects) {
-		Class<T> type = null;
-		for (Object object : newNotNullIterator(objects)) {
-			Class<T> prevType = type;
-	    	if (object.getClass().isArray()) {
-	            type = (Class<T>) object.getClass().getComponentType();
-	    	} else {
-	    		type = (Class<T>) object.getClass();
-	    	}
-	    	if (prevType != null && !type.isAssignableFrom(prevType)) {
-	    		type = (Class<T>) Object.class;
-	    		break;
-	    	}
-		}
-		return type;
-	}
+    private static <T> Class<T> guessComponentType(Object... objects) {
+        Class<T> type = null;
+        for (Object object : newNotNullIterator(objects)) {
+            Class<T> prevType = type;
+            if (object.getClass().isArray()) {
+                type = (Class<T>) object.getClass().getComponentType();
+            } else {
+                type = (Class<T>) object.getClass();
+            }
+            if (prevType != null && !type.isAssignableFrom(prevType)) {
+                type = (Class<T>) Object.class;
+                break;
+            }
+        }
+        return type;
+    }
 
     /**
      * This is a safe put when using {@link java.util.concurrent.ConcurrentMap} which throw exceptions if key or value is null
@@ -687,7 +687,7 @@ public class CUtilities {
 
     /**
      * Create a search path list containing:
-     * [ fileName, /fileName, /<eachdir>/fileName, /META-INF/fileName, /META-INF/<eachdir>/fileName ]
+     * [ fileName, /fileName, /{eachdir}/fileName, /META-INF/fileName, /META-INF/{eachdir}/fileName ]
      * @return a list of locations to look for the file supplied.
      */
     public static List<String> createSearchPath(String fileName, String...alternateDirectories) {

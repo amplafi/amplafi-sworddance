@@ -114,7 +114,7 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
     }
     /**
      * Child proxies are used when 'this' has been asked for a property that is partial path to leaf properties.
-     * <p>For example, a ProxyMapper is managing properties:
+     * For example, a ProxyMapper is managing properties:
      * <ul><li>foo.bar</li>
      * <li>foo.goo</li>
      * <li>bee</li>
@@ -123,7 +123,8 @@ public class RootProxyMapper<I, O extends I> extends ProxyMapperImpl<I, O> {
      * <ul><li>bar (mapped to parent "foo.bar")</li>
      * <li>goo (mapped to parent "foo.goo")</li>
      * </ul>
-     * This allows the ProxyMapper usage to be less visible to called utility code.</p>
+     * This allows the ProxyMapper usage to be less visible to called utility code.
+     *
      * @param <CI>
      * @param <CO>
      * @param propertyName
