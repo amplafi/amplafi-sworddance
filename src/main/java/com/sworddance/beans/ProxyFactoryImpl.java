@@ -94,8 +94,9 @@ public class ProxyFactoryImpl implements ProxyFactory {
         R proxyMapper = (R) getProxyMapper(proxy);
         if ( proxyMapper instanceof RootProxyMapper) {
             initProxyMapper((RootProxyMapper)proxyMapper);
-        } else if ( proxyMapper instanceof ProxyMapperImplementor<?, ?>) {
-            initProxyMapper(proxyMapper);
+            // 2017 not certain what this is supposed to do .. infinite loop?
+//        } else if ( proxyMapper instanceof ProxyMapperImplementor<?, ?>) {
+//            initProxyMapper((ProxyMapperImplementor)proxyMapper);
         }
         return proxyMapper;
     }
