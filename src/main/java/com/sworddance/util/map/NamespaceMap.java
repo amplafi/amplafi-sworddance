@@ -35,7 +35,7 @@ public interface NamespaceMap extends NamespaceMapProvider, Emptyable {
     public Map<String, String> getAsStringMap(Object namespace);
 
 
-    public String remove(Object namespace, Object key);
+    public String removeFromNamespace(Object namespace, Object key);
 
     public String put(Object namespace, Object key, Object value);
 
